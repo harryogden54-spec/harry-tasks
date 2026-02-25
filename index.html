@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <title>Harry — Task Board</title>
   <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
@@ -18,6 +20,11 @@
     .list-item-drag-over{opacity:0.5;border-style:dashed!important}
     @keyframes spin{to{transform:rotate(360deg)}}
     .spin{animation:spin 1s linear infinite;display:inline-block}
+    /* Mobile bottom tab safe area */
+    .bottom-tab-bar{padding-bottom:env(safe-area-inset-bottom,0px)}
+    /* Prevent iOS bounce on body but allow scroll inside */
+    html,body{height:100%;overflow:hidden}
+    #root{height:100%;overflow:hidden}
   </style>
 </head>
 <body>
@@ -28,65 +35,22 @@ const { useState, useEffect, useRef, useCallback } = React;
 // ─── Supabase config ──────────────────────────────────────────────────────────
 const SB_URL = "https://vbegnnwyrbxiqdnzvhwk.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZiZWdubnd5cmJ4aXFkbnp2aHdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5OTEzMjIsImV4cCI6MjA4NzU2NzMyMn0.K2zZrYYh2b34jyqjjzVBhty3lHz0LU2q_-8RIb_0S1M";
+const sbHeaders = {"Content-Type":"application/json","apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Prefer":"resolution=merge-duplicates"};
 
-const sbHeaders = {
-  "Content-Type": "application/json",
-  "apikey": SB_KEY,
-  "Authorization": `Bearer ${SB_KEY}`,
-  "Prefer": "resolution=merge-duplicates"
-};
-
-// Fetch all rows from a table, returns array of { id, data } objects
 async function sbGetAll(table) {
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/${table}?select=id,data`, { headers: sbHeaders });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch { return null; }
+  try { const r=await fetch(`${SB_URL}/rest/v1/${table}?select=id,data`,{headers:sbHeaders}); if(!r.ok)return null; return await r.json(); } catch{return null;}
 }
-
-// Upsert a single row (id + data)
-async function sbUpsert(table, id, data) {
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/${table}`, {
-      method: "POST",
-      headers: sbHeaders,
-      body: JSON.stringify({ id, data, updated_at: new Date().toISOString() })
-    });
-    return res.ok;
-  } catch { return false; }
+async function sbUpsert(table,id,data) {
+  try { const r=await fetch(`${SB_URL}/rest/v1/${table}`,{method:"POST",headers:sbHeaders,body:JSON.stringify({id,data,updated_at:new Date().toISOString()})}); return r.ok; } catch{return false;}
 }
-
-// Delete a row by id
-async function sbDelete(table, id) {
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
-      method: "DELETE",
-      headers: sbHeaders
-    });
-    return res.ok;
-  } catch { return false; }
+async function sbDelete(table,id) {
+  try { const r=await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`,{method:"DELETE",headers:sbHeaders}); return r.ok; } catch{return false;}
 }
-
-// Upsert a settings key/value
-async function sbSetSetting(key, value) {
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/settings`, {
-      method: "POST",
-      headers: sbHeaders,
-      body: JSON.stringify({ key, value })
-    });
-    return res.ok;
-  } catch { return false; }
+async function sbSetSetting(key,value) {
+  try { const r=await fetch(`${SB_URL}/rest/v1/settings`,{method:"POST",headers:sbHeaders,body:JSON.stringify({key,value})}); return r.ok; } catch{return false;}
 }
-
 async function sbGetSetting(key) {
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/settings?key=eq.${key}&select=value`, { headers: sbHeaders });
-    if (!res.ok) return null;
-    const rows = await res.json();
-    return rows.length ? rows[0].value : null;
-  } catch { return null; }
+  try { const r=await fetch(`${SB_URL}/rest/v1/settings?key=eq.${key}&select=value`,{headers:sbHeaders}); if(!r.ok)return null; const rows=await r.json(); return rows.length?rows[0].value:null; } catch{return null;}
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -106,11 +70,7 @@ const STATUSES    = ["To Do","In Progress","Done"];
 const PRIORITY_COLOR = { High:"#BF616A", Medium:"#D08770", Low:"#A3BE8C" };
 const CAT_COLOR      = { Daily:"#5E81AC", School:"#81A1C1", Personal:"#8FBCBB" };
 const TODAY = new Date().toISOString().split("T")[0];
-
-const LIST_COLORS = [
-  "#5E81AC","#88C0D0","#81A1C1","#8FBCBB","#7B9FCC",
-  "#A3BE8C","#D08770","#BF616A","#B48EAD","#EBCB8B"
-];
+const LIST_COLORS = ["#5E81AC","#88C0D0","#81A1C1","#8FBCBB","#7B9FCC","#A3BE8C","#D08770","#BF616A","#B48EAD","#EBCB8B"];
 
 const INITIAL_TASKS = [
   { id:"t1", title:"Contact ADHD 360 for GP referral",  category:"Daily",    priority:"High",   status:"To Do", dueDate:"2026-02-24", notes:"", subtasks:[], pinned:true,  createdAt:"2026-02-24T10:00:00Z" },
@@ -121,17 +81,10 @@ const INITIAL_TASKS = [
   { id:"t6", title:"Morocco holiday",                   category:"Personal", priority:"Low",    status:"To Do", dueDate:"",           notes:"", subtasks:[], pinned:false, createdAt:"2026-02-25T10:02:00Z" },
   { id:"t7", title:"Wisdom teeth",                      category:"Personal", priority:"Medium", status:"To Do", dueDate:"",           notes:"", subtasks:[], pinned:false, createdAt:"2026-02-25T10:03:00Z" },
 ];
-
 const INITIAL_LISTS = [
-  {
-    id:"l1", name:"Claude Projects", color:"#5E81AC", createdAt:"2026-02-25T10:00:00Z",
-    items:[
-      { id:"li1", text:"Task manager app", note:"The one I'm working on now", done:false, order:0 },
-      { id:"li2", text:"Study flashcard tool", note:"For Materials & Fire Sci", done:false, order:1 },
-    ]
-  }
+  { id:"l1", name:"Claude Projects", color:"#5E81AC", createdAt:"2026-02-25T10:00:00Z",
+    items:[ { id:"li1", text:"Task manager app", note:"The one I'm working on now", done:false, order:0 }, { id:"li2", text:"Study flashcard tool", note:"For Materials & Fire Sci", done:false, order:1 } ] }
 ];
-
 const THEMES = {
   polar: { name:"Polar", label:"Polar White", bg:"#EEF2F7", surface:"#FFFFFF", alt:"#E5ECF4", border:"#D0DBEA", text:"#2E3440", muted:"#7B8EA8", accent:"#5E81AC", fg:"#FFFFFF" },
   frost: { name:"Frost", label:"Frost Blue",  bg:"#D8E4F0", surface:"#EBF1F8", alt:"#D0DDED", border:"#B8CDE0", text:"#2E3440", muted:"#607A96", accent:"#4472A8", fg:"#FFFFFF" },
@@ -143,75 +96,130 @@ const newTask = () => ({ id:`t${Date.now()}`, title:"", category:"Daily", priori
 
 function dateFmt(s) {
   if (!s) return null;
-  const d = new Date(s+"T12:00:00"), now = new Date(TODAY+"T12:00:00");
-  const diff = Math.round((d - now) / 86400000);
-  if (diff < -1) return { label:`${Math.abs(diff)}d overdue`, over:true };
-  if (diff === -1) return { label:"Yesterday", over:true };
-  if (diff === 0)  return { label:"Today", over:false, today:true };
-  if (diff === 1)  return { label:"Tomorrow", over:false };
-  if (diff <= 7)   return { label:`${diff}d`, over:false };
-  return { label:d.toLocaleDateString("en-GB",{day:"numeric",month:"short"}), over:false };
+  const d=new Date(s+"T12:00:00"),now=new Date(TODAY+"T12:00:00"),diff=Math.round((d-now)/86400000);
+  if(diff<-1)return{label:`${Math.abs(diff)}d overdue`,over:true};
+  if(diff===-1)return{label:"Yesterday",over:true};
+  if(diff===0)return{label:"Today",over:false,today:true};
+  if(diff===1)return{label:"Tomorrow",over:false};
+  if(diff<=7)return{label:`${diff}d`,over:false};
+  return{label:d.toLocaleDateString("en-GB",{day:"numeric",month:"short"}),over:false};
 }
-
 function isUrgent(t) {
-  if (t.status==="Done") return false;
-  if (t.priority==="High") return true;
-  if (t.dueDate && new Date(t.dueDate+"T12:00:00") <= new Date(TODAY+"T12:00:00")) return true;
+  if(t.status==="Done")return false;
+  if(t.priority==="High")return true;
+  if(t.dueDate&&new Date(t.dueDate+"T12:00:00")<=new Date(TODAY+"T12:00:00"))return true;
   return false;
 }
+function lsGet(key,fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch{return fallback;}}
+function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch{}}
 
-function lsGet(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
-}
-function lsSet(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+// ─── useIsMobile ──────────────────────────────────────────────────────────────
+function useIsMobile() {
+  const [mobile, setMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const fn = () => setMobile(window.innerWidth < 768);
+    window.addEventListener("resize", fn);
+    return () => window.removeEventListener("resize", fn);
+  }, []);
+  return mobile;
 }
 
-// ─── Sync status indicator ────────────────────────────────────────────────────
+// ─── Sync Dot ─────────────────────────────────────────────────────────────────
 function SyncDot({ status }) {
   const colors = { synced:"#A3BE8C", syncing:"#EBCB8B", offline:"#BF616A", idle:"#ccc" };
-  const labels = { synced:"Synced", syncing:"Syncing…", offline:"Offline — changes saved locally", idle:"" };
+  const labels = { synced:"Synced", syncing:"Syncing…", offline:"Offline", idle:"" };
   return (
-    <div style={{display:"flex",alignItems:"center",gap:5}} title={labels[status]}>
-      <div style={{width:7,height:7,borderRadius:"50%",background:colors[status],flexShrink:0,transition:"background 0.3s"}}/>
+    <div style={{display:"flex",alignItems:"center",gap:4}} title={labels[status]}>
+      <div style={{width:6,height:6,borderRadius:"50%",background:colors[status],transition:"background 0.3s"}}/>
       <span style={{fontSize:10,color:colors[status],fontWeight:600}}>{labels[status]}</span>
+    </div>
+  );
+}
+
+// ─── Tab icons (SVG strings) ──────────────────────────────────────────────────
+const ICONS = {
+  dashboard: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>,
+  tasks:     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/></svg>,
+  lists:     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+  courses:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+};
+
+// ─── Bottom Tab Bar (mobile) ──────────────────────────────────────────────────
+function BottomTabBar({ view, setView, T }) {
+  const tabs = [["dashboard","Home"],["tasks","Tasks"],["lists","Lists"],["courses","Courses"]];
+  return (
+    <div className="bottom-tab-bar" style={{position:"fixed",bottom:0,left:0,right:0,background:T.surface,borderTop:`1px solid ${T.border}`,display:"flex",zIndex:200}}>
+      {tabs.map(([v,label])=>(
+        <button key={v} onClick={()=>setView(v)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,padding:"10px 0 8px",background:"none",border:"none",cursor:"pointer",color:view===v?T.accent:T.muted,transition:"color 0.15s"}}>
+          <div style={{opacity:view===v?1:0.5,transition:"opacity 0.15s"}}>{ICONS[v]}</div>
+          <span style={{fontSize:10,fontWeight:view===v?700:400}}>{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Desktop Nav ──────────────────────────────────────────────────────────────
+function DesktopNav({ view, setView, theme, setTheme, syncStatus, T }) {
+  const B = a => ({background:a?T.accent:"transparent",color:a?"#fff":T.muted,border:`1px solid ${a?T.accent:T.border}`,borderRadius:6,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:a?600:400,transition:"all 0.15s"});
+  return (
+    <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,position:"sticky",top:0,zIndex:100}}>
+      <div style={{maxWidth:1140,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:52}}>
+        <div style={{display:"flex",alignItems:"center",gap:20}}>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <div style={{width:8,height:8,borderRadius:2,background:T.accent}}/>
+            <span style={{fontSize:15,fontWeight:700,color:T.text}}>Harry</span>
+          </div>
+          <div style={{display:"flex",gap:2}}>
+            {[["dashboard","Dashboard"],["tasks","Tasks"],["lists","Lists"],["courses","Courses"]].map(([v,l])=>(
+              <button key={v} onClick={()=>setView(v)} style={{...B(view===v),padding:"5px 14px",fontSize:13}}>{l}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <SyncDot status={syncStatus}/>
+          <div style={{width:1,height:16,background:T.border,margin:"0 4px"}}/>
+          <span style={{fontSize:10,color:T.muted,marginRight:4,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Theme</span>
+          {Object.entries(THEMES).map(([k,v])=>(
+            <button key={k} onClick={()=>setTheme(k)} style={{...B(theme===k),padding:"4px 10px",fontSize:11}}>{v.label}</button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 // ─── Calendar ────────────────────────────────────────────────────────────────
 function Cal({ tasks, T }) {
-  const now = new Date();
-  const [mo, setMo] = useState(now.getMonth());
-  const [yr, setYr] = useState(now.getFullYear());
-  const dim = new Date(yr,mo+1,0).getDate(), fd=(new Date(yr,mo,1).getDay()+6)%7;
+  const now=new Date();
+  const [mo,setMo]=useState(now.getMonth());
+  const [yr,setYr]=useState(now.getFullYear());
+  const dim=new Date(yr,mo+1,0).getDate(),fd=(new Date(yr,mo,1).getDay()+6)%7;
   const byDay={};
   tasks.forEach(t=>{
-    if(!t.dueDate||t.status==="Done") return;
+    if(!t.dueDate||t.status==="Done")return;
     const d=new Date(t.dueDate+"T12:00:00");
     if(d.getMonth()===mo&&d.getFullYear()===yr){const k=d.getDate();byDay[k]=[...(byDay[k]||[]),t];}
   });
-  const prevMonth=()=>{ if(mo===0){setMo(11);setYr(y=>y-1);}else setMo(m=>m-1); };
-  const nextMonth=()=>{ if(mo===11){setMo(0);setYr(y=>y+1);}else setMo(m=>m+1); };
+  const prevMonth=()=>{if(mo===0){setMo(11);setYr(y=>y-1);}else setMo(m=>m-1);};
+  const nextMonth=()=>{if(mo===11){setMo(0);setYr(y=>y+1);}else setMo(m=>m+1);};
   const mn=new Date(yr,mo,1).toLocaleString("en-GB",{month:"long",year:"numeric"});
-  const todayDay = new Date().getDate(), todayMo = new Date().getMonth(), todayYr = new Date().getFullYear();
+  const todayDay=new Date().getDate(),todayMo=new Date().getMonth(),todayYr=new Date().getFullYear();
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-        <button onClick={prevMonth} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:16,lineHeight:1,padding:"2px 6px"}}>‹</button>
+        <button onClick={prevMonth} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:16,padding:"2px 6px"}}>‹</button>
         <span style={{fontSize:13,fontWeight:600,color:T.text}}>{mn}</span>
-        <button onClick={nextMonth} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:16,lineHeight:1,padding:"2px 6px"}}>›</button>
+        <button onClick={nextMonth} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:16,padding:"2px 6px"}}>›</button>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,textAlign:"center"}}>
         {["M","T","W","T","F","S","S"].map((d,i)=><div key={i} style={{fontSize:10,color:T.muted,fontWeight:700,padding:"3px 0"}}>{d}</div>)}
         {Array(fd).fill(null).map((_,i)=><div key={`e${i}`}/>)}
         {Array(dim).fill(null).map((_,i)=>{
-          const day=i+1, has=byDay[day];
-          const isToday=day===todayDay&&mo===todayMo&&yr===todayYr;
+          const day=i+1,has=byDay[day],isToday=day===todayDay&&mo===todayMo&&yr===todayYr;
           const over=has?.some(t=>new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00"));
           return <div key={day} style={{padding:"4px 2px",borderRadius:5,fontSize:12,background:isToday?T.accent:"transparent",color:isToday?T.fg:has?(over?PRIORITY_COLOR.High:T.accent):T.muted,fontWeight:isToday||has?600:400}}>
-            {day}
-            {has&&!isToday&&<div style={{width:3,height:3,borderRadius:"50%",background:over?PRIORITY_COLOR.High:T.accent,margin:"1px auto 0"}}/>}
+            {day}{has&&!isToday&&<div style={{width:3,height:3,borderRadius:"50%",background:over?PRIORITY_COLOR.High:T.accent,margin:"1px auto 0"}}/>}
           </div>;
         })}
       </div>
@@ -221,61 +229,67 @@ function Cal({ tasks, T }) {
 
 // ─── Checkbox ────────────────────────────────────────────────────────────────
 function Check({ checked, onChange, color, T }) {
-  const c = color || T.accent;
-  return <div onClick={onChange} style={{width:20,height:20,borderRadius:4,border:`2px solid ${checked?c:T.border}`,background:checked?c:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
-    {checked&&<span style={{color:"#fff",fontSize:11,fontWeight:800,lineHeight:1}}>✓</span>}
+  const c=color||T.accent;
+  return <div onClick={onChange} style={{width:22,height:22,borderRadius:5,border:`2px solid ${checked?c:T.border}`,background:checked?c:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.15s"}}>
+    {checked&&<span style={{color:"#fff",fontSize:12,fontWeight:800,lineHeight:1}}>✓</span>}
   </div>;
 }
 
 // ─── Task Card ───────────────────────────────────────────────────────────────
 function Card({ task, onEdit, onDel, onPin, T, draggable, onDragStart, onDragOver, onDrop }) {
-  const d=dateFmt(task.dueDate), dc=task.subtasks.filter(s=>s.done).length, urgent=isUrgent(task);
+  const d=dateFmt(task.dueDate),dc=task.subtasks.filter(s=>s.done).length,urgent=isUrgent(task);
   return (
     <div draggable={draggable} onDragStart={onDragStart} onDragOver={onDragOver} onDrop={onDrop}
       onClick={()=>onEdit(task)}
-      style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:urgent&&task.status!=="Done"?`3px solid ${PRIORITY_COLOR.High}`:`1px solid ${T.border}`,borderRadius:8,padding:"12px 13px",marginBottom:7,cursor:"pointer",transition:"all 0.15s",opacity:task.status==="Done"?0.55:1}}
-      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 3px 12px rgba(46,52,64,0.1)";e.currentTarget.style.transform="translateY(-1px)"}}
-      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none"}}
+      style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:urgent&&task.status!=="Done"?`3px solid ${PRIORITY_COLOR.High}`:`1px solid ${T.border}`,borderRadius:10,padding:"13px 14px",marginBottom:8,cursor:"pointer",transition:"all 0.15s",opacity:task.status==="Done"?0.55:1}}
+      onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 3px 12px rgba(46,52,64,0.1)";}}
+      onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";}}
     >
       <div style={{display:"flex",gap:7,alignItems:"flex-start"}}>
-        <p style={{margin:0,flex:1,fontSize:13,fontWeight:500,color:T.text,lineHeight:1.4,textDecoration:task.status==="Done"?"line-through":"none"}}>{task.title||"Untitled"}</p>
+        <p style={{margin:0,flex:1,fontSize:14,fontWeight:500,color:T.text,lineHeight:1.4,textDecoration:task.status==="Done"?"line-through":"none"}}>{task.title||"Untitled"}</p>
         <div style={{display:"flex",gap:4,flexShrink:0}}>
-          <button onClick={e=>{e.stopPropagation();onPin(task.id)}} title={task.pinned?"Unpin":"Pin"} style={{background:"none",border:"none",cursor:"pointer",color:task.pinned?T.accent:T.border,fontSize:11,padding:"1px 2px",lineHeight:1,fontWeight:700}}>{task.pinned?"📌":"·"}</button>
-          <button onClick={e=>{e.stopPropagation();onDel(task.id)}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:15,padding:0,lineHeight:1}}>×</button>
+          <button onClick={e=>{e.stopPropagation();onPin(task.id);}} style={{background:"none",border:"none",cursor:"pointer",color:task.pinned?T.accent:T.border,fontSize:13,padding:"2px 3px",lineHeight:1}}>{task.pinned?"📌":"·"}</button>
+          <button onClick={e=>{e.stopPropagation();onDel(task.id);}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:18,padding:0,lineHeight:1}}>×</button>
         </div>
       </div>
-      <div style={{display:"flex",gap:5,marginTop:7,flexWrap:"wrap",alignItems:"center"}}>
-        <span style={{fontSize:10,fontWeight:600,color:CAT_COLOR[task.category],background:CAT_COLOR[task.category]+"22",padding:"2px 7px",borderRadius:3}}>{task.category}</span>
-        <span style={{fontSize:10,fontWeight:600,color:PRIORITY_COLOR[task.priority],background:PRIORITY_COLOR[task.priority]+"22",padding:"2px 7px",borderRadius:3}}>{task.priority}</span>
-        {task.pinned&&<span style={{fontSize:10,fontWeight:600,color:T.accent,background:T.alt,padding:"2px 7px",borderRadius:3}}>Pinned</span>}
-        {d&&<span style={{fontSize:10,color:d.over?PRIORITY_COLOR.High:d.today?PRIORITY_COLOR.Medium:T.muted,marginLeft:"auto",fontWeight:d.over||d.today?700:400}}>{d.label}</span>}
+      <div style={{display:"flex",gap:5,marginTop:8,flexWrap:"wrap",alignItems:"center"}}>
+        <span style={{fontSize:11,fontWeight:600,color:CAT_COLOR[task.category],background:CAT_COLOR[task.category]+"22",padding:"3px 8px",borderRadius:4}}>{task.category}</span>
+        <span style={{fontSize:11,fontWeight:600,color:PRIORITY_COLOR[task.priority],background:PRIORITY_COLOR[task.priority]+"22",padding:"3px 8px",borderRadius:4}}>{task.priority}</span>
+        {d&&<span style={{fontSize:11,color:d.over?PRIORITY_COLOR.High:d.today?PRIORITY_COLOR.Medium:T.muted,marginLeft:"auto",fontWeight:d.over||d.today?700:400}}>{d.label}</span>}
       </div>
       {task.subtasks.length>0&&<>
-        <div style={{marginTop:8,height:2,background:T.border,borderRadius:2}}><div style={{height:"100%",width:`${(dc/task.subtasks.length)*100}%`,background:T.accent,borderRadius:2,transition:"width 0.3s"}}/></div>
-        <p style={{margin:"3px 0 0",fontSize:10,color:T.muted}}>{dc}/{task.subtasks.length} subtasks</p>
+        <div style={{marginTop:9,height:3,background:T.border,borderRadius:2}}><div style={{height:"100%",width:`${(dc/task.subtasks.length)*100}%`,background:T.accent,borderRadius:2,transition:"width 0.3s"}}/></div>
+        <p style={{margin:"4px 0 0",fontSize:11,color:T.muted}}>{dc}/{task.subtasks.length} subtasks</p>
       </>}
     </div>
   );
 }
 
 // ─── Task Modal ───────────────────────────────────────────────────────────────
-function Modal({ task, onSave, onClose, T }) {
+function Modal({ task, onSave, onClose, T, isMobile }) {
   const [f,setF]=useState(task),[ns,setNs]=useState("");
   const u=(k,v)=>setF(x=>({...x,[k]:v}));
-  const inp={width:"100%",boxSizing:"border-box",border:`1px solid ${T.border}`,borderRadius:6,padding:"9px 11px",fontSize:13,color:T.text,background:T.alt,outline:"none"};
-  const lbl={display:"block",fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:5};
+  const inp={width:"100%",boxSizing:"border-box",border:`1px solid ${T.border}`,borderRadius:8,padding:"11px 13px",fontSize:14,color:T.text,background:T.alt,outline:"none"};
+  const lbl={display:"block",fontSize:11,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:6};
+  const modalStyle = isMobile
+    ? {position:"fixed",inset:0,background:"rgba(46,52,64,0.6)",zIndex:1000,display:"flex",alignItems:"flex-end"}
+    : {position:"fixed",inset:0,background:"rgba(46,52,64,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16};
+  const innerStyle = isMobile
+    ? {background:T.surface,borderRadius:"16px 16px 0 0",width:"100%",maxHeight:"92vh",overflow:"auto",padding:"20px 20px 32px"}
+    : {background:T.surface,borderRadius:12,width:"100%",maxWidth:500,maxHeight:"90vh",overflow:"auto",padding:24,border:`1px solid ${T.border}`};
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(46,52,64,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
-      <div style={{background:T.surface,borderRadius:12,width:"100%",maxWidth:500,maxHeight:"90vh",overflow:"auto",padding:24,border:`1px solid ${T.border}`}} onClick={e=>e.stopPropagation()}>
+    <div style={modalStyle} onClick={onClose}>
+      <div style={innerStyle} onClick={e=>e.stopPropagation()}>
+        {isMobile&&<div style={{width:36,height:4,borderRadius:2,background:T.border,margin:"0 auto 18px"}}/>}
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:18}}>
-          <span style={{fontSize:15,fontWeight:700,color:T.text}}>Edit Task</span>
-          <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:T.muted}}>×</button>
+          <span style={{fontSize:16,fontWeight:700,color:T.text}}>Edit Task</span>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:T.muted}}>×</button>
         </div>
         <label style={lbl}>Title</label>
         <input value={f.title} onChange={e=>u("title",e.target.value)} placeholder="What needs to be done?" style={{...inp,marginBottom:14}} autoFocus/>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
           {[["Category","category",CATEGORIES],["Priority","priority",PRIORITIES],["Status","status",STATUSES]].map(([l,k,o])=>(
-            <div key={k}><label style={lbl}>{l}</label><select value={f[k]} onChange={e=>u(k,e.target.value)} style={{...inp,cursor:"pointer"}}>{o.map(x=><option key={x}>{x}</option>)}</select></div>
+            <div key={k}><label style={lbl}>{l}</label><select value={f[k]} onChange={e=>u(k,e.target.value)} style={{...inp,cursor:"pointer",padding:"10px 8px",fontSize:13}}>{o.map(x=><option key={x}>{x}</option>)}</select></div>
           ))}
         </div>
         <label style={lbl}>Due Date</label>
@@ -284,23 +298,23 @@ function Modal({ task, onSave, onClose, T }) {
         <textarea value={f.notes} onChange={e=>u("notes",e.target.value)} placeholder="Extra details..." style={{...inp,minHeight:70,resize:"vertical",marginBottom:14}}/>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
           <Check checked={f.pinned} onChange={()=>u("pinned",!f.pinned)} T={T}/>
-          <span style={{fontSize:13,color:T.text}}>Pin to top</span>
+          <span style={{fontSize:14,color:T.text}}>Pin to top</span>
         </div>
         <label style={lbl}>Subtasks</label>
         {f.subtasks.map(s=>(
-          <div key={s.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-            <input type="checkbox" checked={s.done} onChange={()=>u("subtasks",f.subtasks.map(x=>x.id===s.id?{...x,done:!x.done}:x))}/>
-            <span style={{flex:1,fontSize:13,color:s.done?T.muted:T.text,textDecoration:s.done?"line-through":"none"}}>{s.title}</span>
-            <button onClick={()=>u("subtasks",f.subtasks.filter(x=>x.id!==s.id))} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
+          <div key={s.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <input type="checkbox" checked={s.done} onChange={()=>u("subtasks",f.subtasks.map(x=>x.id===s.id?{...x,done:!x.done}:x))} style={{width:18,height:18}}/>
+            <span style={{flex:1,fontSize:14,color:s.done?T.muted:T.text,textDecoration:s.done?"line-through":"none"}}>{s.title}</span>
+            <button onClick={()=>u("subtasks",f.subtasks.filter(x=>x.id!==s.id))} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:18}}>×</button>
           </div>
         ))}
         <div style={{display:"flex",gap:8,marginBottom:20}}>
           <input value={ns} onChange={e=>setNs(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&ns.trim()){u("subtasks",[...f.subtasks,{id:Date.now(),title:ns.trim(),done:false}]);setNs("");}}} placeholder="Add subtask..." style={{...inp,flex:1}}/>
-          <button onClick={()=>{if(ns.trim()){u("subtasks",[...f.subtasks,{id:Date.now(),title:ns.trim(),done:false}]);setNs("");}}} style={{background:T.accent,color:"#fff",border:"none",borderRadius:6,padding:"0 14px",cursor:"pointer",fontSize:13,fontWeight:600}}>Add</button>
+          <button onClick={()=>{if(ns.trim()){u("subtasks",[...f.subtasks,{id:Date.now(),title:ns.trim(),done:false}]);setNs("");}}} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"0 16px",cursor:"pointer",fontSize:14,fontWeight:600}}>Add</button>
         </div>
         <div style={{display:"flex",gap:10}}>
-          <button onClick={()=>onSave(f)} style={{flex:1,background:T.accent,color:"#fff",border:"none",borderRadius:7,padding:11,cursor:"pointer",fontSize:14,fontWeight:600}}>Save</button>
-          <button onClick={onClose} style={{flex:1,background:T.alt,color:T.muted,border:"none",borderRadius:7,padding:11,cursor:"pointer",fontSize:14}}>Cancel</button>
+          <button onClick={()=>onSave(f)} style={{flex:1,background:T.accent,color:"#fff",border:"none",borderRadius:9,padding:13,cursor:"pointer",fontSize:15,fontWeight:600}}>Save</button>
+          <button onClick={onClose} style={{flex:1,background:T.alt,color:T.muted,border:"none",borderRadius:9,padding:13,cursor:"pointer",fontSize:15}}>Cancel</button>
         </div>
       </div>
     </div>
@@ -308,22 +322,24 @@ function Modal({ task, onSave, onClose, T }) {
 }
 
 // ─── Quick Add ────────────────────────────────────────────────────────────────
-function QuickAdd({ onAdd, T }) {
+function QuickAdd({ onAdd, T, isMobile }) {
   const [title,setTitle]=useState(""),[cat,setCat]=useState("Daily"),[pri,setPri]=useState("Medium");
   const submit=()=>{
-    if(!title.trim()) return;
+    if(!title.trim())return;
     onAdd({id:`t${Date.now()}`,title:title.trim(),category:cat,priority:pri,status:"To Do",dueDate:"",notes:"",subtasks:[],pinned:false,createdAt:new Date().toISOString()});
     setTitle("");
   };
-  const s={border:`1px solid ${T.border}`,borderRadius:6,padding:"8px 10px",fontSize:13,color:T.text,background:T.alt,outline:"none"};
+  const s={border:`1px solid ${T.border}`,borderRadius:8,padding:"10px 12px",fontSize:14,color:T.text,background:T.alt,outline:"none"};
   return (
-    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:14}}>
-      <span style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:10}}>Quick Add</span>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        <input value={title} onChange={e=>setTitle(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder="What needs doing?" style={{...s,flex:1,minWidth:150}}/>
-        <select value={cat} onChange={e=>setCat(e.target.value)} style={{...s,cursor:"pointer"}}>{CATEGORIES.map(c=><option key={c}>{c}</option>)}</select>
-        <select value={pri} onChange={e=>setPri(e.target.value)} style={{...s,cursor:"pointer"}}>{PRIORITIES.map(p=><option key={p}>{p}</option>)}</select>
-        <button onClick={submit} style={{background:T.accent,color:"#fff",border:"none",borderRadius:6,padding:"8px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>Add</button>
+    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:16}}>
+      <span style={{fontSize:11,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:10}}>Quick Add</span>
+      <div style={{display:"flex",flexDirection:isMobile?"column":"row",gap:8}}>
+        <input value={title} onChange={e=>setTitle(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder="What needs doing?" style={{...s,flex:1}}/>
+        <div style={{display:"flex",gap:8}}>
+          <select value={cat} onChange={e=>setCat(e.target.value)} style={{...s,flex:1,cursor:"pointer"}}>{CATEGORIES.map(c=><option key={c}>{c}</option>)}</select>
+          <select value={pri} onChange={e=>setPri(e.target.value)} style={{...s,flex:1,cursor:"pointer"}}>{PRIORITIES.map(p=><option key={p}>{p}</option>)}</select>
+          <button onClick={submit} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",cursor:"pointer",fontSize:14,fontWeight:600,whiteSpace:"nowrap"}}>Add</button>
+        </div>
       </div>
     </div>
   );
@@ -334,36 +350,36 @@ function CourseWeekGrid({ course, weeks, currentWeek, get, tog, T }) {
   const total=course.fields.length*weeks;
   const done=Array.from({length:weeks},(_,i)=>i+1).reduce((a,w)=>a+course.fields.filter(f=>get(course.id,w,f)).length,0);
   const pct=Math.round((done/total)*100);
-  const [open,setOpen]=useState(true);
+  const [open,setOpen]=useState(false);
   return (
-    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,marginBottom:12,overflow:"hidden"}}>
+    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,marginBottom:12,overflow:"hidden"}}>
       <div onClick={()=>setOpen(o=>!o)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",cursor:"pointer",borderBottom:open?`1px solid ${T.border}`:"none",background:T.alt}}>
         <div style={{width:10,height:10,borderRadius:2,background:course.color,flexShrink:0}}/>
         <span style={{fontSize:14,fontWeight:700,color:T.text,flex:1}}>{course.name}</span>
         <span style={{fontSize:11,color:pct===100?"#A3BE8C":T.muted,fontWeight:600,marginRight:8}}>{done}/{total} · {pct}%</span>
-        <div style={{width:80,height:4,background:T.border,borderRadius:2,marginRight:8}}>
+        <div style={{width:60,height:4,background:T.border,borderRadius:2,marginRight:8}}>
           <div style={{height:"100%",width:`${pct}%`,background:pct===100?"#A3BE8C":course.color,borderRadius:2,transition:"width 0.4s"}}/>
         </div>
         <span style={{fontSize:12,color:T.muted}}>{open?"▲":"▼"}</span>
       </div>
       {open&&<div style={{padding:"0 18px 16px"}}>
         <div style={{overflowX:"auto",marginTop:14}}>
-          <table style={{width:"100%",borderCollapse:"collapse",minWidth:520}}>
+          <table style={{width:"100%",borderCollapse:"collapse",minWidth:400}}>
             <thead><tr>
-              <th style={{textAlign:"left",fontSize:10,fontWeight:700,color:T.muted,paddingBottom:10,textTransform:"uppercase",letterSpacing:"0.08em",width:60}}>Week</th>
-              {course.fields.map(f=><th key={f} style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:10,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.08em"}}>{FIELD_LABELS[f]}</th>)}
-              <th style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:10,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.08em"}}>Done</th>
+              <th style={{textAlign:"left",fontSize:10,fontWeight:700,color:T.muted,paddingBottom:10,textTransform:"uppercase",width:50}}>Week</th>
+              {course.fields.map(f=><th key={f} style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:10,textAlign:"center",textTransform:"uppercase"}}>{FIELD_LABELS[f]}</th>)}
+              <th style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:10,textAlign:"center",textTransform:"uppercase"}}>Done</th>
             </tr></thead>
             <tbody>
               {Array.from({length:weeks},(_,i)=>i+1).map(wk=>{
                 const wkDone=course.fields.filter(f=>get(course.id,wk,f)).length;
-                const allDone=wkDone===course.fields.length, isCurrent=wk===currentWeek;
+                const allDone=wkDone===course.fields.length,isCurrent=wk===currentWeek;
                 return <tr key={wk} style={{borderTop:`1px solid ${T.border}`,background:isCurrent?T.accent+"18":"transparent"}}>
-                  <td style={{padding:"9px 0",fontSize:12,fontWeight:isCurrent?700:400,color:isCurrent?T.accent:T.text}}>
+                  <td style={{padding:"10px 0",fontSize:12,fontWeight:isCurrent?700:400,color:isCurrent?T.accent:T.text}}>
                     Wk {wk}{isCurrent&&<span style={{fontSize:9,fontWeight:700,color:T.accent,marginLeft:4,background:T.accent+"22",padding:"1px 5px",borderRadius:3}}>now</span>}
                   </td>
-                  {course.fields.map(f=><td key={f} style={{textAlign:"center",padding:"9px 8px"}}><div style={{display:"flex",justifyContent:"center"}}><Check checked={get(course.id,wk,f)} onChange={()=>tog(course.id,wk,f)} color={course.color} T={T}/></div></td>)}
-                  <td style={{textAlign:"center",padding:"9px 8px"}}><span style={{fontSize:11,fontWeight:600,color:allDone?"#A3BE8C":T.muted}}>{allDone?"✓":""}{wkDone}/{course.fields.length}</span></td>
+                  {course.fields.map(f=><td key={f} style={{textAlign:"center",padding:"10px 8px"}}><div style={{display:"flex",justifyContent:"center"}}><Check checked={get(course.id,wk,f)} onChange={()=>tog(course.id,wk,f)} color={course.color} T={T}/></div></td>)}
+                  <td style={{textAlign:"center",padding:"10px 8px"}}><span style={{fontSize:11,fontWeight:600,color:allDone?"#A3BE8C":T.muted}}>{allDone?"✓":""}{wkDone}/{course.fields.length}</span></td>
                 </tr>;
               })}
             </tbody>
@@ -376,47 +392,33 @@ function CourseWeekGrid({ course, weeks, currentWeek, get, tog, T }) {
 
 // ─── List Item ────────────────────────────────────────────────────────────────
 function ListItem({ item, listColor, onToggle, onDelete, onUpdateNote, onUpdateText, T, dragHandlers }) {
-  const [showNote, setShowNote] = useState(false);
-  const [editingNote, setEditingNote] = useState(false);
-  const [noteVal, setNoteVal] = useState(item.note||"");
-  const [editingText, setEditingText] = useState(false);
-  const [textVal, setTextVal] = useState(item.text||"");
-
-  const saveNote = () => { onUpdateNote(noteVal); setEditingNote(false); };
-  const saveText = () => { if(textVal.trim()) onUpdateText(textVal.trim()); setEditingText(false); };
-
+  const [showNote,setShowNote]=useState(false);
+  const [editingNote,setEditingNote]=useState(false);
+  const [noteVal,setNoteVal]=useState(item.note||"");
+  const [editingText,setEditingText]=useState(false);
+  const [textVal,setTextVal]=useState(item.text||"");
+  const saveNote=()=>{onUpdateNote(noteVal);setEditingNote(false);};
+  const saveText=()=>{if(textVal.trim())onUpdateText(textVal.trim());setEditingText(false);};
   return (
-    <div
-      draggable
-      onDragStart={dragHandlers.onDragStart}
-      onDragOver={dragHandlers.onDragOver}
-      onDrop={dragHandlers.onDrop}
-      onDragEnd={dragHandlers.onDragEnd}
-      style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"10px 12px",marginBottom:5,transition:"all 0.15s",opacity:item.done?0.6:1}}
-    >
-      <div style={{display:"flex",alignItems:"center",gap:9}}>
-        <span style={{color:T.border,fontSize:13,cursor:"grab",flexShrink:0,lineHeight:1,userSelect:"none"}} title="Drag to reorder">⠿</span>
+    <div draggable onDragStart={dragHandlers.onDragStart} onDragOver={dragHandlers.onDragOver} onDrop={dragHandlers.onDrop} onDragEnd={dragHandlers.onDragEnd}
+      style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:9,padding:"12px 13px",marginBottom:6,transition:"all 0.15s",opacity:item.done?0.6:1}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <span style={{color:T.border,fontSize:14,cursor:"grab",flexShrink:0,userSelect:"none"}}>⠿</span>
         <Check checked={item.done} onChange={onToggle} color={listColor} T={T}/>
         {editingText
-          ? <input autoFocus value={textVal} onChange={e=>setTextVal(e.target.value)}
-              onBlur={saveText} onKeyDown={e=>{if(e.key==="Enter")saveText();if(e.key==="Escape"){setTextVal(item.text);setEditingText(false);}}}
-              style={{flex:1,border:`1px solid ${T.border}`,borderRadius:5,padding:"3px 7px",fontSize:13,color:T.text,background:T.alt,outline:"none"}}/>
-          : <span onClick={()=>!item.done&&setEditingText(true)} style={{flex:1,fontSize:13,color:item.done?T.muted:T.text,textDecoration:item.done?"line-through":"none",cursor:item.done?"default":"text",lineHeight:1.4}}>{item.text||"Untitled"}</span>
+          ? <input autoFocus value={textVal} onChange={e=>setTextVal(e.target.value)} onBlur={saveText} onKeyDown={e=>{if(e.key==="Enter")saveText();if(e.key==="Escape"){setTextVal(item.text);setEditingText(false);}}}
+              style={{flex:1,border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 8px",fontSize:14,color:T.text,background:T.alt,outline:"none"}}/>
+          : <span onClick={()=>!item.done&&setEditingText(true)} style={{flex:1,fontSize:14,color:item.done?T.muted:T.text,textDecoration:item.done?"line-through":"none",cursor:item.done?"default":"text",lineHeight:1.4}}>{item.text||"Untitled"}</span>
         }
-        <button onClick={()=>setShowNote(s=>!s)} title="Toggle note" style={{background:"none",border:"none",cursor:"pointer",color:item.note?listColor:T.border,fontSize:12,padding:"1px 3px",lineHeight:1,flexShrink:0}}>
-          {item.note?"📝":"✎"}
-        </button>
-        <button onClick={onDelete} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:15,padding:0,lineHeight:1,flexShrink:0}}>×</button>
+        <button onClick={()=>setShowNote(s=>!s)} style={{background:"none",border:"none",cursor:"pointer",color:item.note?listColor:T.border,fontSize:13,padding:"2px 4px",lineHeight:1,flexShrink:0}}>{item.note?"📝":"✎"}</button>
+        <button onClick={onDelete} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:18,padding:0,lineHeight:1,flexShrink:0}}>×</button>
       </div>
-      {(showNote||item.note) && (
-        <div style={{marginTop:8,marginLeft:29,paddingLeft:12,borderLeft:`2px solid ${listColor}40`}}>
+      {(showNote||item.note)&&(
+        <div style={{marginTop:9,marginLeft:32,paddingLeft:12,borderLeft:`2px solid ${listColor}40`}}>
           {editingNote
-            ? <textarea autoFocus value={noteVal} onChange={e=>setNoteVal(e.target.value)}
-                onBlur={saveNote} onKeyDown={e=>{if(e.key==="Escape")saveNote();}}
-                style={{width:"100%",border:`1px solid ${T.border}`,borderRadius:5,padding:"5px 8px",fontSize:12,color:T.text,background:T.alt,outline:"none",resize:"vertical",minHeight:54}}/>
-            : <p onClick={()=>setEditingNote(true)} style={{fontSize:12,color:item.note?T.muted:"transparent",cursor:"text",lineHeight:1.5,minHeight:18}}>
-                {item.note||"Add a note…"}
-              </p>
+            ? <textarea autoFocus value={noteVal} onChange={e=>setNoteVal(e.target.value)} onBlur={saveNote} onKeyDown={e=>{if(e.key==="Escape")saveNote();}}
+                style={{width:"100%",border:`1px solid ${T.border}`,borderRadius:6,padding:"6px 9px",fontSize:13,color:T.text,background:T.alt,outline:"none",resize:"vertical",minHeight:60}}/>
+            : <p onClick={()=>setEditingNote(true)} style={{fontSize:13,color:item.note?T.muted:"transparent",cursor:"text",lineHeight:1.5,minHeight:20}}>{item.note||"Add a note…"}</p>
           }
         </div>
       )}
@@ -426,63 +428,44 @@ function ListItem({ item, listColor, onToggle, onDelete, onUpdateNote, onUpdateT
 
 // ─── List Panel ───────────────────────────────────────────────────────────────
 function ListPanel({ list, onUpdate, onDelete, T, compact }) {
-  const [newText, setNewText] = useState("");
-  const [editingName, setEditingName] = useState(false);
-  const [nameVal, setNameVal] = useState(list.name);
-  const [open, setOpen] = useState(true);
-  const [editColor, setEditColor] = useState(false);
-  const dragOver = useRef(null);
-  const dragItem = useRef(null);
-
-  const items = [...list.items].sort((a,b)=>a.order-b.order);
-  const doneCount = items.filter(i=>i.done).length;
-
-  const updateItems = (newItems) => onUpdate({...list, items:newItems});
-
-  const addItem = () => {
-    if(!newText.trim()) return;
-    const maxOrder = items.length ? Math.max(...items.map(i=>i.order)) + 1 : 0;
-    updateItems([...list.items, {id:`li${Date.now()}`,text:newText.trim(),note:"",done:false,order:maxOrder}]);
-    setNewText("");
-  };
-
-  const toggleItem = (id) => updateItems(list.items.map(i=>i.id===id?{...i,done:!i.done}:i));
-  const deleteItem = (id) => updateItems(list.items.filter(i=>i.id!==id));
-  const updateNote = (id,note) => updateItems(list.items.map(i=>i.id===id?{...i,note}:i));
-  const updateText = (id,text) => updateItems(list.items.map(i=>i.id===id?{...i,text}:i));
-  const saveName = () => { if(nameVal.trim()) onUpdate({...list,name:nameVal.trim()}); setEditingName(false); };
-
-  const dragHandlersFor = (idx) => ({
-    onDragStart: (e) => { dragItem.current=idx; e.dataTransfer.effectAllowed="move"; },
-    onDragOver: (e) => { e.preventDefault(); dragOver.current=idx; },
-    onDrop: (e) => {
-      e.preventDefault();
-      if(dragItem.current===null||dragItem.current===dragOver.current) return;
-      const sorted = [...list.items].sort((a,b)=>a.order-b.order);
-      const moved = sorted.splice(dragItem.current,1)[0];
-      sorted.splice(dragOver.current,0,moved);
-      updateItems(sorted.map((it,i)=>({...it,order:i})));
-      dragItem.current=null; dragOver.current=null;
-    },
-    onDragEnd: () => { dragItem.current=null; dragOver.current=null; }
+  const [newText,setNewText]=useState("");
+  const [editingName,setEditingName]=useState(false);
+  const [nameVal,setNameVal]=useState(list.name);
+  const [open,setOpen]=useState(true);
+  const [editColor,setEditColor]=useState(false);
+  const dragOver=useRef(null),dragItem=useRef(null);
+  const items=[...list.items].sort((a,b)=>a.order-b.order);
+  const doneCount=items.filter(i=>i.done).length;
+  const updateItems=newItems=>onUpdate({...list,items:newItems});
+  const addItem=()=>{if(!newText.trim())return;const max=items.length?Math.max(...items.map(i=>i.order))+1:0;updateItems([...list.items,{id:`li${Date.now()}`,text:newText.trim(),note:"",done:false,order:max}]);setNewText("");};
+  const toggleItem=id=>updateItems(list.items.map(i=>i.id===id?{...i,done:!i.done}:i));
+  const deleteItem=id=>updateItems(list.items.filter(i=>i.id!==id));
+  const updateNote=(id,note)=>updateItems(list.items.map(i=>i.id===id?{...i,note}:i));
+  const updateText=(id,text)=>updateItems(list.items.map(i=>i.id===id?{...i,text}:i));
+  const saveName=()=>{if(nameVal.trim())onUpdate({...list,name:nameVal.trim()});setEditingName(false);};
+  const dragHandlersFor=idx=>({
+    onDragStart:e=>{dragItem.current=idx;e.dataTransfer.effectAllowed="move";},
+    onDragOver:e=>{e.preventDefault();dragOver.current=idx;},
+    onDrop:e=>{e.preventDefault();if(dragItem.current===null||dragItem.current===dragOver.current)return;const s=[...list.items].sort((a,b)=>a.order-b.order);const m=s.splice(dragItem.current,1)[0];s.splice(dragOver.current,0,m);updateItems(s.map((it,i)=>({...it,order:i})));dragItem.current=null;dragOver.current=null;},
+    onDragEnd:()=>{dragItem.current=null;dragOver.current=null;}
   });
 
-  if(compact) {
+  if(compact){
     return (
-      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:`3px solid ${list.color}`,borderRadius:10,padding:16,height:"100%"}}>
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderLeft:`3px solid ${list.color}`,borderRadius:12,padding:16}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-          <span style={{fontSize:13,fontWeight:700,color:T.text,flex:1}}>{list.name}</span>
-          <span style={{fontSize:11,color:T.muted}}>{doneCount}/{items.length}</span>
+          <span style={{fontSize:14,fontWeight:700,color:T.text,flex:1}}>{list.name}</span>
+          <span style={{fontSize:12,color:T.muted}}>{doneCount}/{items.length}</span>
         </div>
-        {items.length===0 && <p style={{fontSize:12,color:T.muted}}>No items yet.</p>}
+        {items.length===0&&<p style={{fontSize:13,color:T.muted}}>No items yet.</p>}
         {items.slice(0,4).map(item=>(
-          <div key={item.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",borderBottom:`1px solid ${T.border}`}}>
+          <div key={item.id} style={{display:"flex",alignItems:"center",gap:9,padding:"7px 0",borderBottom:`1px solid ${T.border}`}}>
             <Check checked={item.done} onChange={()=>toggleItem(item.id)} color={list.color} T={T}/>
-            <span style={{flex:1,fontSize:12,color:item.done?T.muted:T.text,textDecoration:item.done?"line-through":"none"}}>{item.text}</span>
+            <span style={{flex:1,fontSize:13,color:item.done?T.muted:T.text,textDecoration:item.done?"line-through":"none"}}>{item.text}</span>
           </div>
         ))}
-        {items.length>4&&<p style={{fontSize:11,color:T.muted,marginTop:6}}>+{items.length-4} more</p>}
-        {items.length>0&&<div style={{marginTop:10,height:3,background:T.border,borderRadius:2}}>
+        {items.length>4&&<p style={{fontSize:12,color:T.muted,marginTop:7}}>+{items.length-4} more</p>}
+        {items.length>0&&<div style={{marginTop:11,height:3,background:T.border,borderRadius:2}}>
           <div style={{height:"100%",width:`${Math.round((doneCount/items.length)*100)}%`,background:list.color,borderRadius:2,transition:"width 0.3s"}}/>
         </div>}
       </div>
@@ -490,51 +473,34 @@ function ListPanel({ list, onUpdate, onDelete, T, compact }) {
   }
 
   return (
-    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,marginBottom:14,overflow:"hidden"}}>
+    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,marginBottom:14,overflow:"hidden"}}>
       <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderBottom:open?`1px solid ${T.border}`:"none",background:T.alt}}>
-        <div style={{width:10,height:10,borderRadius:2,background:list.color,flexShrink:0,cursor:"pointer",position:"relative"}}
-          onClick={()=>setEditColor(v=>!v)}>
-          {editColor&&(
-            <div style={{position:"absolute",top:16,left:0,background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,padding:8,display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5,zIndex:50,width:130}}
-              onClick={e=>e.stopPropagation()}>
-              {LIST_COLORS.map(c=>(
-                <div key={c} onClick={()=>{onUpdate({...list,color:c});setEditColor(false);}}
-                  style={{width:16,height:16,borderRadius:3,background:c,cursor:"pointer",border:c===list.color?`2px solid ${T.text}`:"2px solid transparent"}}/>
-              ))}
-            </div>
-          )}
+        <div style={{width:10,height:10,borderRadius:2,background:list.color,flexShrink:0,cursor:"pointer",position:"relative"}} onClick={()=>setEditColor(v=>!v)}>
+          {editColor&&<div style={{position:"absolute",top:16,left:0,background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,padding:8,display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5,zIndex:50,width:130}} onClick={e=>e.stopPropagation()}>
+            {LIST_COLORS.map(c=><div key={c} onClick={()=>{onUpdate({...list,color:c});setEditColor(false);}} style={{width:16,height:16,borderRadius:3,background:c,cursor:"pointer",border:c===list.color?`2px solid ${T.text}`:"2px solid transparent"}}/>)}
+          </div>}
         </div>
         {editingName
-          ? <input autoFocus value={nameVal} onChange={e=>setNameVal(e.target.value)}
-              onBlur={saveName} onKeyDown={e=>{if(e.key==="Enter")saveName();if(e.key==="Escape"){setNameVal(list.name);setEditingName(false);}}}
-              style={{flex:1,border:`1px solid ${T.border}`,borderRadius:5,padding:"3px 8px",fontSize:14,fontWeight:700,color:T.text,background:T.surface,outline:"none"}}/>
+          ? <input autoFocus value={nameVal} onChange={e=>setNameVal(e.target.value)} onBlur={saveName} onKeyDown={e=>{if(e.key==="Enter")saveName();if(e.key==="Escape"){setNameVal(list.name);setEditingName(false);}}}
+              style={{flex:1,border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 9px",fontSize:14,fontWeight:700,color:T.text,background:T.surface,outline:"none"}}/>
           : <span onClick={()=>setEditingName(true)} style={{fontSize:14,fontWeight:700,color:T.text,flex:1,cursor:"text"}}>{list.name}</span>
         }
-        <span style={{fontSize:11,color:doneCount===items.length&&items.length>0?"#A3BE8C":T.muted,fontWeight:600,marginRight:4}}>{doneCount}/{items.length}</span>
-        {items.length>0&&<div style={{width:60,height:3,background:T.border,borderRadius:2,marginRight:8}}>
+        <span style={{fontSize:12,color:doneCount===items.length&&items.length>0?"#A3BE8C":T.muted,fontWeight:600,marginRight:4}}>{doneCount}/{items.length}</span>
+        {items.length>0&&<div style={{width:50,height:3,background:T.border,borderRadius:2,marginRight:8}}>
           <div style={{height:"100%",width:`${items.length?Math.round((doneCount/items.length)*100):0}%`,background:list.color,borderRadius:2,transition:"width 0.3s"}}/>
         </div>}
-        <button onClick={()=>setOpen(o=>!o)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:12,padding:"2px 4px"}}>{open?"▲":"▼"}</button>
-        <button onClick={()=>onDelete(list.id)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:15,padding:0,lineHeight:1}} title="Delete list">×</button>
+        <button onClick={()=>setOpen(o=>!o)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:13,padding:"2px 4px"}}>{open?"▲":"▼"}</button>
+        <button onClick={()=>onDelete(list.id)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:18,padding:0,lineHeight:1}}>×</button>
       </div>
       {open&&<div style={{padding:"14px 18px"}}>
-        {items.length===0&&<p style={{fontSize:13,color:T.muted,marginBottom:12}}>No items yet — add one below.</p>}
+        {items.length===0&&<p style={{fontSize:14,color:T.muted,marginBottom:12}}>No items yet — add one below.</p>}
         {items.map((item,idx)=>(
-          <ListItem key={item.id} item={item} listColor={list.color}
-            onToggle={()=>toggleItem(item.id)}
-            onDelete={()=>deleteItem(item.id)}
-            onUpdateNote={(n)=>updateNote(item.id,n)}
-            onUpdateText={(t)=>updateText(item.id,t)}
-            T={T}
-            dragHandlers={dragHandlersFor(idx)}
-          />
+          <ListItem key={item.id} item={item} listColor={list.color} onToggle={()=>toggleItem(item.id)} onDelete={()=>deleteItem(item.id)} onUpdateNote={n=>updateNote(item.id,n)} onUpdateText={t=>updateText(item.id,t)} T={T} dragHandlers={dragHandlersFor(idx)}/>
         ))}
         <div style={{display:"flex",gap:8,marginTop:8}}>
-          <input value={newText} onChange={e=>setNewText(e.target.value)}
-            onKeyDown={e=>e.key==="Enter"&&addItem()}
-            placeholder="Add item…"
-            style={{flex:1,border:`1px solid ${T.border}`,borderRadius:6,padding:"8px 11px",fontSize:13,color:T.text,background:T.alt,outline:"none"}}/>
-          <button onClick={addItem} style={{background:list.color,color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",fontSize:13,fontWeight:600}}>Add</button>
+          <input value={newText} onChange={e=>setNewText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addItem()} placeholder="Add item…"
+            style={{flex:1,border:`1px solid ${T.border}`,borderRadius:8,padding:"10px 12px",fontSize:14,color:T.text,background:T.alt,outline:"none"}}/>
+          <button onClick={addItem} style={{background:list.color,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",cursor:"pointer",fontSize:14,fontWeight:600}}>Add</button>
         </div>
       </div>}
     </div>
@@ -542,46 +508,103 @@ function ListPanel({ list, onUpdate, onDelete, T, compact }) {
 }
 
 // ─── New List Modal ───────────────────────────────────────────────────────────
-function NewListModal({ onSave, onClose, T }) {
-  const [name, setName] = useState("");
-  const [color, setColor] = useState(LIST_COLORS[0]);
-  const inp={width:"100%",border:`1px solid ${T.border}`,borderRadius:6,padding:"9px 11px",fontSize:13,color:T.text,background:T.alt,outline:"none"};
-  const save = () => {
-    if(!name.trim()) return;
-    onSave({ id:`l${Date.now()}`, name:name.trim(), color, createdAt:new Date().toISOString(), items:[] });
-  };
+function NewListModal({ onSave, onClose, T, isMobile }) {
+  const [name,setName]=useState("");
+  const [color,setColor]=useState(LIST_COLORS[0]);
+  const inp={width:"100%",border:`1px solid ${T.border}`,borderRadius:8,padding:"11px 13px",fontSize:14,color:T.text,background:T.alt,outline:"none"};
+  const save=()=>{if(!name.trim())return;onSave({id:`l${Date.now()}`,name:name.trim(),color,createdAt:new Date().toISOString(),items:[]});};
+  const modalStyle=isMobile?{position:"fixed",inset:0,background:"rgba(46,52,64,0.6)",zIndex:1000,display:"flex",alignItems:"flex-end"}:{position:"fixed",inset:0,background:"rgba(46,52,64,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16};
+  const innerStyle=isMobile?{background:T.surface,borderRadius:"16px 16px 0 0",width:"100%",padding:"20px 20px 32px"}:{background:T.surface,borderRadius:12,width:"100%",maxWidth:380,padding:24,border:`1px solid ${T.border}`};
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(46,52,64,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
-      <div style={{background:T.surface,borderRadius:12,width:"100%",maxWidth:380,padding:24,border:`1px solid ${T.border}`}} onClick={e=>e.stopPropagation()}>
+    <div style={modalStyle} onClick={onClose}>
+      <div style={innerStyle} onClick={e=>e.stopPropagation()}>
+        {isMobile&&<div style={{width:36,height:4,borderRadius:2,background:T.border,margin:"0 auto 18px"}}/>}
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:18}}>
-          <span style={{fontSize:15,fontWeight:700,color:T.text}}>New List</span>
-          <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:T.muted}}>×</button>
+          <span style={{fontSize:16,fontWeight:700,color:T.text}}>New List</span>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:T.muted}}>×</button>
         </div>
-        <label style={{display:"block",fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:5}}>Name</label>
+        <label style={{display:"block",fontSize:11,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:6}}>Name</label>
         <input autoFocus value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&save()} placeholder="e.g. Claude Projects" style={{...inp,marginBottom:16}}/>
-        <label style={{display:"block",fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:8}}>Colour</label>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
-          {LIST_COLORS.map(c=>(
-            <div key={c} onClick={()=>setColor(c)} style={{width:22,height:22,borderRadius:4,background:c,cursor:"pointer",border:c===color?`2.5px solid ${T.text}`:`2px solid transparent`,transition:"border 0.1s"}}/>
-          ))}
+        <label style={{display:"block",fontSize:11,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:9}}>Colour</label>
+        <div style={{display:"flex",gap:9,flexWrap:"wrap",marginBottom:22}}>
+          {LIST_COLORS.map(c=><div key={c} onClick={()=>setColor(c)} style={{width:26,height:26,borderRadius:5,background:c,cursor:"pointer",border:c===color?`2.5px solid ${T.text}`:`2px solid transparent`}}/>)}
         </div>
         <div style={{display:"flex",gap:10}}>
-          <button onClick={save} style={{flex:1,background:color,color:"#fff",border:"none",borderRadius:7,padding:11,cursor:"pointer",fontSize:14,fontWeight:600}}>Create List</button>
-          <button onClick={onClose} style={{flex:1,background:T.alt,color:T.muted,border:"none",borderRadius:7,padding:11,cursor:"pointer",fontSize:14}}>Cancel</button>
+          <button onClick={save} style={{flex:1,background:color,color:"#fff",border:"none",borderRadius:9,padding:13,cursor:"pointer",fontSize:15,fontWeight:600}}>Create List</button>
+          <button onClick={onClose} style={{flex:1,background:T.alt,color:T.muted,border:"none",borderRadius:9,padding:13,cursor:"pointer",fontSize:15}}>Cancel</button>
         </div>
       </div>
     </div>
   );
 }
 
+// ─── Mobile Dashboard ─────────────────────────────────────────────────────────
+function MobileDashboard({ lists, todayTasks, updateList, deleteList, setView, T }) {
+  const C={background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:16,marginBottom:12};
+  const L={fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:10};
+  const now=new Date();
+  const hour=now.getHours();
+  const greet=hour<12?"Good morning":hour<18?"Good afternoon":"Good evening";
+  return (
+    <div>
+      {/* Greeting */}
+      <div style={{marginBottom:16}}>
+        <p style={{fontSize:22,fontWeight:700,color:T.text,lineHeight:1.2}}>{greet}, Harry 👋</p>
+        <p style={{fontSize:13,color:T.muted,marginTop:4}}>{now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</p>
+      </div>
+
+      {/* Quick Add */}
+      <div style={{marginBottom:12}}>
+        <QuickAdd onAdd={t=>{ const fn=window.__setTasks; if(fn)fn(p=>[...p,t]); }} T={T} isMobile={true}/>
+      </div>
+
+      {/* Today tasks */}
+      <div style={{...C,borderLeft:`3px solid ${PRIORITY_COLOR.Medium}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <span style={{...L,marginBottom:0}}>Today</span>
+          <button onClick={()=>setView("tasks")} style={{background:"none",border:"none",cursor:"pointer",color:T.accent,fontSize:12,fontWeight:600}}>All tasks →</button>
+        </div>
+        {todayTasks.length===0
+          ? <div style={{textAlign:"center",padding:"16px 0"}}>
+              <div style={{fontSize:24,marginBottom:6}}>✅</div>
+              <p style={{fontSize:13,color:T.muted}}>Nothing due today</p>
+            </div>
+          : todayTasks.map(t=>(
+            <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:`1px solid ${T.border}`}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
+              <span style={{flex:1,fontSize:14,color:T.text,fontWeight:500}}>{t.title}</span>
+              <span style={{fontSize:11,color:CAT_COLOR[t.category],background:CAT_COLOR[t.category]+"22",padding:"2px 7px",borderRadius:4,fontWeight:600}}>{t.category}</span>
+            </div>
+          ))
+        }
+      </div>
+
+      {/* Lists */}
+      {lists.length>0&&<div style={C}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <span style={{...L,marginBottom:0}}>My Lists</span>
+          <button onClick={()=>setView("lists")} style={{background:"none",border:"none",cursor:"pointer",color:T.accent,fontSize:12,fontWeight:600}}>View all →</button>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {lists.map(list=><ListPanel key={list.id} list={list} onUpdate={updateList} onDelete={deleteList} T={T} compact={true}/>)}
+        </div>
+      </div>}
+      {lists.length===0&&<div style={{...C,textAlign:"center",padding:24}}>
+        <p style={{fontSize:13,color:T.muted,marginBottom:10}}>No lists yet.</p>
+        <button onClick={()=>setView("lists")} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"9px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>Create a list</button>
+      </div>}
+    </div>
+  );
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
-  const [tasks,setTasks]         = useState(()=>lsGet("h-tasks-html", INITIAL_TASKS));
-  const [cd,setCd]               = useState(()=>lsGet("h-courses-html", {}));
-  const [deadlines,setDeadlines] = useState(()=>lsGet("h-dl-html", []));
-  const [lists,setLists]         = useState(()=>lsGet("h-lists-html", INITIAL_LISTS));
+  const [tasks,setTasks]         = useState(()=>lsGet("h-tasks-html",INITIAL_TASKS));
+  const [cd,setCd]               = useState(()=>lsGet("h-courses-html",{}));
+  const [deadlines,setDeadlines] = useState(()=>lsGet("h-dl-html",[]));
+  const [lists,setLists]         = useState(()=>lsGet("h-lists-html",INITIAL_LISTS));
   const [view,setView]           = useState("dashboard");
-  const [tv,setTv]               = useState("kanban");
+  const [tv,setTv]               = useState("list");
   const [edit,setEdit]           = useState(null);
   const [theme,setTheme]         = useState(()=>lsGet("h-theme-html","polar"));
   const [fCat,setFCat]           = useState("All");
@@ -589,160 +612,71 @@ function App() {
   const [dragId,setDragId]       = useState(null);
   const [newDl,setNewDl]         = useState({title:"",course:"maths",date:"",notes:""});
   const [showNewList,setShowNewList] = useState(false);
-  const [syncStatus,setSyncStatus]   = useState("idle"); // idle | syncing | synced | offline
+  const [syncStatus,setSyncStatus]   = useState("idle");
   const [loaded,setLoaded]           = useState(false);
   const syncTimer = useRef(null);
+  const isMobile = useIsMobile();
   const T = THEMES[theme];
 
-  // ── Load from Supabase on mount ──────────────────────────────────────────
+  // Expose setTasks for MobileDashboard QuickAdd workaround
+  window.__setTasks = setTasks;
+
+  // ── Load from Supabase ───────────────────────────────────────────────────
   useEffect(()=>{
     async function loadAll() {
       setSyncStatus("syncing");
       try {
-        const [tRows, lRows, dlRows, cdRows, themeVal] = await Promise.all([
-          sbGetAll("tasks"),
-          sbGetAll("lists"),
-          sbGetAll("deadlines"),
-          sbGetAll("courses"),
-          sbGetSetting("theme")
-        ]);
-
-        if (tRows !== null) {
-          const loaded = tRows.map(r=>r.data);
-          if (loaded.length > 0) { setTasks(loaded); lsSet("h-tasks-html", loaded); }
-        }
-        if (lRows !== null) {
-          const loaded = lRows.map(r=>r.data);
-          if (loaded.length > 0) { setLists(loaded); lsSet("h-lists-html", loaded); }
-        }
-        if (dlRows !== null) {
-          const loaded = dlRows.map(r=>r.data);
-          setDeadlines(loaded); lsSet("h-dl-html", loaded);
-        }
-        if (cdRows !== null) {
-          const obj = {};
-          cdRows.forEach(r=>{ Object.assign(obj, r.data); });
-          if (Object.keys(obj).length > 0) { setCd(obj); lsSet("h-courses-html", obj); }
-        }
-        if (themeVal) { setTheme(themeVal); lsSet("h-theme-html", themeVal); }
-
+        const [tRows,lRows,dlRows,cdRows,themeVal]=await Promise.all([sbGetAll("tasks"),sbGetAll("lists"),sbGetAll("deadlines"),sbGetAll("courses"),sbGetSetting("theme")]);
+        if(tRows!==null){const ld=tRows.map(r=>r.data);if(ld.length>0){setTasks(ld);lsSet("h-tasks-html",ld);}}
+        if(lRows!==null){const ld=lRows.map(r=>r.data);if(ld.length>0){setLists(ld);lsSet("h-lists-html",ld);}}
+        if(dlRows!==null){const ld=dlRows.map(r=>r.data);setDeadlines(ld);lsSet("h-dl-html",ld);}
+        if(cdRows!==null){const obj={};cdRows.forEach(r=>{Object.assign(obj,r.data);});if(Object.keys(obj).length>0){setCd(obj);lsSet("h-courses-html",obj);}}
+        if(themeVal){setTheme(themeVal);lsSet("h-theme-html",themeVal);}
         setSyncStatus("synced");
-      } catch {
-        setSyncStatus("offline");
-      }
+      } catch { setSyncStatus("offline"); }
       setLoaded(true);
     }
     loadAll();
-  }, []);
+  },[]);
 
-  // ── Debounced sync helper ────────────────────────────────────────────────
-  const debouncedSync = useCallback((fn) => {
-    if (syncTimer.current) clearTimeout(syncTimer.current);
-    syncTimer.current = setTimeout(async () => {
-      setSyncStatus("syncing");
-      const ok = await fn();
-      setSyncStatus(ok ? "synced" : "offline");
-    }, 600);
-  }, []);
+  const debouncedSync=useCallback((fn)=>{
+    if(syncTimer.current)clearTimeout(syncTimer.current);
+    syncTimer.current=setTimeout(async()=>{setSyncStatus("syncing");const ok=await fn();setSyncStatus(ok?"synced":"offline");},600);
+  },[]);
 
-  // ── Persist tasks ────────────────────────────────────────────────────────
-  useEffect(()=>{
-    if (!loaded) return;
-    lsSet("h-tasks-html", tasks);
-    debouncedSync(async () => {
-      const results = await Promise.all(tasks.map(t => sbUpsert("tasks", t.id, t)));
-      return results.every(Boolean);
-    });
-  }, [tasks]);
+  useEffect(()=>{if(!loaded)return;lsSet("h-tasks-html",tasks);debouncedSync(async()=>{const r=await Promise.all(tasks.map(t=>sbUpsert("tasks",t.id,t)));return r.every(Boolean);});},[tasks]);
+  useEffect(()=>{if(!loaded)return;lsSet("h-lists-html",lists);debouncedSync(async()=>{const r=await Promise.all(lists.map(l=>sbUpsert("lists",l.id,l)));return r.every(Boolean);});},[lists]);
+  useEffect(()=>{if(!loaded)return;lsSet("h-dl-html",deadlines);debouncedSync(async()=>{const r=await Promise.all(deadlines.map(d=>sbUpsert("deadlines",d.id,d)));return r.every(Boolean);});},[deadlines]);
+  useEffect(()=>{if(!loaded)return;lsSet("h-courses-html",cd);debouncedSync(async()=>await sbUpsert("courses","cd-main",cd));},[cd]);
+  useEffect(()=>{lsSet("h-theme-html",theme);document.body.style.background=T.bg;if(loaded)sbSetSetting("theme",theme);},[theme]);
 
-  // ── Persist lists ────────────────────────────────────────────────────────
-  useEffect(()=>{
-    if (!loaded) return;
-    lsSet("h-lists-html", lists);
-    debouncedSync(async () => {
-      const results = await Promise.all(lists.map(l => sbUpsert("lists", l.id, l)));
-      return results.every(Boolean);
-    });
-  }, [lists]);
+  const saveTask=t=>{setTasks(p=>p.find(x=>x.id===t.id)?p.map(x=>x.id===t.id?t:x):[...p,t]);setEdit(null);};
+  const delTask=async id=>{setTasks(p=>p.filter(t=>t.id!==id));await sbDelete("tasks",id);};
+  const pinTask=id=>setTasks(p=>p.map(t=>t.id===id?{...t,pinned:!t.pinned}:t));
+  const tog=(cid,wk,fld)=>setCd(p=>({...p,[`${cid}-${wk}-${fld}`]:!p[`${cid}-${wk}-${fld}`]}));
+  const get=(cid,wk,fld)=>!!cd[`${cid}-${wk}-${fld}`];
+  const sortT=arr=>[...arr].sort((a,b)=>(a.pinned===b.pinned)?0:a.pinned?-1:1);
+  const updateList=updated=>setLists(p=>p.map(l=>l.id===updated.id?updated:l));
+  const deleteList=async id=>{setLists(p=>p.filter(l=>l.id!==id));await sbDelete("lists",id);};
+  const createList=l=>{setLists(p=>[...p,l]);setShowNewList(false);};
+  const addDeadline=()=>{if(!newDl.title||!newDl.date)return;setDeadlines(p=>[...p,{id:`dl${Date.now()}`,...newDl}]);setNewDl({title:"",course:"maths",date:"",notes:""});};
+  const delDeadline=async id=>{setDeadlines(p=>p.filter(x=>x.id!==id));await sbDelete("deadlines",id);};
+  const handleDrop=status=>{if(!dragId)return;setTasks(p=>p.map(t=>t.id===dragId?{...t,status}:t));setDragId(null);};
 
-  // ── Persist deadlines ────────────────────────────────────────────────────
-  useEffect(()=>{
-    if (!loaded) return;
-    lsSet("h-dl-html", deadlines);
-    debouncedSync(async () => {
-      const results = await Promise.all(deadlines.map(d => sbUpsert("deadlines", d.id, d)));
-      return results.every(Boolean);
-    });
-  }, [deadlines]);
+  const baseFilt=tasks.filter(t=>(fCat==="All"||t.category===fCat)&&(!search||t.title.toLowerCase().includes(search.toLowerCase())));
+  const todayTasks=tasks.filter(t=>t.dueDate===TODAY&&t.status!=="Done");
+  const urgentTask=tasks.filter(t=>isUrgent(t)&&t.status!=="Done");
+  const overdue=tasks.filter(t=>t.dueDate&&new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00")&&t.status!=="Done");
+  const upcomingDl=[...deadlines].sort((a,b)=>a.date>b.date?1:-1).filter(d=>d.date>=TODAY).slice(0,5);
+  const wkSum=COURSES.map(c=>{const done=c.fields.filter(f=>get(c.id,CURRENT_WEEK,f)).length;return{...c,done,total:c.fields.length,pct:Math.round((done/c.fields.length)*100)};});
+  const totI=wkSum.reduce((a,c)=>a+c.total,0),doneI=wkSum.reduce((a,c)=>a+c.done,0);
 
-  // ── Persist course data ──────────────────────────────────────────────────
-  useEffect(()=>{
-    if (!loaded) return;
-    lsSet("h-courses-html", cd);
-    debouncedSync(async () => {
-      return await sbUpsert("courses", "cd-main", cd);
-    });
-  }, [cd]);
+  const C={background:T.surface,border:`1px solid ${T.border}`,borderRadius:isMobile?12:10,padding:isMobile?16:20};
+  const L={fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:8};
+  const B=a=>({background:a?T.accent:"transparent",color:a?"#fff":T.muted,border:`1px solid ${a?T.accent:T.border}`,borderRadius:6,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:a?600:400,transition:"all 0.15s"});
+  const inp2={border:`1px solid ${T.border}`,borderRadius:8,padding:"10px 12px",fontSize:isMobile?14:12,color:T.text,background:T.alt,outline:"none"};
 
-  // ── Persist theme ────────────────────────────────────────────────────────
-  useEffect(()=>{
-    lsSet("h-theme-html", theme);
-    document.body.style.background = T.bg;
-    if (loaded) sbSetSetting("theme", theme);
-  }, [theme]);
-
-  // ── Task helpers ─────────────────────────────────────────────────────────
-  const saveTask = t => {
-    setTasks(p=>p.find(x=>x.id===t.id)?p.map(x=>x.id===t.id?t:x):[...p,t]);
-    setEdit(null);
-  };
-  const delTask = async id => {
-    setTasks(p=>p.filter(t=>t.id!==id));
-    await sbDelete("tasks", id);
-  };
-  const pinTask = id => setTasks(p=>p.map(t=>t.id===id?{...t,pinned:!t.pinned}:t));
-  const tog = (cid,wk,fld) => setCd(p=>({...p,[`${cid}-${wk}-${fld}`]:!p[`${cid}-${wk}-${fld}`]}));
-  const get = (cid,wk,fld) => !!cd[`${cid}-${wk}-${fld}`];
-  const sortT = arr => [...arr].sort((a,b)=>(a.pinned===b.pinned)?0:a.pinned?-1:1);
-
-  const updateList = updated => setLists(p=>p.map(l=>l.id===updated.id?updated:l));
-  const deleteList = async id => {
-    setLists(p=>p.filter(l=>l.id!==id));
-    await sbDelete("lists", id);
-  };
-  const createList = l => { setLists(p=>[...p,l]); setShowNewList(false); };
-
-  const addDeadline = () => {
-    if(!newDl.title||!newDl.date) return;
-    setDeadlines(p=>[...p,{id:`dl${Date.now()}`,...newDl}]);
-    setNewDl({title:"",course:"maths",date:"",notes:""});
-  };
-  const delDeadline = async id => {
-    setDeadlines(p=>p.filter(x=>x.id!==id));
-    await sbDelete("deadlines", id);
-  };
-
-  const handleDrop = status => {
-    if(!dragId) return;
-    setTasks(p=>p.map(t=>t.id===dragId?{...t,status}:t));
-    setDragId(null);
-  };
-
-  // ── Derived ──────────────────────────────────────────────────────────────
-  const baseFilt = tasks.filter(t=>(fCat==="All"||t.category===fCat)&&(!search||t.title.toLowerCase().includes(search.toLowerCase())));
-  const todayTasks = tasks.filter(t=>t.dueDate===TODAY&&t.status!=="Done");
-  const urgentTask = tasks.filter(t=>isUrgent(t)&&t.status!=="Done");
-  const overdue    = tasks.filter(t=>t.dueDate&&new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00")&&t.status!=="Done");
-  const upcomingDl = [...deadlines].sort((a,b)=>a.date>b.date?1:-1).filter(d=>d.date>=TODAY).slice(0,5);
-  const wkSum      = COURSES.map(c=>{const done=c.fields.filter(f=>get(c.id,CURRENT_WEEK,f)).length;return{...c,done,total:c.fields.length,pct:Math.round((done/c.fields.length)*100)};});
-  const totI       = wkSum.reduce((a,c)=>a+c.total,0), doneI=wkSum.reduce((a,c)=>a+c.done,0);
-
-  const C   = {background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:20};
-  const L   = {fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",display:"block",marginBottom:8};
-  const B   = a => ({background:a?T.accent:"transparent",color:a?"#fff":T.muted,border:`1px solid ${a?T.accent:T.border}`,borderRadius:6,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:a?600:400,transition:"all 0.15s"});
-  const inp2 = {border:`1px solid ${T.border}`,borderRadius:6,padding:"8px 10px",fontSize:12,color:T.text,background:T.alt,outline:"none"};
-
-  if (!loaded) {
+  if(!loaded){
     return (
       <div style={{minHeight:"100vh",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
         <div style={{width:28,height:28,borderRadius:"50%",border:`3px solid ${T.border}`,borderTop:`3px solid ${T.accent}`}} className="spin"/>
@@ -751,266 +685,270 @@ function App() {
     );
   }
 
+  const contentPad = isMobile ? "16px" : "24px";
+
   return (
-    <div style={{minHeight:"100vh",background:T.bg,transition:"background 0.2s"}}>
+    <div style={{height:"100vh",background:T.bg,transition:"background 0.2s",display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <style>{`input:focus,select:focus,textarea:focus{border-color:${T.accent}!important;outline:none}`}</style>
 
-      {/* NAV */}
-      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,position:"sticky",top:0,zIndex:100}}>
-        <div style={{maxWidth:1140,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:52}}>
-          <div style={{display:"flex",alignItems:"center",gap:20}}>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <div style={{width:8,height:8,borderRadius:2,background:T.accent}}/>
-              <span style={{fontSize:15,fontWeight:700,color:T.text}}>Harry</span>
-            </div>
-            <div style={{display:"flex",gap:2}}>
-              {[["dashboard","Dashboard"],["tasks","Tasks"],["lists","Lists"],["courses","Courses"]].map(([v,l])=>(
-                <button key={v} onClick={()=>setView(v)} style={{...B(view===v),padding:"5px 14px",fontSize:13}}>{l}</button>
-              ))}
-            </div>
+      {/* Desktop nav only */}
+      {!isMobile&&<DesktopNav view={view} setView={setView} theme={theme} setTheme={setTheme} syncStatus={syncStatus} T={T}/>}
+
+      {/* Mobile top bar with scrollable tab nav */}
+      {isMobile&&<div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,flexShrink:0}}>
+        <div style={{padding:"12px 16px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:7}}>
+            <div style={{width:8,height:8,borderRadius:2,background:T.accent}}/>
+            <span style={{fontSize:16,fontWeight:700,color:T.text}}>Harry</span>
           </div>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
             <SyncDot status={syncStatus}/>
-            <div style={{width:1,height:16,background:T.border,margin:"0 4px"}}/>
-            <span style={{fontSize:10,color:T.muted,marginRight:4,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase"}}>Theme</span>
-            {Object.entries(THEMES).map(([k,v])=>(
-              <button key={k} onClick={()=>setTheme(k)} style={{...B(theme===k),padding:"4px 10px",fontSize:11}}>{v.label}</button>
-            ))}
+            <select value={theme} onChange={e=>setTheme(e.target.value)} style={{border:`1px solid ${T.border}`,borderRadius:6,padding:"4px 8px",fontSize:12,color:T.text,background:T.alt,outline:"none",cursor:"pointer"}}>
+              {Object.entries(THEMES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+            </select>
           </div>
         </div>
-      </div>
+        <div style={{display:"flex",overflowX:"auto",padding:"8px 12px 0",gap:2,WebkitOverflowScrolling:"touch"}}
+          onScroll={e=>e.stopPropagation()}>
+          <style>{`.mobnav::-webkit-scrollbar{display:none}`}</style>
+          {[["dashboard","Home"],["tasks","Tasks"],["lists","Lists"],["courses","Courses"]].map(([v,l])=>(
+            <button key={v} onClick={()=>setView(v)} style={{whiteSpace:"nowrap",flexShrink:0,background:"none",border:"none",borderBottom:view===v?`2px solid ${T.accent}`:"2px solid transparent",color:view===v?T.accent:T.muted,fontWeight:view===v?700:400,fontSize:14,padding:"6px 16px 10px",cursor:"pointer",transition:"color 0.15s"}}>{l}</button>
+          ))}
+        </div>
+      </div>}
 
-      <div style={{maxWidth:1140,margin:"0 auto",padding:24}}>
+      {/* Scrollable content */}
+      <div style={{flex:1,overflowY:"auto",padding:contentPad}}>
+        <div style={{maxWidth:isMobile?"100%":1140,margin:"0 auto"}}>
 
-        {/* DASHBOARD */}
-        {view==="dashboard"&&<>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:16}}>
-            {[
-              {l:"Active Tasks",v:tasks.filter(t=>t.status!=="Done").length,c:T.text},
-              {l:"Due Today",v:todayTasks.length,c:todayTasks.length?PRIORITY_COLOR.Medium:T.text},
-              {l:"Overdue",v:overdue.length,c:overdue.length?PRIORITY_COLOR.High:T.text},
-              {l:`Week ${CURRENT_WEEK}`,v:`${doneI}/${totI}`,c:T.text,s:`${Math.round((doneI/totI)*100)}% complete`},
-            ].map(x=>(
-              <div key={x.l} style={C}>
-                <span style={L}>{x.l}</span>
-                <div style={{fontSize:26,fontWeight:700,color:x.c,lineHeight:1}}>{x.v}</div>
-                {x.s&&<div style={{fontSize:11,color:T.muted,marginTop:3}}>{x.s}</div>}
-              </div>
-            ))}
-          </div>
-          <div style={{marginBottom:14}}><QuickAdd onAdd={t=>setTasks(p=>[...p,t])} T={T}/></div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1.6fr",gap:14,marginBottom:14}}>
-            <div style={C}><span style={L}>Calendar</span><Cal tasks={tasks} T={T}/></div>
-            <div style={C}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                <span style={L}>Week {CURRENT_WEEK} — Checklist</span>
-                <span style={{fontSize:11,color:doneI===totI?"#A3BE8C":T.muted,fontWeight:600}}>{doneI===totI?"All done":`${totI-doneI} remaining`}</span>
-              </div>
-              {wkSum.map(c=>(
-                <div key={c.id} style={{marginBottom:11}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                    <span style={{fontSize:12,fontWeight:600,color:c.color}}>{c.short}</span>
-                    <span style={{fontSize:11,color:c.done===c.total?"#A3BE8C":T.muted,fontWeight:600}}>{c.done}/{c.total}</span>
-                  </div>
-                  <div style={{height:3,background:T.border,borderRadius:3,marginBottom:4}}>
-                    <div style={{height:"100%",width:`${c.pct}%`,background:c.done===c.total?"#A3BE8C":c.color,borderRadius:3,transition:"width 0.4s"}}/>
-                  </div>
-                  <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                    {c.fields.map(f=>(
-                      <span key={f} style={{fontSize:10,color:get(c.id,CURRENT_WEEK,f)?"#A3BE8C":PRIORITY_COLOR.High,fontWeight:600}}>
-                        {get(c.id,CURRENT_WEEK,f)?"✓":"○"} {FIELD_LABELS[f]}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {urgentTask.length>0&&<div style={{...C,marginBottom:14,borderLeft:`3px solid ${PRIORITY_COLOR.High}`}}>
-            <span style={{...L,color:PRIORITY_COLOR.High}}>Urgent — Action Needed ({urgentTask.length})</span>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
-              {urgentTask.slice(0,6).map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
-            </div>
-          </div>}
-          {todayTasks.length>0&&<div style={{...C,marginBottom:14,borderLeft:`3px solid ${PRIORITY_COLOR.Medium}`}}>
-            <span style={{...L,color:PRIORITY_COLOR.Medium}}>Due Today ({todayTasks.length})</span>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
-              {todayTasks.map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
-            </div>
-          </div>}
-          {lists.length>0&&<div style={{...C,marginBottom:14}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-              <span style={L}>My Lists</span>
-              <button onClick={()=>setView("lists")} style={{fontSize:11,color:T.accent,background:"none",border:"none",cursor:"pointer",fontWeight:600}}>View all →</button>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
-              {lists.map(list=>(
-                <ListPanel key={list.id} list={list} onUpdate={updateList} onDelete={deleteList} T={T} compact={true}/>
-              ))}
-            </div>
-          </div>}
-          {upcomingDl.length>0&&<div style={C}>
-            <span style={L}>Upcoming Deadlines</span>
-            {upcomingDl.map(d=>{
-              const course=COURSES.find(c=>c.id===d.course),df=dateFmt(d.date);
-              return <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:`1px solid ${T.border}`}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:course?.color||T.muted,flexShrink:0}}/>
-                <span style={{flex:1,fontSize:13,fontWeight:500,color:T.text}}>{d.title}</span>
-                <span style={{fontSize:11,color:course?.color,background:course?.color+"22",padding:"2px 8px",borderRadius:4,fontWeight:600}}>{course?.short}</span>
-                <span style={{fontSize:11,color:df?.over?PRIORITY_COLOR.High:PRIORITY_COLOR.Medium,fontWeight:600}}>{df?.label||d.date}</span>
-                <button onClick={()=>delDeadline(d.id)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
-              </div>;
-            })}
-          </div>}
-        </>}
-
-        {/* TASKS */}
-        {view==="tasks"&&<>
-          <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
-            <button onClick={()=>setEdit(newTask())} style={{background:T.accent,color:"#fff",border:"none",borderRadius:7,padding:"8px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ New Task</button>
-            <div style={{display:"flex",alignItems:"center",gap:6,background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"6px 12px",flex:1,maxWidth:260}}>
-              <span style={{color:T.muted,fontSize:12}}>Search</span>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="..." style={{border:"none",outline:"none",background:"transparent",fontSize:13,color:T.text,width:"100%"}}/>
-            </div>
-            <div style={{display:"flex",gap:3}}>
-              {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"5px 11px",fontSize:11}}>{c}</button>)}
-            </div>
-            <div style={{marginLeft:"auto",display:"flex",gap:3}}>
-              {[["kanban","Kanban"],["list","List"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}
-            </div>
-          </div>
-          <div style={{display:"flex",gap:10,marginBottom:14}}>
-            {STATUSES.map(s=>(
-              <div key={s} style={{...C,flex:1,padding:"10px 14px",textAlign:"center"}}>
-                <div style={{fontSize:9,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{s}</div>
-                <div style={{fontSize:22,fontWeight:700,color:T.text}}>{baseFilt.filter(t=>t.status===s).length}</div>
-              </div>
-            ))}
-          </div>
-          {tv==="today"&&<div>
-            <div style={{...C,marginBottom:14,borderLeft:`3px solid ${PRIORITY_COLOR.Medium}`}}>
-              <span style={{...L,color:PRIORITY_COLOR.Medium}}>Due Today</span>
-              {todayTasks.length===0?<p style={{color:T.muted,fontSize:13}}>Nothing due today</p>:todayTasks.map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
-            </div>
-            <div style={{...C,borderLeft:`3px solid ${PRIORITY_COLOR.High}`}}>
-              <span style={{...L,color:PRIORITY_COLOR.High}}>Overdue</span>
-              {overdue.length===0?<p style={{color:T.muted,fontSize:13}}>Nothing overdue</p>:overdue.map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
-            </div>
-          </div>}
-          {tv==="kanban"&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
-            {STATUSES.map(status=>(
-              <div key={status} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)} style={{minHeight:80}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                  <span style={{fontSize:14,fontWeight:600,color:T.text}}>{status}</span>
-                  <span style={{fontSize:11,color:T.muted,background:T.alt,borderRadius:4,padding:"1px 7px",border:`1px solid ${T.border}`}}>{baseFilt.filter(t=>t.status===status).length}</span>
-                </div>
-                {sortT(baseFilt.filter(t=>t.status===status)).map(t=>(
-                  <Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}
-                    draggable onDragStart={()=>setDragId(t.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)}
-                  />
+          {/* DASHBOARD */}
+          {view==="dashboard"&&(isMobile
+            ? <MobileDashboard lists={lists} todayTasks={todayTasks} updateList={updateList} deleteList={deleteList} setView={setView} T={T}/>
+            : <>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:16}}>
+                {[{l:"Active Tasks",v:tasks.filter(t=>t.status!=="Done").length,c:T.text},{l:"Due Today",v:todayTasks.length,c:todayTasks.length?PRIORITY_COLOR.Medium:T.text},{l:"Overdue",v:overdue.length,c:overdue.length?PRIORITY_COLOR.High:T.text},{l:`Week ${CURRENT_WEEK}`,v:`${doneI}/${totI}`,c:T.text,s:`${Math.round((doneI/totI)*100)}% complete`}].map(x=>(
+                  <div key={x.l} style={C}><span style={L}>{x.l}</span><div style={{fontSize:26,fontWeight:700,color:x.c,lineHeight:1}}>{x.v}</div>{x.s&&<div style={{fontSize:11,color:T.muted,marginTop:3}}>{x.s}</div>}</div>
                 ))}
-                {baseFilt.filter(t=>t.status===status).length===0&&(
-                  <div style={{border:`1.5px dashed ${T.border}`,borderRadius:8,padding:20,textAlign:"center"}}>
-                    <p style={{margin:0,fontSize:11,color:T.muted}}>Drop here</p>
+              </div>
+              <div style={{marginBottom:14}}><QuickAdd onAdd={t=>setTasks(p=>[...p,t])} T={T} isMobile={false}/></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1.6fr",gap:14,marginBottom:14}}>
+                <div style={C}><span style={L}>Calendar</span><Cal tasks={tasks} T={T}/></div>
+                <div style={C}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                    <span style={L}>Week {CURRENT_WEEK} — Checklist</span>
+                    <span style={{fontSize:11,color:doneI===totI?"#A3BE8C":T.muted,fontWeight:600}}>{doneI===totI?"All done":`${totI-doneI} remaining`}</span>
                   </div>
-                )}
+                  {wkSum.map(c=>(
+                    <div key={c.id} style={{marginBottom:11}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                        <span style={{fontSize:12,fontWeight:600,color:c.color}}>{c.short}</span>
+                        <span style={{fontSize:11,color:c.done===c.total?"#A3BE8C":T.muted,fontWeight:600}}>{c.done}/{c.total}</span>
+                      </div>
+                      <div style={{height:3,background:T.border,borderRadius:3,marginBottom:4}}>
+                        <div style={{height:"100%",width:`${c.pct}%`,background:c.done===c.total?"#A3BE8C":c.color,borderRadius:3,transition:"width 0.4s"}}/>
+                      </div>
+                      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                        {c.fields.map(f=><span key={f} style={{fontSize:10,color:get(c.id,CURRENT_WEEK,f)?"#A3BE8C":PRIORITY_COLOR.High,fontWeight:600}}>{get(c.id,CURRENT_WEEK,f)?"✓":"○"} {FIELD_LABELS[f]}</span>)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>}
-          {tv==="list"&&<div>
-            {baseFilt.some(t=>t.pinned&&t.status!=="Done")&&<div style={{marginBottom:18}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <span style={{fontSize:13,fontWeight:700,color:T.accent}}>Pinned</span>
-                <div style={{flex:1,height:1,background:T.border}}/>
+              {urgentTask.length>0&&<div style={{...C,marginBottom:14,borderLeft:`3px solid ${PRIORITY_COLOR.High}`}}>
+                <span style={{...L,color:PRIORITY_COLOR.High}}>Urgent — Action Needed ({urgentTask.length})</span>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
+                  {urgentTask.slice(0,6).map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
+                </div>
+              </div>}
+              {todayTasks.length>0&&<div style={{...C,marginBottom:14,borderLeft:`3px solid ${PRIORITY_COLOR.Medium}`}}>
+                <span style={{...L,color:PRIORITY_COLOR.Medium}}>Due Today ({todayTasks.length})</span>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
+                  {todayTasks.map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
+                </div>
+              </div>}
+              {lists.length>0&&<div style={{...C,marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <span style={L}>My Lists</span>
+                  <button onClick={()=>setView("lists")} style={{fontSize:11,color:T.accent,background:"none",border:"none",cursor:"pointer",fontWeight:600}}>View all →</button>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>
+                  {lists.map(list=><ListPanel key={list.id} list={list} onUpdate={updateList} onDelete={deleteList} T={T} compact={true}/>)}
+                </div>
+              </div>}
+              {upcomingDl.length>0&&<div style={C}>
+                <span style={L}>Upcoming Deadlines</span>
+                {upcomingDl.map(d=>{const course=COURSES.find(c=>c.id===d.course),df=dateFmt(d.date);return <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:`1px solid ${T.border}`}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:course?.color||T.muted,flexShrink:0}}/>
+                  <span style={{flex:1,fontSize:13,fontWeight:500,color:T.text}}>{d.title}</span>
+                  <span style={{fontSize:11,color:course?.color,background:course?.color+"22",padding:"2px 8px",borderRadius:4,fontWeight:600}}>{course?.short}</span>
+                  <span style={{fontSize:11,color:df?.over?PRIORITY_COLOR.High:PRIORITY_COLOR.Medium,fontWeight:600}}>{df?.label||d.date}</span>
+                  <button onClick={()=>delDeadline(d.id)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
+                </div>;})}
+              </div>}
+            </>
+          )}
+
+          {/* TASKS */}
+          {view==="tasks"&&<>
+            <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+              <button onClick={()=>setEdit(newTask())} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",cursor:"pointer",fontSize:14,fontWeight:600}}>+ New Task</button>
+              <div style={{display:"flex",alignItems:"center",gap:6,background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 12px",flex:1}}>
+                <span style={{color:T.muted,fontSize:13}}>🔍</span>
+                <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{border:"none",outline:"none",background:"transparent",fontSize:14,color:T.text,width:"100%"}}/>
               </div>
-              {baseFilt.filter(t=>t.pinned&&t.status!=="Done").map(t=>(
-                <div key={t.id} onClick={()=>setEdit(t)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"10px 13px",marginBottom:5,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(46,52,64,0.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
-                  <span style={{flex:1,fontSize:13,fontWeight:500,color:T.text}}>{t.title}</span>
-                  <span style={{fontSize:10,color:T.muted,background:T.alt,padding:"2px 8px",borderRadius:4,border:`1px solid ${T.border}`}}>{t.status}</span>
-                  {t.dueDate&&(()=>{const d=dateFmt(t.dueDate);return <span style={{fontSize:10,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400}}>{d.label}</span>;})()}
-                  <button onClick={e=>{e.stopPropagation();delTask(t.id)}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
+            </div>
+            {!isMobile&&<div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+              {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"5px 11px",fontSize:11}}>{c}</button>)}
+              <div style={{marginLeft:"auto",display:"flex",gap:3}}>
+                {[["kanban","Kanban"],["list","List"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}
+              </div>
+            </div>}
+            {isMobile&&<div style={{display:"flex",gap:6,marginBottom:12,overflowX:"auto",paddingBottom:4}}>
+              {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"6px 14px",fontSize:12,whiteSpace:"nowrap"}}>{c}</button>)}
+            </div>}
+            <div style={{display:"flex",gap:8,marginBottom:14}}>
+              {STATUSES.map(s=>(
+                <div key={s} style={{...C,flex:1,padding:"10px 12px",textAlign:"center",marginBottom:0}}>
+                  <div style={{fontSize:9,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{s}</div>
+                  <div style={{fontSize:22,fontWeight:700,color:T.text}}>{baseFilt.filter(t=>t.status===s).length}</div>
+                </div>
+              ))}
+            </div>
+            {/* Mobile always shows list view, desktop can switch */}
+            {(!isMobile&&tv==="kanban")&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+              {STATUSES.map(status=>(
+                <div key={status} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)} style={{minHeight:80}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                    <span style={{fontSize:14,fontWeight:600,color:T.text}}>{status}</span>
+                    <span style={{fontSize:11,color:T.muted,background:T.alt,borderRadius:4,padding:"1px 7px",border:`1px solid ${T.border}`}}>{baseFilt.filter(t=>t.status===status).length}</span>
+                  </div>
+                  {sortT(baseFilt.filter(t=>t.status===status)).map(t=>(
+                    <Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T} draggable onDragStart={()=>setDragId(t.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)}/>
+                  ))}
+                  {baseFilt.filter(t=>t.status===status).length===0&&<div style={{border:`1.5px dashed ${T.border}`,borderRadius:8,padding:20,textAlign:"center"}}><p style={{margin:0,fontSize:11,color:T.muted}}>Drop here</p></div>}
                 </div>
               ))}
             </div>}
-            {CATEGORIES.map(cat=>{
-              const ct=baseFilt.filter(t=>t.category===cat&&!t.pinned);
-              if(!ct.length) return null;
-              return <div key={cat} style={{marginBottom:20}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:CAT_COLOR[cat]}}/>
-                  <span style={{fontSize:13,fontWeight:700,color:T.text}}>{cat}</span>
-                  <div style={{flex:1,height:1,background:T.border}}/>
-                  <span style={{fontSize:11,color:T.muted}}>{ct.length}</span>
+            {(isMobile||tv==="list"||tv==="today")&&<div>
+              {(tv==="today"||isMobile)&&<>
+                <div style={{...C,marginBottom:12,borderLeft:`3px solid ${PRIORITY_COLOR.Medium}`}}>
+                  <span style={{...L,color:PRIORITY_COLOR.Medium}}>Due Today</span>
+                  {todayTasks.length===0?<p style={{color:T.muted,fontSize:14}}>Nothing due today ✓</p>:baseFilt.filter(t=>t.dueDate===TODAY&&t.status!=="Done").map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
                 </div>
-                {sortT(ct).map(t=>(
-                  <div key={t.id} onClick={()=>setEdit(t)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"10px 13px",marginBottom:5,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 8px rgba(46,52,64,0.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
-                    <div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
-                    <span style={{flex:1,fontSize:13,fontWeight:500,color:t.status==="Done"?T.muted:T.text,textDecoration:t.status==="Done"?"line-through":"none"}}>{t.title}</span>
-                    <span style={{fontSize:10,color:T.muted,background:T.alt,padding:"2px 8px",borderRadius:4,border:`1px solid ${T.border}`}}>{t.status}</span>
-                    {t.dueDate&&(()=>{const d=dateFmt(t.dueDate);return <span style={{fontSize:10,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400}}>{d.label}</span>;})()}
-                    <button onClick={e=>{e.stopPropagation();delTask(t.id)}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
+                <div style={{...C,marginBottom:12,borderLeft:`3px solid ${PRIORITY_COLOR.High}`}}>
+                  <span style={{...L,color:PRIORITY_COLOR.High}}>Overdue</span>
+                  {overdue.length===0?<p style={{color:T.muted,fontSize:14}}>Nothing overdue ✓</p>:baseFilt.filter(t=>t.dueDate&&new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00")&&t.status!=="Done").map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
+                </div>
+              </>}
+              {(!isMobile&&tv==="list")&&<>
+                {baseFilt.some(t=>t.pinned&&t.status!=="Done")&&<div style={{marginBottom:18}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                    <span style={{fontSize:13,fontWeight:700,color:T.accent}}>Pinned</span>
+                    <div style={{flex:1,height:1,background:T.border}}/>
                   </div>
-                ))}
-              </div>;
-            })}
-          </div>}
-        </>}
+                  {baseFilt.filter(t=>t.pinned&&t.status!=="Done").map(t=>(
+                    <div key={t.id} onClick={()=>setEdit(t)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"10px 13px",marginBottom:5,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
+                      <span style={{flex:1,fontSize:13,fontWeight:500,color:T.text}}>{t.title}</span>
+                      <span style={{fontSize:10,color:T.muted,background:T.alt,padding:"2px 8px",borderRadius:4,border:`1px solid ${T.border}`}}>{t.status}</span>
+                      {t.dueDate&&(()=>{const d=dateFmt(t.dueDate);return <span style={{fontSize:10,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400}}>{d.label}</span>;})()}
+                      <button onClick={e=>{e.stopPropagation();delTask(t.id)}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
+                    </div>
+                  ))}
+                </div>}
+                {CATEGORIES.map(cat=>{
+                  const ct=baseFilt.filter(t=>t.category===cat&&!t.pinned);
+                  if(!ct.length)return null;
+                  return <div key={cat} style={{marginBottom:20}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:CAT_COLOR[cat]}}/>
+                      <span style={{fontSize:13,fontWeight:700,color:T.text}}>{cat}</span>
+                      <div style={{flex:1,height:1,background:T.border}}/>
+                      <span style={{fontSize:11,color:T.muted}}>{ct.length}</span>
+                    </div>
+                    {sortT(ct).map(t=>(
+                      <div key={t.id} onClick={()=>setEdit(t)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"10px 13px",marginBottom:5,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
+                        <span style={{flex:1,fontSize:13,fontWeight:500,color:t.status==="Done"?T.muted:T.text,textDecoration:t.status==="Done"?"line-through":"none"}}>{t.title}</span>
+                        <span style={{fontSize:10,color:T.muted,background:T.alt,padding:"2px 8px",borderRadius:4,border:`1px solid ${T.border}`}}>{t.status}</span>
+                        {t.dueDate&&(()=>{const d=dateFmt(t.dueDate);return <span style={{fontSize:10,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400}}>{d.label}</span>;})()}
+                        <button onClick={e=>{e.stopPropagation();delTask(t.id)}} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
+                      </div>
+                    ))}
+                  </div>;
+                })}
+              </>}
+              {isMobile&&<>
+                {CATEGORIES.map(cat=>{
+                  const ct=baseFilt.filter(t=>t.category===cat&&t.status!=="Done");
+                  if(!ct.length)return null;
+                  return <div key={cat} style={{marginBottom:16}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                      <div style={{width:7,height:7,borderRadius:"50%",background:CAT_COLOR[cat]}}/>
+                      <span style={{fontSize:13,fontWeight:700,color:T.text}}>{cat}</span>
+                      <div style={{flex:1,height:1,background:T.border}}/>
+                      <span style={{fontSize:12,color:T.muted}}>{ct.length}</span>
+                    </div>
+                    {sortT(ct).map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}
+                  </div>;
+                })}
+              </>}
+            </div>}
+          </>}
 
-        {/* LISTS */}
-        {view==="lists"&&<>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <span style={{fontSize:15,fontWeight:700,color:T.text}}>My Lists</span>
-            <button onClick={()=>setShowNewList(true)} style={{background:T.accent,color:"#fff",border:"none",borderRadius:7,padding:"8px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ New List</button>
-          </div>
-          {lists.length===0&&(
-            <div style={{...C,textAlign:"center",padding:48}}>
-              <p style={{fontSize:14,color:T.muted,marginBottom:6}}>No lists yet.</p>
+          {/* LISTS */}
+          {view==="lists"&&<>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <span style={{fontSize:isMobile?17:15,fontWeight:700,color:T.text}}>My Lists</span>
+              <button onClick={()=>setShowNewList(true)} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",cursor:"pointer",fontSize:14,fontWeight:600}}>+ New List</button>
+            </div>
+            {lists.length===0&&<div style={{...C,textAlign:"center",padding:48}}>
+              <p style={{fontSize:15,color:T.muted,marginBottom:6}}>No lists yet.</p>
               <p style={{fontSize:13,color:T.muted,marginBottom:18}}>Create a list to track projects, ideas, or anything without due dates.</p>
-              <button onClick={()=>setShowNewList(true)} style={{background:T.accent,color:"#fff",border:"none",borderRadius:7,padding:"10px 24px",cursor:"pointer",fontSize:13,fontWeight:600}}>Create your first list</button>
-            </div>
-          )}
-          {lists.map(list=>(
-            <ListPanel key={list.id} list={list} onUpdate={updateList} onDelete={deleteList} T={T} compact={false}/>
-          ))}
-        </>}
+              <button onClick={()=>setShowNewList(true)} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"11px 24px",cursor:"pointer",fontSize:14,fontWeight:600}}>Create your first list</button>
+            </div>}
+            {lists.map(list=><ListPanel key={list.id} list={list} onUpdate={updateList} onDelete={deleteList} T={T} compact={false}/>)}
+          </>}
 
-        {/* COURSES */}
-        {view==="courses"&&<>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <span style={{fontSize:15,fontWeight:700,color:T.text}}>Semester Tracker</span>
-            <span style={{fontSize:12,color:T.muted}}>Week {CURRENT_WEEK} of {WEEKS}</span>
-          </div>
-          <div style={{...C,marginBottom:16}}>
-            <span style={L}>Assignment Deadlines</span>
-            {deadlines.length===0&&<p style={{fontSize:12,color:T.muted,marginBottom:12}}>No deadlines added yet.</p>}
-            {[...deadlines].sort((a,b)=>a.date>b.date?1:-1).map(d=>{
-              const course=COURSES.find(c=>c.id===d.course),df=dateFmt(d.date);
-              return <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:`1px solid ${T.border}`}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:course?.color||T.muted,flexShrink:0}}/>
-                <span style={{flex:1,fontSize:13,fontWeight:500,color:T.text}}>{d.title}</span>
-                <span style={{fontSize:11,color:course?.color,background:course?.color+"22",padding:"2px 8px",borderRadius:4,fontWeight:600}}>{course?.short}</span>
-                <span style={{fontSize:11,color:df?.over?PRIORITY_COLOR.High:PRIORITY_COLOR.Medium,fontWeight:600,minWidth:60,textAlign:"right"}}>{df?.label||d.date}</span>
-                <button onClick={()=>delDeadline(d.id)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:14}}>×</button>
-              </div>;
-            })}
-            <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
-              <input value={newDl.title} onChange={e=>setNewDl(x=>({...x,title:e.target.value}))} placeholder="Assignment name..." style={{...inp2,flex:2,minWidth:140}}/>
-              <select value={newDl.course} onChange={e=>setNewDl(x=>({...x,course:e.target.value}))} style={{...inp2,cursor:"pointer"}}>
-                {COURSES.map(c=><option key={c.id} value={c.id}>{c.short}</option>)}
-              </select>
-              <input type="date" value={newDl.date} onChange={e=>setNewDl(x=>({...x,date:e.target.value}))} style={inp2}/>
-              <button onClick={addDeadline} style={{background:T.accent,color:"#fff",border:"none",borderRadius:6,padding:"8px 16px",cursor:"pointer",fontSize:13,fontWeight:600}}>Add</button>
+          {/* COURSES */}
+          {view==="courses"&&<>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <span style={{fontSize:isMobile?17:15,fontWeight:700,color:T.text}}>Semester Tracker</span>
+              <span style={{fontSize:12,color:T.muted}}>Week {CURRENT_WEEK} of {WEEKS}</span>
             </div>
-          </div>
-          {COURSES.map(course=>(
-            <CourseWeekGrid key={course.id} course={course} weeks={WEEKS} currentWeek={CURRENT_WEEK} get={get} tog={tog} T={T}/>
-          ))}
-        </>}
+            <div style={{...C,marginBottom:16}}>
+              <span style={L}>Assignment Deadlines</span>
+              {deadlines.length===0&&<p style={{fontSize:13,color:T.muted,marginBottom:12}}>No deadlines added yet.</p>}
+              {[...deadlines].sort((a,b)=>a.date>b.date?1:-1).map(d=>{
+                const course=COURSES.find(c=>c.id===d.course),df=dateFmt(d.date);
+                return <div key={d.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:`1px solid ${T.border}`}}>
+                  <div style={{width:7,height:7,borderRadius:"50%",background:course?.color||T.muted,flexShrink:0}}/>
+                  <span style={{flex:1,fontSize:14,fontWeight:500,color:T.text}}>{d.title}</span>
+                  <span style={{fontSize:11,color:course?.color,background:course?.color+"22",padding:"2px 8px",borderRadius:4,fontWeight:600}}>{course?.short}</span>
+                  <span style={{fontSize:12,color:df?.over?PRIORITY_COLOR.High:PRIORITY_COLOR.Medium,fontWeight:600,minWidth:60,textAlign:"right"}}>{df?.label||d.date}</span>
+                  <button onClick={()=>delDeadline(d.id)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:18}}>×</button>
+                </div>;
+              })}
+              <div style={{display:"flex",flexDirection:isMobile?"column":"row",gap:8,marginTop:12}}>
+                <input value={newDl.title} onChange={e=>setNewDl(x=>({...x,title:e.target.value}))} placeholder="Assignment name..." style={{...inp2,flex:2}}/>
+                <div style={{display:"flex",gap:8}}>
+                  <select value={newDl.course} onChange={e=>setNewDl(x=>({...x,course:e.target.value}))} style={{...inp2,flex:1,cursor:"pointer"}}>
+                    {COURSES.map(c=><option key={c.id} value={c.id}>{c.short}</option>)}
+                  </select>
+                  <input type="date" value={newDl.date} onChange={e=>setNewDl(x=>({...x,date:e.target.value}))} style={{...inp2,flex:1}}/>
+                  <button onClick={addDeadline} style={{background:T.accent,color:"#fff",border:"none",borderRadius:8,padding:"10px 16px",cursor:"pointer",fontSize:14,fontWeight:600}}>Add</button>
+                </div>
+              </div>
+            </div>
+            {COURSES.map(course=><CourseWeekGrid key={course.id} course={course} weeks={WEEKS} currentWeek={CURRENT_WEEK} get={get} tog={tog} T={T}/>)}
+          </>}
 
+        </div>
       </div>
-      {edit&&<Modal task={edit} onSave={saveTask} onClose={()=>setEdit(null)} T={T}/>}
-      {showNewList&&<NewListModal onSave={createList} onClose={()=>setShowNewList(false)} T={T}/>}
+
+
+      {edit&&<Modal task={edit} onSave={saveTask} onClose={()=>setEdit(null)} T={T} isMobile={isMobile}/>}
+      {showNewList&&<NewListModal onSave={createList} onClose={()=>setShowNewList(false)} T={T} isMobile={isMobile}/>}
     </div>
   );
 }
