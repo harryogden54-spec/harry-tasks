@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="theme-color" content="#2E3440"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><rect width='180' height='180' rx='38' fill='%232E3440'/><rect x='44' y='42' width='16' height='96' rx='6' fill='%23D8DEE9'/><rect x='44' y='82' width='92' height='16' rx='6' fill='%23D8DEE9'/><rect x='120' y='42' width='16' height='96' rx='6' fill='%23D8DEE9'/><rect x='62' y='132' width='56' height='6' rx='3' fill='%235E81AC' opacity='0.8'/></svg>"/>
   <title>Harry — Task Board</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
@@ -691,7 +693,7 @@ function App(){
             ?<MobileDashboard lists={lists} todayTasks={todayTasks} updateList={updateList} deleteList={deleteList} setView={setView} T={T}/>
             :<div className="fade-in">
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:16}}>
-                {[{l:"Active Tasks",v:tasks.filter(t=>t.status!=="Done").length,c:T.text},{l:"Due Today",v:todayTasks.length,c:todayTasks.length?PRIORITY_COLOR.Medium:T.text},{l:"Overdue",v:overdue.length,c:overdue.length?PRIORITY_COLOR.High:T.text},{l:`Week ${CURRENT_WEEK}`,v:`${doneI}/${totI}`,c:T.text,s:`${Math.round((doneI/totI)*100)}% complete`}].map(x=>(
+                {[{l:"Active Tasks",v:tasks.filter(t=>t.status!=="Done").length,c:T.text},{l:"Due Today",v:todayTasks.length,c:todayTasks.length?PRIORITY_COLOR.Medium:T.text},{l:"Overdue",v:overdue.length,c:overdue.length?PRIORITY_COLOR.High:T.text},{l:"In Progress",v:tasks.filter(t=>t.status==="In Progress").length,c:T.accent}].map(x=>(
                   <div key={x.l} style={C}><span style={L}>{x.l}</span><div style={{fontSize:26,fontWeight:700,color:x.c,lineHeight:1}}>{x.v}</div>{x.s&&<div style={{fontSize:11,color:T.muted,marginTop:3}}>{x.s}</div>}</div>
                 ))}
               </div>
@@ -700,16 +702,37 @@ function App(){
                 <div style={C}><span style={L}>Calendar</span><Cal tasks={tasks} T={T}/></div>
                 <div style={C}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                    <span style={L}>Week {CURRENT_WEEK} — Checklist</span>
-                    <span style={{fontSize:11,color:doneI===totI?"#A3BE8C":T.muted,fontWeight:600}}>{doneI===totI?"All done":`${totI-doneI} remaining`}</span>
+                    <span style={L}>All Tasks</span>
+                    <button onClick={()=>setView("tasks")} style={{fontSize:11,color:T.accent,background:"none",border:"none",cursor:"pointer",fontWeight:600}}>View all →</button>
                   </div>
-                  {wkSum.map(c=>(
-                    <div key={c.id} style={{marginBottom:11}}>
-                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:12,fontWeight:600,color:c.color}}>{c.short}</span><span style={{fontSize:11,color:c.done===c.total?"#A3BE8C":T.muted,fontWeight:600}}>{c.done}/{c.total}</span></div>
-                      <div style={{height:3,background:T.border,borderRadius:3,marginBottom:4}}><div style={{height:"100%",width:`${c.pct}%`,background:c.done===c.total?"#A3BE8C":c.color,borderRadius:3,transition:"width 0.4s"}}/></div>
-                      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>{c.fields.map(f=><span key={f} style={{fontSize:10,color:get(c.id,CURRENT_WEEK,f)?"#A3BE8C":PRIORITY_COLOR.High,fontWeight:600}}>{get(c.id,CURRENT_WEEK,f)?"✓":"○"} {FIELD_LABELS[f]}</span>)}</div>
-                    </div>
-                  ))}
+                  {CATEGORIES.map(cat=>{
+                    const catTasks=tasks.filter(t=>t.category===cat&&t.status!=="Done");
+                    if(!catTasks.length)return null;
+                    const urgent=catTasks.filter(t=>isUrgent(t));
+                    return(
+                      <div key={cat} style={{marginBottom:14}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                          <div style={{width:7,height:7,borderRadius:"50%",background:CAT_COLOR[cat],flexShrink:0}}/>
+                          <span style={{fontSize:12,fontWeight:700,color:T.text,flex:1}}>{cat}</span>
+                          {urgent.length>0&&<span style={{fontSize:10,fontWeight:700,color:PRIORITY_COLOR.High,background:PRIORITY_COLOR.High+"18",padding:"1px 7px",borderRadius:4}}>{urgent.length} urgent</span>}
+                          <span style={{fontSize:11,color:T.muted}}>{catTasks.length}</span>
+                        </div>
+                        {catTasks.slice(0,3).map(t=>{
+                          const d=dateFmt(t.dueDate);
+                          return(
+                            <div key={t.id} onClick={()=>setEdit(t)} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderRadius:7,marginBottom:3,cursor:"pointer",background:isUrgent(t)?PRIORITY_COLOR.High+"10":T.alt,transition:"background 0.1s"}}
+                              onMouseEnter={e=>e.currentTarget.style.background=T.border} onMouseLeave={e=>e.currentTarget.style.background=isUrgent(t)?PRIORITY_COLOR.High+"10":T.alt}>
+                              <div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
+                              <span style={{flex:1,fontSize:12,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</span>
+                              {d&&<span style={{fontSize:10,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400,flexShrink:0}}>{d.label}</span>}
+                            </div>
+                          );
+                        })}
+                        {catTasks.length>3&&<p style={{fontSize:11,color:T.muted,padding:"2px 10px"}}>+{catTasks.length-3} more</p>}
+                      </div>
+                    );
+                  })}
+                  {tasks.filter(t=>t.status!=="Done").length===0&&<div style={{textAlign:"center",padding:"20px 0"}}><div style={{fontSize:28,marginBottom:8}}>🎉</div><p style={{fontSize:13,color:T.muted}}>All tasks complete!</p></div>}
                 </div>
               </div>
               {urgentTask.length>0&&<div style={{...C,marginBottom:14,borderLeft:`3px solid ${PRIORITY_COLOR.High}`}}><span style={{...L,color:PRIORITY_COLOR.High}}>Urgent — Action Needed ({urgentTask.length})</span><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{urgentTask.slice(0,6).map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} T={T}/>)}</div></div>}
