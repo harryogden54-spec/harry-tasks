@@ -930,6 +930,7 @@ function App(){
   const[theme,setTheme]          =useState(()=>lsGet("h-theme-html","polar"));
   const[fCat,setFCat]            =useState("All");
   const[sortBy,setSortBy]        =useState("default");
+  const[hideDone,setHideDone]    =useState(false);
   const[search,setSearch]        =useState("");
   const[dragId,setDragId]        =useState(null);
   const[newDl,setNewDl]          =useState({title:"",course:"maths",date:"",notes:""});
