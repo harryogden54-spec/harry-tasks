@@ -102,9 +102,10 @@ const LIST_TYPES=[
 // Days: 0=Mon,1=Tue,2=Wed,3=Thu,4=Fri
 const TIMETABLE=[
   {day:0,start:9,end:10,course:"maths",type:"Lecture",room:"Swann Building - Main Lecture Theatre"},
-  {day:0,start:10,end:11,course:"construction",type:"Lecture",room:"Fleeming Jenkin - TLG"},
+  {day:0,start:10,end:11,course:"civdes",type:"Lecture",room:"Fleeming Jenkin - TLG"},
   {day:0,start:15,end:16,course:"env",type:"Seminar",room:"Ashworth Labs - Lecture Theatre 1"},
   {day:1,start:9,end:12,course:"civdes",type:"Lab",room:"Murchison House 1.20 - Open Access/Teaching Computer Lab"},
+  {day:1,start:9,end:10,course:"civdes",type:"Seminar",room:"Eng Sanderson Building - Classroom 2"},
   {day:1,start:12,end:13,course:"maths",type:"Tutorial",room:"Engineering Maths Drop-in"},
   {day:1,start:13,end:14,course:"materials",type:"Seminar",room:"Alrick - Classroom 10"},
   {day:1,start:14,end:15,course:"fire",type:"Lecture",room:"Nucleus 2.07 - Yew Lecture Theatre"},
@@ -1129,11 +1130,19 @@ function App(){
                 <option value="created">Newest</option>
               </select>
             </div>}
-            {!isMobile&&<div style={{marginLeft:"auto",display:"flex",gap:4}}>{[["kanban","Kanban"],["list","List"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}</div>}
+            {!isMobile&&<div style={{marginLeft:"auto",display:"flex",gap:4}}>{[["list","All Tasks"],["kanban","Kanban"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}</div>}
             </div>
-            {isMobile&&<div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
+            {isMobile&&<div style={{marginBottom:8,display:"flex",gap:6,overflowX:"auto",paddingBottom:2}}>
               {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap"}}>{c}</button>)}
-              <button onClick={()=>setHideDone(h=>!h)} style={{...B(hideDone),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap",flexShrink:0}}>{hideDone?"Show done":"Hide done"}</button>
+            </div>}
+            {isMobile&&<div style={{marginBottom:14,display:"flex",gap:6}}>
+              <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 10px",fontSize:12,color:T.text,background:T.surface,outline:"none",cursor:"pointer",flex:1}}>
+                <option value="default">Default</option>
+                <option value="dueDate">Due Date</option>
+                <option value="priority">Priority</option>
+                <option value="created">Newest</option>
+              </select>
+              <button onClick={()=>setHideDone(h=>!h)} style={{...B(hideDone),padding:"8px 14px",fontSize:12,whiteSpace:"nowrap"}}>{hideDone?"Show all":"Hide done"}</button>
             </div>}
             <div style={{display:"flex",gap:10,marginBottom:18}}>{STATUSES.map(s=>(<div key={s} style={{...C,flex:1,padding:"14px 16px",textAlign:"center",marginBottom:0}}><div style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{s}</div><div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:"-0.02em"}}>{baseFilt.filter(t=>t.status===s).length}</div></div>))}</div>
             {!isMobile&&tv==="kanban"&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
