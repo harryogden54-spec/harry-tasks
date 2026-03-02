@@ -81,7 +81,9 @@ const COURSES=[
   {id:"construction",name:"Construction & Surveying 2",short:"Construction",color:"#D08770",fields:["resources","flashcards"]},
   {id:"civdes",name:"Civil Engineering Design 2",short:"Civ Des",color:"#E57373",fields:["resources","notes"],noExam:true},
 ];
-const FIELD_LABELS={resources:"Resources",notes:"Notes",problemSets:"Problem Sets",flashcards:"Flashcards"};
+// Default field labels - user can customize per course
+const DEFAULT_FIELD_LABELS={resources:"Resources",notes:"Notes",problemSets:"Problem Sets",flashcards:"Flashcards",lectures:"Lectures",tutorials:"Tutorials",coursework:"Coursework",revision:"Revision",practicals:"Practicals"};
+const FIELD_LABELS={resources:"Resources",notes:"Notes",problemSets:"Problem Sets",flashcards:"Flashcards",lectures:"Lectures",tutorials:"Tutorials",coursework:"Coursework",revision:"Revision",practicals:"Practicals"};
 const INITIAL_EXAM_DATES={maths:"",fire:"",materials:"",env:"",construction:""};
 const WEEKS=10,CURRENT_WEEK=6;
 const CATEGORIES=["Daily","School","Personal"];
@@ -101,20 +103,23 @@ const LIST_TYPES=[
 // ─── Timetable data ───────────────────────────────────────────────────────────
 // Days: 0=Mon,1=Tue,2=Wed,3=Thu,4=Fri
 const TIMETABLE=[
+  // Monday
   {day:0,start:9,end:10,course:"maths",type:"Lecture",room:"Swann Building - Main Lecture Theatre"},
   {day:0,start:10,end:11,course:"civdes",type:"Lecture",room:"Fleeming Jenkin - TLG"},
   {day:0,start:15,end:16,course:"env",type:"Seminar",room:"Ashworth Labs - Lecture Theatre 1"},
-  {day:1,start:9,end:12,course:"civdes",type:"Lab",room:"Murchison House 1.20 - Open Access/Teaching Computer Lab"},
-  {day:1,start:9,end:10,course:"civdes",type:"Seminar",room:"Eng Sanderson Building - Classroom 2"},
+  // Tuesday
+  {day:1,start:9,end:12,course:"civdes",type:"Lab",room:"Murchison House - 1.20 - Open Access/Teaching Computer Lab"},
   {day:1,start:12,end:13,course:"maths",type:"Tutorial",room:"Engineering Maths Drop-in"},
   {day:1,start:13,end:14,course:"materials",type:"Seminar",room:"Alrick - Classroom 10"},
-  {day:1,start:14,end:15,course:"fire",type:"Lecture",room:"Nucleus 2.07 - Yew Lecture Theatre"},
-  {day:2,start:9,end:10,course:"construction",type:"Seminar",room:"Eng Sanderson Building - Classroom 2"},
-  {day:3,start:9,end:10,course:"materials",type:"Lecture",room:"Nucleus B.01 - Alder Lecture Theatre"},
-  {day:3,start:10,end:11,course:"maths",type:"Lecture",room:"Nucleus 1.14 - Oak Lecture Theatre"},
-  {day:3,start:11,end:13,course:"construction",type:"Lecture",room:"Joseph Black Building - Theatre 100"},
-  {day:3,start:14,end:16,course:"construction",type:"Lecture",room:"JCMB - Lecture Theatre B"},
-  {day:4,start:9,end:10,course:"materials",type:"Lecture",room:"Ashworth Labs - Lecture Theatre 1"},
+  {day:1,start:14,end:16,course:"fire",type:"Lecture",room:"Nucleus - 2.07 - Yew Lecture Theatre"},
+  // Wednesday
+  {day:2,start:9,end:10,course:"materials",type:"Lecture",room:"Nucleus - B.01 - Alder Lecture Theatre"},
+  // Thursday
+  {day:3,start:9,end:10,course:"materials",type:"Lecture",room:"Ashworth Labs - Lecture Theatre 1"},
+  {day:3,start:10,end:11,course:"maths",type:"Lecture",room:"Nucleus - 1.14 - Oak Lecture Theatre"},
+  {day:3,start:11,end:12,course:"construction",type:"Lecture",room:"Joseph Black Building - Theatre 100"},
+  {day:3,start:14,end:15,course:"construction",type:"Lecture",room:"Murchison House - G.26 Charlotte Murchison Lecture Theatre"},
+  // Friday
   {day:4,start:11,end:12,course:"env",type:"Seminar",room:"JCMB - Lecture Theatre B"},
 ];
 const DAY_NAMES=["Monday","Tuesday","Wednesday","Thursday","Friday"];
@@ -700,9 +705,64 @@ function QuickAdd({onAdd,T,isMobile}){
 }
 
 // ─── Course Week Grid ─────────────────────────────────────────────────────────
-function CourseWeekGrid({course,weeks,currentWeek,get,tog,T,examDate,onExamChange}){
-  const total=course.fields.length*weeks;
-  const done=Array.from({length:weeks},(_,i)=>i+1).reduce((a,w)=>a+course.fields.filter(f=>get(course.id,w,f)).length,0);
+
+// ─── Field Editor ─────────────────────────────────────────────────────────────
+function FieldEditor({fields,onFieldsChange,T}){
+  const[adding,setAdding]=useState(false);
+  const[newField,setNewField]=useState("");
+  const[newLabel,setNewLabel]=useState("");
+  const PRESETS=["resources","notes","problemSets","flashcards","lectures","tutorials","coursework","revision","practicals"];
+  const availablePresets=PRESETS.filter(p=>!fields.includes(p));
+
+  const addField=(key,label)=>{
+    if(!key.trim())return;
+    // Create a slug key from label if using custom
+    const fieldKey=key.replace(/\s+/g,'-').toLowerCase();
+    if(fields.includes(fieldKey))return;
+    // Store custom label
+    if(label&&label!==FIELD_LABELS[fieldKey]){
+      // We'll piggyback on FIELD_LABELS for display - store in component state via onFieldsChange
+    }
+    onFieldsChange([...fields,fieldKey]);
+    setNewField("");setNewLabel("");setAdding(false);
+  };
+  const removeField=f=>onFieldsChange(fields.filter(x=>x!==f));
+
+  return(
+    <div style={{padding:"10px 0 6px",borderBottom:`1px solid ${T.border}`,marginBottom:8}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+        <span style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.1em"}}>Columns</span>
+        {fields.map(f=>(
+          <div key={f} style={{display:"flex",alignItems:"center",gap:4,background:T.alt,border:`1px solid ${T.border}`,borderRadius:6,padding:"3px 8px"}}>
+            <span style={{fontSize:11,fontWeight:600,color:T.text}}>{FIELD_LABELS[f]||f}</span>
+            <button onClick={()=>removeField(f)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:13,padding:0,lineHeight:1,marginLeft:2}}>×</button>
+          </div>
+        ))}
+        <button onClick={()=>setAdding(a=>!a)} style={{background:T.alt,border:`1px solid ${T.border}`,borderRadius:6,padding:"3px 10px",cursor:"pointer",fontSize:11,color:T.muted,fontWeight:600}}>+ Add</button>
+      </div>
+      {adding&&<div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+        {availablePresets.length>0&&<>
+          <span style={{fontSize:11,color:T.muted}}>Quick add:</span>
+          {availablePresets.map(p=>(
+            <button key={p} onClick={()=>addField(p,FIELD_LABELS[p])} style={{background:T.accent+"18",border:`1px solid ${T.accent}`,borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:11,color:T.accent,fontWeight:600}}>{FIELD_LABELS[p]||p}</button>
+          ))}
+          <span style={{fontSize:11,color:T.muted}}>or custom:</span>
+        </>}
+        <input value={newField} onChange={e=>setNewField(e.target.value)} placeholder="Field name (e.g. Coursework)" autoFocus
+          style={{border:`1px solid ${T.border}`,borderRadius:6,padding:"5px 10px",fontSize:12,color:T.text,background:T.surface,outline:"none",width:160}}
+          onKeyDown={e=>e.key==="Enter"&&newField.trim()&&addField(newField.trim().toLowerCase().replace(/\s+/g,'-'),newField.trim())}/>
+        <button onClick={()=>newField.trim()&&addField(newField.trim().toLowerCase().replace(/\s+/g,'-'),newField.trim())}
+          style={{background:T.accent,color:"#fff",border:"none",borderRadius:6,padding:"5px 12px",cursor:"pointer",fontSize:12,fontWeight:600}}>Add</button>
+        <button onClick={()=>setAdding(false)} style={{background:"none",border:"none",cursor:"pointer",color:T.muted,fontSize:18}}>×</button>
+      </div>}
+    </div>
+  );
+}
+
+function CourseWeekGrid({course,weeks,currentWeek,get,tog,T,examDate,onExamChange,courseFields,onFieldsChange}){
+  const fields=courseFields||course.fields;
+  const total=fields.length*weeks;
+  const done=Array.from({length:weeks},(_,i)=>i+1).reduce((a,w)=>a+fields.filter(f=>get(course.id,w,f)).length,0);
   const pct=Math.round((done/total)*100);const[open,setOpen]=useState(false);const examFmt=examDate?dateFmt(examDate):null;
   return(
     <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,marginBottom:14,overflow:"hidden"}} className="slide-in">
@@ -722,10 +782,13 @@ function CourseWeekGrid({course,weeks,currentWeek,get,tog,T,examDate,onExamChang
           <span style={{fontSize:12,fontWeight:700,color:T.muted,flex:1}}>Exam Date</span>
           <input type="date" value={examDate||""} onChange={e=>onExamChange(course.id,e.target.value)} style={{border:`1px solid ${T.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,color:T.text,background:T.alt,outline:"none"}}/>
           {examDate&&<span style={{fontSize:11,fontWeight:600,color:examFmt?.over?PRIORITY_COLOR.High:PRIORITY_COLOR.Medium}}>{examFmt?.label}</span>}
-        </div>}<div style={{overflowX:"auto",marginTop:12}}>
+        </div>}
+          {/* Field editor */}
+          <FieldEditor fields={fields} onFieldsChange={f=>onFieldsChange(course.id,f)} T={T}/>
+<div style={{overflowX:"auto",marginTop:12}}>
         <table style={{width:"100%",borderCollapse:"collapse",minWidth:400}}>
-          <thead><tr><th style={{textAlign:"left",fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textTransform:"uppercase",width:54}}>Week</th>{course.fields.map(f=><th key={f} style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textAlign:"center",textTransform:"uppercase"}}>{FIELD_LABELS[f]}</th>)}<th style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textAlign:"center",textTransform:"uppercase"}}>Done</th></tr></thead>
-          <tbody>{Array.from({length:weeks},(_,i)=>i+1).map(wk=>{const wkDone=course.fields.filter(f=>get(course.id,wk,f)).length;const allDone=wkDone===course.fields.length,isCurrent=wk===currentWeek;return<tr key={wk} style={{borderTop:`1px solid ${T.border}`,background:isCurrent?T.accent+"15":"transparent"}}><td style={{padding:"11px 0",fontSize:12,fontWeight:isCurrent?700:400,color:isCurrent?T.accent:T.text}}>Wk {wk}{isCurrent&&<span style={{fontSize:9,fontWeight:700,color:T.accent,marginLeft:5,background:T.accent+"25",padding:"1px 6px",borderRadius:4}}>now</span>}</td>{course.fields.map(f=><td key={f} style={{textAlign:"center",padding:"11px 8px"}}><div style={{display:"flex",justifyContent:"center"}}><Check checked={get(course.id,wk,f)} onChange={()=>tog(course.id,wk,f)} color={course.color} T={T}/></div></td>)}<td style={{textAlign:"center",padding:"11px 8px"}}><span style={{fontSize:11,fontWeight:600,color:allDone?"#A3BE8C":T.muted}}>{allDone?"✓":""}{wkDone}/{course.fields.length}</span></td></tr>;})}
+          <thead><tr><th style={{textAlign:"left",fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textTransform:"uppercase",width:54}}>Week</th>{fields.map(f=><th key={f} style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textAlign:"center",textTransform:"uppercase"}}>{FIELD_LABELS[f]}</th>)}<th style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textAlign:"center",textTransform:"uppercase"}}>Done</th></tr></thead>
+          <tbody>{Array.from({length:weeks},(_,i)=>i+1).map(wk=>{const wkDone=fields.filter(f=>get(course.id,wk,f)).length;const allDone=wkDone===fields.length,isCurrent=wk===currentWeek;return<tr key={wk} style={{borderTop:`1px solid ${T.border}`,background:isCurrent?T.accent+"15":"transparent"}}><td style={{padding:"11px 0",fontSize:12,fontWeight:isCurrent?700:400,color:isCurrent?T.accent:T.text}}>Wk {wk}{isCurrent&&<span style={{fontSize:9,fontWeight:700,color:T.accent,marginLeft:5,background:T.accent+"25",padding:"1px 6px",borderRadius:4}}>now</span>}</td>{fields.map(f=><td key={f} style={{textAlign:"center",padding:"11px 8px"}}><div style={{display:"flex",justifyContent:"center"}}><Check checked={get(course.id,wk,f)} onChange={()=>tog(course.id,wk,f)} color={course.color} T={T}/></div></td>)}<td style={{textAlign:"center",padding:"11px 8px"}}><span style={{fontSize:11,fontWeight:600,color:allDone?"#A3BE8C":T.muted}}>{allDone?"✓":""}{wkDone}/{fields.length}</span></td></tr>;})}
           </tbody>
         </table>
       </div></div>}
@@ -925,6 +988,7 @@ function App(){
   const[habits,setHabits]        =useState(()=>lsGet("h-habits-html",INITIAL_HABITS));
   const[archive,setArchive]      =useState(()=>lsGet("h-archive-html",[]));
   const[examDates,setExamDates]  =useState(()=>lsGet("h-exams-html",INITIAL_EXAM_DATES));
+  const[courseFields,setCourseFields]=useState(()=>lsGet("h-cfields-html",Object.fromEntries(COURSES.map(c=>[c.id,c.fields]))));
   const[view,setView]            =useState("dashboard");
   const[tv,setTv]                =useState("list");
   const[edit,setEdit]            =useState(null);
@@ -959,6 +1023,7 @@ function App(){
         if(hR){setHabits(hR);lsSet("h-habits-html",hR);}
         if(aR){setArchive(aR);lsSet("h-archive-html",aR);}
         const exR=await sbGetSetting("examDates");if(exR){setExamDates(exR);lsSet("h-exams-html",exR);}
+        const cfR=await sbGetSetting("courseFields");if(cfR){setCourseFields(cfR);lsSet("h-cfields-html",cfR);}
         setSyncStatus("synced");
       }catch{setSyncStatus("offline");}
       setLoaded(true);
@@ -978,6 +1043,7 @@ function App(){
   useEffect(()=>{if(!loaded)return;lsSet("h-habits-html",habits);debouncedSync(async()=>await sbSetSetting("habits",habits));},[habits]);
   useEffect(()=>{if(!loaded)return;lsSet("h-archive-html",archive);debouncedSync(async()=>await sbSetSetting("archive",archive));},[archive]);
   useEffect(()=>{if(!loaded)return;lsSet("h-exams-html",examDates);debouncedSync(async()=>await sbSetSetting("examDates",examDates));},[examDates]);
+  useEffect(()=>{if(!loaded)return;lsSet("h-cfields-html",courseFields);debouncedSync(async()=>await sbSetSetting("courseFields",courseFields));},[courseFields]);
   useEffect(()=>{lsSet("h-theme-html",theme);document.body.style.background=T.bg;if(loaded)sbSetSetting("theme",theme);},[theme]);
   useEffect(()=>{lsSet("h-notif",notifEnabled);},[notifEnabled]);
   useEffect(()=>{const h=e=>{if((e.metaKey||e.ctrlKey)&&e.key==="k"){e.preventDefault();setShowSearch(true);}if(e.key==="Escape"){setShowSearch(false);setShowSettings(false);}};window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[]);
@@ -1022,7 +1088,7 @@ function App(){
   const urgentTask=tasks.filter(t=>isUrgent(t)&&t.status!=="Done");
   const overdue=tasks.filter(t=>t.dueDate&&new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00")&&t.status!=="Done");
   const upcomingDl=[...deadlines].sort((a,b)=>a.date>b.date?1:-1).filter(d=>d.date>=TODAY).slice(0,5);
-  const wkSum=COURSES.map(c=>{const done=c.fields.filter(f=>get(c.id,CURRENT_WEEK,f)).length;return{...c,done,total:c.fields.length,pct:Math.round((done/c.fields.length)*100)};});
+  const wkSum=COURSES.map(c=>{const cf=courseFields[c.id]||c.fields;const done=cf.filter(f=>get(c.id,CURRENT_WEEK,f)).length;return{...c,done,total:cf.length,pct:Math.round((done/cf.length)*100)};});
   const totI=wkSum.reduce((a,c)=>a+c.total,0),doneI=wkSum.reduce((a,c)=>a+c.done,0);
 
   const C={background:T.surface,border:`1px solid ${T.border}`,borderRadius:isMobile?16:14,padding:isMobile?18:22};
@@ -1130,19 +1196,11 @@ function App(){
                 <option value="created">Newest</option>
               </select>
             </div>}
-            {!isMobile&&<div style={{marginLeft:"auto",display:"flex",gap:4}}>{[["list","All Tasks"],["kanban","Kanban"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}</div>}
+            {!isMobile&&<div style={{marginLeft:"auto",display:"flex",gap:4}}>{[["kanban","Kanban"],["list","List"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}</div>}
             </div>
-            {isMobile&&<div style={{marginBottom:8,display:"flex",gap:6,overflowX:"auto",paddingBottom:2}}>
+            {isMobile&&<div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
               {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap"}}>{c}</button>)}
-            </div>}
-            {isMobile&&<div style={{marginBottom:14,display:"flex",gap:6}}>
-              <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{border:`1px solid ${T.border}`,borderRadius:8,padding:"8px 10px",fontSize:12,color:T.text,background:T.surface,outline:"none",cursor:"pointer",flex:1}}>
-                <option value="default">Default</option>
-                <option value="dueDate">Due Date</option>
-                <option value="priority">Priority</option>
-                <option value="created">Newest</option>
-              </select>
-              <button onClick={()=>setHideDone(h=>!h)} style={{...B(hideDone),padding:"8px 14px",fontSize:12,whiteSpace:"nowrap"}}>{hideDone?"Show all":"Hide done"}</button>
+              <button onClick={()=>setHideDone(h=>!h)} style={{...B(hideDone),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap",flexShrink:0}}>{hideDone?"Show done":"Hide done"}</button>
             </div>}
             <div style={{display:"flex",gap:10,marginBottom:18}}>{STATUSES.map(s=>(<div key={s} style={{...C,flex:1,padding:"14px 16px",textAlign:"center",marginBottom:0}}><div style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{s}</div><div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:"-0.02em"}}>{baseFilt.filter(t=>t.status===s).length}</div></div>))}</div>
             {!isMobile&&tv==="kanban"&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
@@ -1194,7 +1252,7 @@ function App(){
                 </div>
               </div>
             </div>
-            {COURSES.map(course=><CourseWeekGrid key={course.id} course={course} weeks={WEEKS} currentWeek={CURRENT_WEEK} get={get} tog={tog} T={T} examDate={examDates[course.id]} onExamChange={(id,val)=>setExamDates(p=>({...p,[id]:val}))}/>)}
+            {COURSES.map(course=><CourseWeekGrid key={course.id} course={course} weeks={WEEKS} currentWeek={CURRENT_WEEK} get={get} tog={tog} T={T} examDate={examDates[course.id]} onExamChange={(id,val)=>setExamDates(p=>({...p,[id]:val}))} courseFields={courseFields[course.id]||course.fields} onFieldsChange={(id,fields)=>setCourseFields(p=>({...p,[id]:fields}))}/>)}
           </div>}
 
           {/* ARCHIVE */}
