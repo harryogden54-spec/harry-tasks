@@ -6,8 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="theme-color" content="#EEF2F7"/>
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23EEF2F7'/%3E%3Cpolygon points='90,28 104,68 147,68 113,93 126,133 90,108 54,133 67,93 33,68 76,68' fill='none' stroke='%235E81AC' stroke-width='10' stroke-linejoin='round'/%3E%3C/svg%3E"/>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23EEF2F7'/%3E%3Cpolygon points='16,3 19.5,12 29,12.5 22,18.5 24.5,28 16,23 7.5,28 10,18.5 3,12.5 12.5,12' fill='none' stroke='%235E81AC' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E"/>
+  <link rel="apple-touch-icon" href="icon.png"/>
   <title>Harry — Tasks</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -32,6 +32,27 @@
     .card-enter{animation:slideUp 0.22s ease both}
     .pulse{animation:pulse 2s ease-in-out infinite}
   </style>
+
+  <script>
+  // Generate PNG apple-touch-icon for iOS home screen
+  (function(){
+    try {
+      var c=document.createElement('canvas');c.width=180;c.height=180;
+      var ctx=c.getContext('2d');
+      // Background
+      ctx.fillStyle='#EEF2F7';
+      var r=38;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(180-r,0);ctx.quadraticCurveTo(180,0,180,r);ctx.lineTo(180,180-r);ctx.quadraticCurveTo(180,180,180-r,180);ctx.lineTo(r,180);ctx.quadraticCurveTo(0,180,0,180-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.fill();
+      // Star
+      ctx.strokeStyle='#5E81AC';ctx.lineWidth=9;ctx.lineJoin='round';ctx.beginPath();
+      var pts=[[90,28],[104,68],[147,68],[113,93],[126,133],[90,108],[54,133],[67,93],[33,68],[76,68]];
+      ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.stroke();
+      var url=c.toDataURL('image/png');
+      var link=document.querySelector('link[rel="apple-touch-icon"]');
+      if(link)link.href=url;
+      else{var l=document.createElement('link');l.rel='apple-touch-icon';l.href=url;document.head.appendChild(l);}
+    } catch(e){}
+  })();
+  </script>
 </head>
 <body>
 <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:14px;background:#EEF2F7"><div style="width:32px;height:32px;border-radius:50%;border:3px solid #D0DBEA;border-top:3px solid #5E81AC;animation:spin 1s linear infinite"></div><span style="font-size:14px;color:#7B8EA8;font-family:sans-serif;font-weight:500">Loading Harry Tasks…</span></div></div>
@@ -58,6 +79,7 @@ const COURSES=[
   {id:"materials",name:"Materials 2",short:"Materials",color:"#A3BE8C",fields:["resources","flashcards"]},
   {id:"env",name:"Environmental Engineering 2",short:"Env Eng",color:"#8FBCBB",fields:["resources","flashcards"]},
   {id:"construction",name:"Construction & Surveying 2",short:"Construction",color:"#D08770",fields:["resources","flashcards"]},
+  {id:"civdes",name:"Civil Engineering Design 2",short:"Civ Des",color:"#E57373",fields:["resources","notes"],noExam:true},
 ];
 const FIELD_LABELS={resources:"Resources",notes:"Notes",problemSets:"Problem Sets",flashcards:"Flashcards"};
 const INITIAL_EXAM_DATES={maths:"",fire:"",materials:"",env:"",construction:""};
@@ -82,7 +104,7 @@ const TIMETABLE=[
   {day:0,start:9,end:10,course:"maths",type:"Lecture",room:"Swann Building - Main Lecture Theatre"},
   {day:0,start:10,end:11,course:"construction",type:"Lecture",room:"Fleeming Jenkin - TLG"},
   {day:0,start:15,end:16,course:"env",type:"Seminar",room:"Ashworth Labs - Lecture Theatre 1"},
-  {day:1,start:9,end:12,course:"construction",type:"Seminar",room:"Murchison House 1.20"},
+  {day:1,start:9,end:12,course:"civdes",type:"Lab",room:"Murchison House 1.20 - Open Access/Teaching Computer Lab"},
   {day:1,start:12,end:13,course:"maths",type:"Tutorial",room:"Engineering Maths Drop-in"},
   {day:1,start:13,end:14,course:"materials",type:"Seminar",room:"Alrick - Classroom 10"},
   {day:1,start:14,end:15,course:"fire",type:"Lecture",room:"Nucleus 2.07 - Yew Lecture Theatre"},
@@ -694,12 +716,12 @@ function CourseWeekGrid({course,weeks,currentWeek,get,tog,T,examDate,onExamChang
         <div style={{width:64,height:4,background:T.border,borderRadius:2,marginRight:10}}><div style={{height:"100%",width:`${pct}%`,background:pct===100?"#A3BE8C":course.color,borderRadius:2,transition:"width 0.4s"}}/></div>
         <span style={{fontSize:12,color:T.muted,transition:"transform 0.2s",display:"inline-block",transform:open?"rotate(0)":"rotate(-90deg)"}}>▼</span>
       </div>
-      {open&&<div style={{padding:"0 20px 18px"}}><div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 0",borderBottom:`1px solid ${T.border}`,marginBottom:4}}>
+      {open&&<div style={{padding:"0 20px 18px"}}>{!course.noExam&&<div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 0",borderBottom:`1px solid ${T.border}`,marginBottom:4}}>
           <span style={{display:"flex",color:T.muted}}><Ic n="exam"/></span>
           <span style={{fontSize:12,fontWeight:700,color:T.muted,flex:1}}>Exam Date</span>
           <input type="date" value={examDate||""} onChange={e=>onExamChange(course.id,e.target.value)} style={{border:`1px solid ${T.border}`,borderRadius:8,padding:"6px 10px",fontSize:12,color:T.text,background:T.alt,outline:"none"}}/>
           {examDate&&<span style={{fontSize:11,fontWeight:600,color:examFmt?.over?PRIORITY_COLOR.High:PRIORITY_COLOR.Medium}}>{examFmt?.label}</span>}
-        </div><div style={{overflowX:"auto",marginTop:12}}>
+        </div>}<div style={{overflowX:"auto",marginTop:12}}>
         <table style={{width:"100%",borderCollapse:"collapse",minWidth:400}}>
           <thead><tr><th style={{textAlign:"left",fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textTransform:"uppercase",width:54}}>Week</th>{course.fields.map(f=><th key={f} style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textAlign:"center",textTransform:"uppercase"}}>{FIELD_LABELS[f]}</th>)}<th style={{fontSize:10,fontWeight:700,color:T.muted,paddingBottom:12,textAlign:"center",textTransform:"uppercase"}}>Done</th></tr></thead>
           <tbody>{Array.from({length:weeks},(_,i)=>i+1).map(wk=>{const wkDone=course.fields.filter(f=>get(course.id,wk,f)).length;const allDone=wkDone===course.fields.length,isCurrent=wk===currentWeek;return<tr key={wk} style={{borderTop:`1px solid ${T.border}`,background:isCurrent?T.accent+"15":"transparent"}}><td style={{padding:"11px 0",fontSize:12,fontWeight:isCurrent?700:400,color:isCurrent?T.accent:T.text}}>Wk {wk}{isCurrent&&<span style={{fontSize:9,fontWeight:700,color:T.accent,marginLeft:5,background:T.accent+"25",padding:"1px 6px",borderRadius:4}}>now</span>}</td>{course.fields.map(f=><td key={f} style={{textAlign:"center",padding:"11px 8px"}}><div style={{display:"flex",justifyContent:"center"}}><Check checked={get(course.id,wk,f)} onChange={()=>tog(course.id,wk,f)} color={course.color} T={T}/></div></td>)}<td style={{textAlign:"center",padding:"11px 8px"}}><span style={{fontSize:11,fontWeight:600,color:allDone?"#A3BE8C":T.muted}}>{allDone?"✓":""}{wkDone}/{course.fields.length}</span></td></tr>;})}
@@ -986,7 +1008,7 @@ function App(){
   const delDeadline=async id=>{setDeadlines(p=>p.filter(x=>x.id!==id));await sbDelete("deadlines",id);};
   const handleDrop=status=>{if(!dragId)return;setTasks(p=>p.map(t=>t.id===dragId?{...t,status}:t));setDragId(null);};
 
-  const baseFiltRaw=tasks.filter(t=>(fCat==="All"||t.category===fCat)&&(!search||t.title.toLowerCase().includes(search.toLowerCase())));
+  const baseFiltRaw=tasks.filter(t=>(fCat==="All"||t.category===fCat)&&(!search||t.title.toLowerCase().includes(search.toLowerCase()))&&(!hideDone||t.status!=="Done"));
   const baseFilt=useMemo(()=>{
     const arr=[...baseFiltRaw];
     if(sortBy==="dueDate")arr.sort((a,b)=>{if(!a.dueDate)return 1;if(!b.dueDate)return -1;return a.dueDate>b.dueDate?1:-1;});
@@ -1108,7 +1130,10 @@ function App(){
             </div>}
             {!isMobile&&<div style={{marginLeft:"auto",display:"flex",gap:4}}>{[["kanban","Kanban"],["list","List"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}</div>}
             </div>
-            {isMobile&&<div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>{["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap"}}>{c}</button>)}</div>}
+            {isMobile&&<div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
+              {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap"}}>{c}</button>)}
+              <button onClick={()=>setHideDone(h=>!h)} style={{...B(hideDone),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap",flexShrink:0}}>{hideDone?"Show done":"Hide done"}</button>
+            </div>}
             <div style={{display:"flex",gap:10,marginBottom:18}}>{STATUSES.map(s=>(<div key={s} style={{...C,flex:1,padding:"14px 16px",textAlign:"center",marginBottom:0}}><div style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{s}</div><div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:"-0.02em"}}>{baseFilt.filter(t=>t.status===s).length}</div></div>))}</div>
             {!isMobile&&tv==="kanban"&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
               {STATUSES.map(status=>(<div key={status} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)} style={{minHeight:100}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}><span style={{fontSize:15,fontWeight:700,color:T.text}}>{status}</span><span style={{fontSize:12,color:T.muted,background:T.alt,borderRadius:6,padding:"2px 9px",border:`1px solid ${T.border}`}}>{baseFilt.filter(t=>t.status===status).length}</span></div>{sortT(baseFilt.filter(t=>t.status===status)).map(t=>(<Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} onArchive={archiveTask} onQuickDone={quickDoneTask} T={T} draggable onDragStart={()=>setDragId(t.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)}/>))}{baseFilt.filter(t=>t.status===status).length===0&&<div style={{border:`1.5px dashed ${T.border}`,borderRadius:12,padding:24,textAlign:"center"}}><p style={{margin:0,fontSize:12,color:T.muted}}>Drop here</p></div>}</div>))}
