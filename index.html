@@ -1184,7 +1184,6 @@ const NAV_ITEMS=[
   {id:"timetable",label:"Timetable",icon:"clock"},
   {id:"courses",label:"Courses",icon:"book"},
   {id:"notes",label:"Notes",icon:"note"},
-  {id:"archive",label:"Archive",icon:"archive"},
 ];
 
 function Sidebar({view,setView,syncStatus,onSearch,onSettings,T,open,setOpen}){
@@ -1252,6 +1251,7 @@ function App(){
   const[sortBy,setSortBy]        =useState("default");
   const[hideDone,setHideDone]    =useState(false);
   const[groupBycat,setGroupBycat]=useState(true);
+  const[showArchive,setShowArchive]=useState(false);
   const[sidebarOpen,setSidebarOpen]=useState(true);
   const[search,setSearch]        =useState("");
   const[dragId,setDragId]        =useState(null);
@@ -1403,8 +1403,8 @@ function App(){
             ?<MobileDashboard lists={lists} todayTasks={todayTasks} habits={habits} setHabits={setHabits} deadlines={deadlines} updateList={updateList} deleteList={deleteList} setView={setView} T={T}/>
             :<div className="fade-in">
               <DeadlineBanner deadlines={deadlines} T={T}/>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr auto",gap:14,marginBottom:20,alignItems:"stretch"}}>
-                {[{l:"Active",v:tasks.filter(t=>t.status!=="Done").length,c:T.text},{l:"Due Today",v:todayTasks.length,c:todayTasks.length?PRIORITY_COLOR.Medium:T.text},{l:"Overdue",v:overdue.length,c:overdue.length?PRIORITY_COLOR.High:T.text},{l:"In Progress",v:tasks.filter(t=>t.status==="In Progress").length,c:T.accent}].map(x=>(
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr auto",gap:14,marginBottom:20,alignItems:"stretch"}}>
+                {[{l:"Active",v:tasks.filter(t=>t.status!=="Done").length,c:T.text},{l:"Due Today",v:todayTasks.length,c:todayTasks.length?PRIORITY_COLOR.Medium:T.text},{l:"Overdue",v:overdue.length,c:overdue.length?PRIORITY_COLOR.High:T.text}].map(x=>(
                   <div key={x.l} style={{...C,padding:22}}><span style={L}>{x.l}</span><div style={{fontSize:32,fontWeight:800,color:x.c,lineHeight:1,letterSpacing:"-0.02em"}}>{x.v}</div></div>
                 ))}
                 <div style={{...C,padding:22,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -1423,31 +1423,11 @@ function App(){
                     <span style={L}>All Tasks</span>
                     <button onClick={()=>setView("tasks")} style={{fontSize:12,color:T.accent,background:"none",border:"none",cursor:"pointer",fontWeight:700}}>View all →</button>
                   </div>
-                  {CATEGORIES.map(cat=>{
-                    const catTasks=tasks.filter(t=>t.category===cat&&t.status!=="Done");
-                    if(!catTasks.length)return null;
-                    const urg=catTasks.filter(t=>isUrgent(t));
-                    return(
-                      <div key={cat} style={{marginBottom:16}}>
-                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                          <div style={{width:8,height:8,borderRadius:"50%",background:CAT_COLOR[cat]}}/>
-                          <span style={{fontSize:13,fontWeight:700,color:T.text,flex:1}}>{cat}</span>
-                          {urg.length>0&&<span style={{fontSize:10,fontWeight:700,color:PRIORITY_COLOR.High,background:PRIORITY_COLOR.High+"18",padding:"2px 8px",borderRadius:5}}>{urg.length} urgent</span>}
-                          <span style={{fontSize:12,color:T.muted}}>{catTasks.length}</span>
-                        </div>
-                        {catTasks.slice(0,3).map(t=>{const d=dateFmt(t.dueDate);return(
-                          <div key={t.id} onClick={()=>setEdit(t)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:9,marginBottom:4,cursor:"pointer",background:isUrgent(t)?PRIORITY_COLOR.High+"10":T.alt,transition:"background 0.12s"}}
-                            onMouseEnter={e=>e.currentTarget.style.background=T.border} onMouseLeave={e=>e.currentTarget.style.background=isUrgent(t)?PRIORITY_COLOR.High+"10":T.alt}>
-                            <div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/>
-                            <span style={{flex:1,fontSize:13,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</span>
-                            {d&&<span style={{fontSize:11,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400,flexShrink:0}}>{d.label}</span>}
-                          </div>
-                        );})}
-                        {catTasks.length>3&&<p style={{fontSize:12,color:T.muted,padding:"2px 12px"}}>+{catTasks.length-3} more</p>}
-                      </div>
-                    );
-                  })}
-                  {tasks.filter(t=>t.status!=="Done").length===0&&<div style={{textAlign:"center",padding:"24px 0"}}><div style={{color:"#A3BE8C",display:"flex",justifyContent:"center",marginBottom:8}}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg></div><p style={{fontSize:14,color:T.muted}}>All tasks complete!</p></div>}
+                  {(()=>{
+                    const pending=tasks.filter(t=>t.status!=="Done").sort((a,b)=>isUrgent(a)===isUrgent(b)?0:isUrgent(a)?-1:1);
+                    if(!pending.length) return <div style={{textAlign:"center",padding:"20px 0"}}><div style={{display:"flex",justifyContent:"center",marginBottom:8,color:"#A3BE8C"}}><Ic n="check" size={32}/></div><p style={{fontSize:13,color:T.muted}}>All tasks complete!</p></div>;
+                    return <>{pending.slice(0,6).map(t=>{const d=dateFmt(t.dueDate);return(<div key={t.id} onClick={()=>setEdit(t)} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:9,marginBottom:4,cursor:"pointer",background:isUrgent(t)?PRIORITY_COLOR.High+"10":T.alt,transition:"background 0.12s"}} onMouseEnter={e=>e.currentTarget.style.background=T.border} onMouseLeave={e=>e.currentTarget.style.background=isUrgent(t)?PRIORITY_COLOR.High+"10":T.alt}><div style={{width:6,height:6,borderRadius:"50%",background:PRIORITY_COLOR[t.priority],flexShrink:0}}/><span style={{flex:1,fontSize:13,color:T.text,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</span><span style={{fontSize:10,color:CAT_COLOR[t.category],background:CAT_COLOR[t.category]+"20",padding:"2px 7px",borderRadius:4,fontWeight:600,flexShrink:0}}>{t.category}</span>{d&&<span style={{fontSize:11,color:d.over?PRIORITY_COLOR.High:T.muted,fontWeight:d.over?700:400,flexShrink:0}}>{d.label}</span>}</div>);})}{pending.length>6&&<p style={{fontSize:12,color:T.muted,padding:"2px 12px",marginTop:4}}>+{pending.length-6} more</p>}</>;
+                  })()}
                 </div>
               </div>
               {urgentTask.length>0&&<div style={{...C,marginBottom:20,borderLeft:`4px solid ${PRIORITY_COLOR.High}`}}><span style={{...L,color:PRIORITY_COLOR.High}}>Urgent — Action Needed ({urgentTask.length})</span><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:10}}>{urgentTask.slice(0,6).map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} onArchive={archiveTask} onQuickDone={quickDoneTask} T={T}/>)}</div></div>}
@@ -1458,8 +1438,11 @@ function App(){
 
           {/* TASKS */}
           {view==="tasks"&&<div className="fade-in">
+            {showArchive&&<ArchiveView archive={archive} onRestore={restoreTask} onDelete={id=>setArchive(p=>p.filter(x=>x.id!==id))} T={T} isMobile={isMobile}/>}
+            {!showArchive&&<>
             <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap",alignItems:"center"}}>
               <button onClick={()=>setEdit(newTask())} style={{background:T.accent,color:"#fff",border:"none",borderRadius:10,padding:"11px 22px",cursor:"pointer",fontSize:14,fontWeight:700}}>+ New Task</button>
+              <button onClick={()=>setShowArchive(a=>!a)} style={{padding:"11px 18px",borderRadius:10,border:`1px solid ${showArchive?T.accent:T.border}`,background:showArchive?T.accent+"18":"transparent",cursor:"pointer",fontSize:14,fontWeight:600,color:showArchive?T.accent:T.muted,display:"flex",alignItems:"center",gap:6}}><Ic n="archive" color="currentColor"/>Archive</button>
               <div style={{display:"flex",alignItems:"center",gap:8,background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:"10px 14px",flex:1,maxWidth:isMobile?"100%":280}}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search tasks…" style={{border:"none",outline:"none",background:"transparent",fontSize:14,color:T.text,width:"100%"}}/>
@@ -1476,18 +1459,23 @@ function App(){
             </div>}
             {!isMobile&&<div style={{display:"flex",gap:6,alignItems:"center",marginLeft:"auto"}}>
               <button onClick={()=>setGroupBycat(g=>!g)} style={{padding:"6px 12px",borderRadius:8,border:`1px solid ${groupBycat?T.accent:T.border}`,background:groupBycat?T.accent+"18":"transparent",cursor:"pointer",fontSize:12,fontWeight:600,color:groupBycat?T.accent:T.muted}}>{groupBycat?"Grouped":"Flat"}</button>
-              {[["list","All Tasks"],["kanban","Kanban"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}
+              {[["list","All Tasks"],["today","Today"]].map(([v,l])=><button key={v} onClick={()=>setTv(v)} style={B(tv===v)}>{l}</button>)}
             </div>}
             </div>
             {isMobile&&<div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
               {["All",...CATEGORIES].map(c=><button key={c} onClick={()=>setFCat(c)} style={{...B(fCat===c),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap"}}>{c}</button>)}
               <button onClick={()=>setHideDone(h=>!h)} style={{...B(hideDone),padding:"7px 15px",fontSize:12,whiteSpace:"nowrap",flexShrink:0}}>{hideDone?"Show done":"Hide done"}</button>
             </div>}
-            <div style={{display:"flex",gap:10,marginBottom:18}}>{STATUSES.map(s=>(<div key={s} style={{...C,flex:1,padding:"14px 16px",textAlign:"center",marginBottom:0}}><div style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{s}</div><div style={{fontSize:26,fontWeight:800,color:T.text,letterSpacing:"-0.02em"}}>{baseFilt.filter(t=>t.status===s).length}</div></div>))}</div>
-            {!isMobile&&tv==="kanban"&&<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16}}>
-              {STATUSES.map(status=>(<div key={status} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)} style={{minHeight:100}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}><span style={{fontSize:15,fontWeight:700,color:T.text}}>{status}</span><span style={{fontSize:12,color:T.muted,background:T.alt,borderRadius:6,padding:"2px 9px",border:`1px solid ${T.border}`}}>{baseFilt.filter(t=>t.status===status).length}</span></div>{sortT(baseFilt.filter(t=>t.status===status)).map(t=>(<Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} onArchive={archiveTask} onQuickDone={quickDoneTask} T={T} draggable onDragStart={()=>setDragId(t.id)} onDragOver={e=>e.preventDefault()} onDrop={()=>handleDrop(status)}/>))}{baseFilt.filter(t=>t.status===status).length===0&&<div style={{border:`1.5px dashed ${T.border}`,borderRadius:12,padding:24,textAlign:"center"}}><p style={{margin:0,fontSize:12,color:T.muted}}>Drop here</p></div>}</div>))}
-            </div>}
-            {(isMobile||tv==="list"||tv==="today")&&<div>
+            <div style={{display:"flex",gap:10,marginBottom:18}}>
+              {[{l:"Total",v:baseFilt.length,c:T.text},{l:"Due Today",v:baseFilt.filter(t=>t.dueDate===TODAY&&t.status!=="Done").length,c:PRIORITY_COLOR.Medium},{l:"Overdue",v:baseFilt.filter(t=>t.dueDate&&new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00")&&t.status!=="Done").length,c:PRIORITY_COLOR.High},{l:"Done",v:baseFilt.filter(t=>t.status==="Done").length,c:"#A3BE8C"}].map(s=>(
+                <div key={s.l} style={{...C,flex:1,padding:"14px 16px",textAlign:"center",marginBottom:0}}>
+                  <div style={{fontSize:10,fontWeight:700,color:T.muted,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{s.l}</div>
+                  <div style={{fontSize:26,fontWeight:800,color:s.v>0?s.c:T.muted,letterSpacing:"-0.02em"}}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+
+            {(tv==="list"||tv==="today"||isMobile)&&<div>
               {(tv==="today"||isMobile)&&<>
                 <div style={{...C,marginBottom:14,borderLeft:`4px solid ${PRIORITY_COLOR.Medium}`}}><span style={{...L,color:PRIORITY_COLOR.Medium}}>Due Today</span>{todayTasks.length===0?<p style={{color:T.muted,fontSize:14}}>Nothing due today ✓</p>:baseFilt.filter(t=>t.dueDate===TODAY&&t.status!=="Done").map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} onArchive={archiveTask} onQuickDone={quickDoneTask} T={T}/>)}</div>
                 <div style={{...C,marginBottom:14,borderLeft:`4px solid ${PRIORITY_COLOR.High}`}}><span style={{...L,color:PRIORITY_COLOR.High}}>Overdue</span>{overdue.length===0?<p style={{color:T.muted,fontSize:14}}>Nothing overdue ✓</p>:baseFilt.filter(t=>t.dueDate&&new Date(t.dueDate+"T12:00:00")<new Date(TODAY+"T12:00:00")&&t.status!=="Done").map(t=><Card key={t.id} task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} onArchive={archiveTask} onQuickDone={quickDoneTask} T={T}/>)}</div>
@@ -1503,6 +1491,7 @@ function App(){
               {isMobile&&<>{CATEGORIES.map(cat=>{const ct=baseFilt.filter(t=>t.category===cat&&t.status!=="Done");if(!ct.length)return null;return<div key={cat} style={{marginBottom:18}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}><div style={{width:8,height:8,borderRadius:"50%",background:CAT_COLOR[cat]}}/><span style={{fontSize:14,fontWeight:700,color:T.text}}>{cat}</span><div style={{flex:1,height:1,background:T.border}}/><span style={{fontSize:12,color:T.muted}}>{ct.length}</span></div>{sortT(ct).map(t=><SwipeCard key={t.id} onSwipeLeft={()=>archiveTask(t.id)} T={T}><Card task={t} onEdit={setEdit} onDel={delTask} onPin={pinTask} onArchive={archiveTask} onQuickDone={quickDoneTask} T={T}/></SwipeCard>)}</div>;})}
               </>}
             </div>}
+            </>}
           </div>}
 
           {/* LISTS */}
@@ -1543,8 +1532,7 @@ function App(){
           {/* NOTES */}
           {view==="notes"&&<NotesPage notes={notes} setNotes={setNotes} T={T} isMobile={isMobile}/>}
 
-          {/* ARCHIVE */}
-          {view==="archive"&&<ArchiveView archive={archive} onRestore={restoreTask} onDelete={id=>setArchive(p=>p.filter(x=>x.id!==id))} T={T} isMobile={isMobile}/>}
+
 
         </div>
       </div>
