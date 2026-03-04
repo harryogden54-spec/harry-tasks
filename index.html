@@ -1145,7 +1145,7 @@ function Ic(_ref6) {
   }), React.createElement("polyline", {
     points: "14 2 14 8 20 8"
   })));
-  if (n === "graduationcap") return React.createElement("span", {
+  if (n === "book") return React.createElement("span", {
     style: st
   }, React.createElement("svg", {
     width: w,
@@ -1156,9 +1156,9 @@ function Ic(_ref6) {
     strokeWidth: "2",
     strokeLinecap: "round"
   }, React.createElement("path", {
-    d: "M22 10v6M2 10l10-5 10 5-10 5z"
+    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
   }), React.createElement("path", {
-    d: "M6 12v5c3 3 9 3 12 0v-5"
+    d: "M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
   })));
   if (n === "check") return React.createElement("span", {
     style: st
@@ -1207,83 +1207,82 @@ function DeadlineBanner(_ref7) {
     T = _ref7.T;
   var urgent = deadlines.filter(function (d) {
     var diff = Math.round((new Date(d.date + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 86400000);
-    return diff >= 0 && diff <= 7;
+    return diff >= 0 && diff <= 3;
   }).sort(function (a, b) {
     return a.date > b.date ? 1 : -1;
   });
   if (!urgent.length) return null;
+  var d = urgent[0];
+  var course = COURSES.find(function (c) {
+    return c.id === d.course;
+  });
+  var diff = Math.round((new Date(d.date + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 86400000);
+  var label = diff === 0 ? "Due TODAY" : diff === 1 ? "Due TOMORROW" : "Due in " + diff + " days";
   return React.createElement("div", {
+    className: "pulse",
     style: {
-      background: "linear-gradient(135deg," + PRIORITY_COLOR.High + "18," + PRIORITY_COLOR.High + "08)",
-      border: "1.5px solid " + PRIORITY_COLOR.High + "50",
+      background: "linear-gradient(135deg," + PRIORITY_COLOR.High + "22," + PRIORITY_COLOR.High + "10)",
+      border: "1.5px solid " + PRIORITY_COLOR.High + "60",
       borderRadius: 14,
-      padding: "14px 18px",
-      marginBottom: 18
+      padding: "14px 20px",
+      marginBottom: 18,
+      display: "flex",
+      alignItems: "center",
+      gap: 14
     }
   }, React.createElement("div", {
     style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      marginBottom: 10
+      color: PRIORITY_COLOR.High,
+      flexShrink: 0,
+      display: "flex"
     }
   }, React.createElement(Ic, {
-    n: "alert",
-    color: PRIORITY_COLOR.High,
-    size: 15
-  }), React.createElement("span", {
+    n: "alert"
+  })), React.createElement("div", {
     style: {
-      fontSize: 11,
+      flex: 1
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 13,
       fontWeight: 800,
       color: PRIORITY_COLOR.High,
       textTransform: "uppercase",
-      letterSpacing: "0.1em"
+      letterSpacing: "0.08em",
+      marginBottom: 2
     }
-  }, "Upcoming Deadlines")), urgent.map(function (d) {
-    var course = COURSES.find(function (c) {
-      return c.id === d.course;
-    });
-    var diff = Math.round((new Date(d.date + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 86400000);
-    var label = diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : diff + "d";
-    return React.createElement("div", {
-      key: d.id,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "6px 0",
-        borderTop: "1px solid " + PRIORITY_COLOR.High + "20"
-      }
-    }, React.createElement("span", {
-      style: {
-        fontSize: 11,
-        fontWeight: 700,
-        color: diff <= 1 ? PRIORITY_COLOR.High : PRIORITY_COLOR.Medium,
-        minWidth: 52,
-        flexShrink: 0
-      }
-    }, label), React.createElement("span", {
-      style: {
-        flex: 1,
-        fontSize: 13,
-        fontWeight: 600,
-        color: T.text,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap"
-      }
-    }, d.title), course && React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: course.color,
-        background: course.color + "20",
-        padding: "2px 8px",
-        borderRadius: 4,
-        fontWeight: 600,
-        flexShrink: 0
-      }
-    }, course.short));
-  }));
+  }, label), React.createElement("p", {
+    style: {
+      fontSize: 15,
+      fontWeight: 600,
+      color: T.text,
+      margin: 0
+    }
+  }, d.title), course && React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: T.muted,
+      marginTop: 2
+    }
+  }, course.name)), React.createElement("div", {
+    style: {
+      textAlign: "right",
+      flexShrink: 0
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 20,
+      fontWeight: 800,
+      color: PRIORITY_COLOR.High,
+      lineHeight: 1
+    }
+  }, diff === 0 ? "0" : diff), React.createElement("p", {
+    style: {
+      fontSize: 10,
+      color: T.muted,
+      fontWeight: 600
+    }
+  }, diff === 0 ? "days" : "days left")));
 }
 function HabitsPanel(_ref8) {
   var habits = _ref8.habits,
@@ -5227,40 +5226,53 @@ function NewListModal(_ref28) {
   }, "Cancel"))));
 }
 function MobileDashboard(_ref29) {
-  var tasks = _ref29.tasks,
-    lists = _ref29.lists,
+  var lists = _ref29.lists,
+    todayTasks = _ref29.todayTasks,
     habits = _ref29.habits,
     setHabits = _ref29.setHabits,
     deadlines = _ref29.deadlines,
     updateList = _ref29.updateList,
     deleteList = _ref29.deleteList,
     setView = _ref29.setView,
-    setEdit = _ref29.setEdit,
-    delTask = _ref29.delTask,
-    pinTask = _ref29.pinTask,
-    archiveTask = _ref29.archiveTask,
-    quickDoneTask = _ref29.quickDoneTask,
     T = _ref29.T;
   var C = {
     background: T.surface,
     border: "1px solid " + T.border,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12
+    padding: 18,
+    marginBottom: 14
   };
-  var pending = tasks.filter(function (t) {
-    return t.status !== "Done";
-  }).sort(function (a, b) {
-    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-    if (isUrgent(a) !== isUrgent(b)) return isUrgent(a) ? -1 : 1;
-    if (a.dueDate && b.dueDate) return a.dueDate > b.dueDate ? 1 : -1;
-    if (a.dueDate && !b.dueDate) return -1;
-    if (!a.dueDate && b.dueDate) return 1;
-    return 0;
-  });
+  var now = new Date();
+  var hour = now.getHours();
+  var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   return React.createElement("div", {
     className: "fade-in"
   }, React.createElement("div", {
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 24,
+      fontWeight: 800,
+      color: T.text,
+      lineHeight: 1.2,
+      letterSpacing: "-0.02em"
+    }
+  }, greet, ", Harry"), React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      marginTop: 5
+    }
+  }, now.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  }))), React.createElement(DeadlineBanner, {
+    deadlines: deadlines,
+    T: T
+  }), React.createElement("div", {
     style: {
       marginBottom: 14
     }
@@ -5275,157 +5287,14 @@ function MobileDashboard(_ref29) {
     isMobile: true
   })), React.createElement(NextClassCard, {
     T: T
-  }), React.createElement("div", {
-    style: _extends({}, C, {
-      padding: 0,
-      overflow: "hidden"
-    })
-  }, React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "14px 16px 10px"
-    }
-  }, React.createElement("span", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: T.muted,
-      textTransform: "uppercase",
-      letterSpacing: "0.08em"
-    }
-  }, "Tasks"), React.createElement("button", {
-    onClick: function onClick() {
-      return setView("tasks");
-    },
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: T.accent,
-      fontSize: 12,
-      fontWeight: 700
-    }
-  }, "View all")), pending.length === 0 && React.createElement("div", {
-    style: {
-      padding: "20px 16px",
-      textAlign: "center"
-    }
-  }, React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "center",
-      marginBottom: 8,
-      color: "#A3BE8C"
-    }
-  }, React.createElement(Ic, {
-    n: "check",
-    size: 28
-  })), React.createElement("p", {
-    style: {
-      fontSize: 13,
-      color: T.muted
-    }
-  }, "All caught up")), pending.map(function (t, i) {
-    var d = dateFmt(t.dueDate);
-    var urgent = isUrgent(t);
-    return React.createElement("div", {
-      key: t.id,
-      onClick: function onClick() {
-        return setEdit(t);
-      },
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "11px 16px",
-        borderTop: i === 0 ? "none" : "1px solid " + T.border,
-        background: urgent ? PRIORITY_COLOR.High + "08" : "transparent",
-        cursor: "pointer"
-      }
-    }, React.createElement("div", {
-      onClick: function onClick(e) {
-        e.stopPropagation();
-        quickDoneTask(t.id);
-      },
-      style: {
-        width: 22,
-        height: 22,
-        borderRadius: 6,
-        border: "2px solid " + (t.status === "Done" ? "#A3BE8C" : T.border),
-        background: t.status === "Done" ? "#A3BE8C" : "transparent",
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-        transition: "all 0.15s"
-      }
-    }, t.status === "Done" && React.createElement("span", {
-      style: {
-        color: "#fff",
-        fontSize: 11,
-        fontWeight: 800
-      }
-    }, "\u2713")), React.createElement("div", {
-      style: {
-        flex: 1,
-        minWidth: 0
-      }
-    }, React.createElement("p", {
-      style: {
-        margin: 0,
-        fontSize: 14,
-        fontWeight: t.pinned ? 700 : 500,
-        color: T.text,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap"
-      }
-    }, t.title), React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 5,
-        marginTop: 3,
-        alignItems: "center"
-      }
-    }, React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: CAT_COLOR[t.category],
-        fontWeight: 600
-      }
-    }, t.category), t.subtasks && t.subtasks.length > 0 && React.createElement("span", {
-      style: {
-        fontSize: 10,
-        color: T.muted
-      }
-    }, t.subtasks.filter(function (s) {
-      return s.done;
-    }).length, "/", t.subtasks.length))), d && React.createElement("span", {
-      style: {
-        fontSize: 11,
-        color: d.over ? PRIORITY_COLOR.High : d.today ? PRIORITY_COLOR.Medium : T.muted,
-        fontWeight: d.over || d.today ? 700 : 400,
-        flexShrink: 0
-      }
-    }, d.label), t.pinned && React.createElement("span", {
-      style: {
-        flexShrink: 0,
-        display: "flex",
-        color: T.accent
-      }
-    }, React.createElement(Ic, {
-      n: "pinFill",
-      size: 11
-    })));
-  })), React.createElement(HabitsPanel, {
+  }), React.createElement(HabitsPanel, {
     habits: habits,
     setHabits: setHabits,
     T: T
-  }), lists.length > 0 && React.createElement("div", {
-    style: C
+  }), React.createElement("div", {
+    style: _extends({}, C, {
+      borderLeft: "4px solid " + PRIORITY_COLOR.Medium
+    })
   }, React.createElement("div", {
     style: {
       display: "flex",
@@ -5441,7 +5310,102 @@ function MobileDashboard(_ref29) {
       textTransform: "uppercase",
       letterSpacing: "0.08em"
     }
-  }, "Lists"), React.createElement("button", {
+  }, "Today"), React.createElement("button", {
+    onClick: function onClick() {
+      return setView("tasks");
+    },
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: T.accent,
+      fontSize: 12,
+      fontWeight: 700
+    }
+  }, "All tasks \u2192")), todayTasks.length === 0 ? React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: "16px 0"
+    }
+  }, React.createElement("div", {
+    style: {
+      color: "#A3BE8C",
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: 6
+    }
+  }, React.createElement("svg", {
+    width: "28",
+    height: "28",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round"
+  }, React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10"
+  }), React.createElement("polyline", {
+    points: "9 12 11 14 15 10"
+  }))), React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted
+    }
+  }, "Nothing due today")) : todayTasks.map(function (t) {
+    return React.createElement("div", {
+      key: t.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "10px 0",
+        borderBottom: "1px solid " + T.border
+      }
+    }, React.createElement("div", {
+      style: {
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        background: PRIORITY_COLOR[t.priority],
+        flexShrink: 0
+      }
+    }), React.createElement("span", {
+      style: {
+        flex: 1,
+        fontSize: 14,
+        color: T.text,
+        fontWeight: 500
+      }
+    }, t.title), React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: CAT_COLOR[t.category],
+        background: CAT_COLOR[t.category] + "20",
+        padding: "3px 8px",
+        borderRadius: 6,
+        fontWeight: 600
+      }
+    }, t.category));
+  })), lists.length > 0 && React.createElement("div", {
+    style: C
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 14
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "My Lists"), React.createElement("button", {
     onClick: function onClick() {
       return setView("lists");
     },
@@ -5453,13 +5417,13 @@ function MobileDashboard(_ref29) {
       fontSize: 12,
       fontWeight: 700
     }
-  }, "View all")), React.createElement("div", {
+  }, "View all \u2192")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 8
+      gap: 10
     }
-  }, lists.slice(0, 3).map(function (list) {
+  }, lists.map(function (list) {
     return React.createElement(ListPanel, {
       key: list.id,
       list: list,
@@ -6112,57 +6076,6 @@ function SwipeCard(_ref33) {
     onTouchEnd: onTouchEnd
   }, children));
 }
-function SidebarWeather(_ref34) {
-  var T = _ref34.T;
-  var _useState36 = useState(null),
-    w = _useState36[0],
-    setW = _useState36[1];
-  useEffect(function () {
-    var cached = lsGet("h-weather-cache", null);
-    var cacheAge = lsGet("h-weather-time", 0);
-    if (cached && Date.now() - cacheAge < 1800000) {
-      setW(cached);
-      return;
-    }
-    fetch("https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode&timezone=Europe/London").then(function (r) {
-      return r.json();
-    }).then(function (d) {
-      var temp = Math.round(d.current.temperature_2m);
-      var codes = {
-        0: "Clear",
-        1: "Clear",
-        2: "Cloudy",
-        3: "Overcast",
-        51: "Drizzle",
-        53: "Drizzle",
-        55: "Drizzle",
-        61: "Rain",
-        63: "Rain",
-        65: "Rain",
-        71: "Snow",
-        73: "Snow",
-        80: "Showers",
-        95: "Storm"
-      };
-      var desc = codes[d.current.weathercode] || "";
-      var wData = {
-        temp: temp,
-        desc: desc
-      };
-      setW(wData);
-      lsSet("h-weather-cache", wData);
-      lsSet("h-weather-time", Date.now());
-    }).catch(function () {});
-  }, []);
-  if (!w) return null;
-  return React.createElement("p", {
-    style: {
-      fontSize: 12,
-      color: T.muted,
-      margin: 0
-    }
-  }, w.temp, "\xB0C \xB7 ", w.desc);
-}
 var NAV_ITEMS = [{
   id: "dashboard",
   label: "Dashboard",
@@ -6183,19 +6096,23 @@ var NAV_ITEMS = [{
   id: "courses",
   label: "Courses",
   icon: "book"
+}, {
+  id: "notes",
+  label: "Notes",
+  icon: "note"
 }];
-function Sidebar(_ref35) {
-  var view = _ref35.view,
-    setView = _ref35.setView,
-    syncStatus = _ref35.syncStatus,
-    onSearch = _ref35.onSearch,
-    onSettings = _ref35.onSettings,
-    T = _ref35.T,
-    open = _ref35.open,
-    setOpen = _ref35.setOpen;
-  var _useState37 = useState(false),
-    hovered = _useState37[0],
-    setHovered = _useState37[1];
+function Sidebar(_ref34) {
+  var view = _ref34.view,
+    setView = _ref34.setView,
+    syncStatus = _ref34.syncStatus,
+    onSearch = _ref34.onSearch,
+    onSettings = _ref34.onSettings,
+    T = _ref34.T,
+    open = _ref34.open,
+    setOpen = _ref34.setOpen;
+  var _useState36 = useState(false),
+    hovered = _useState36[0],
+    setHovered = _useState36[1];
   var expanded = open || hovered;
   return React.createElement("div", {
     onMouseEnter: function onMouseEnter() {
@@ -6307,25 +6224,6 @@ function Sidebar(_ref35) {
         borderRadius: "0 3px 3px 0"
       }
     }));
-  })), expanded && React.createElement("div", {
-    style: {
-      padding: "8px 16px",
-      borderTop: "1px solid " + T.border,
-      flexShrink: 0
-    }
-  }, React.createElement("p", {
-    style: {
-      fontSize: 11,
-      fontWeight: 600,
-      color: T.muted,
-      marginBottom: 2
-    }
-  }, new Date().toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short"
-  })), React.createElement(SidebarWeather, {
-    T: T
   })), React.createElement("div", {
     style: {
       padding: expanded ? "10px 10px 16px" : "10px 8px 16px",
@@ -6425,37 +6323,37 @@ function Sidebar(_ref35) {
   }, "Synced"))));
 }
 function App() {
-  var _useState38 = useState(function () {
+  var _useState37 = useState(function () {
       return lsGet("h-tasks-html", INITIAL_TASKS);
     }),
-    tasks = _useState38[0],
-    setTasks = _useState38[1];
-  var _useState39 = useState(function () {
+    tasks = _useState37[0],
+    setTasks = _useState37[1];
+  var _useState38 = useState(function () {
       return lsGet("h-courses-html", {});
     }),
-    cd = _useState39[0],
-    setCd = _useState39[1];
-  var _useState40 = useState(function () {
+    cd = _useState38[0],
+    setCd = _useState38[1];
+  var _useState39 = useState(function () {
       return lsGet("h-dl-html", []);
     }),
-    deadlines = _useState40[0],
-    setDeadlines = _useState40[1];
-  var _useState41 = useState(function () {
+    deadlines = _useState39[0],
+    setDeadlines = _useState39[1];
+  var _useState40 = useState(function () {
       return lsGet("h-lists-html", INITIAL_LISTS);
     }),
-    lists = _useState41[0],
-    setLists = _useState41[1];
-  var _useState42 = useState(function () {
+    lists = _useState40[0],
+    setLists = _useState40[1];
+  var _useState41 = useState(function () {
       return lsGet("h-habits-html", INITIAL_HABITS);
     }),
-    habits = _useState42[0],
-    setHabits = _useState42[1];
-  var _useState43 = useState(function () {
+    habits = _useState41[0],
+    setHabits = _useState41[1];
+  var _useState42 = useState(function () {
       return lsGet("h-archive-html", []);
     }),
-    archive = _useState43[0],
-    setArchive = _useState43[1];
-  var _useState44 = useState(function () {
+    archive = _useState42[0],
+    setArchive = _useState42[1];
+  var _useState43 = useState(function () {
       return lsGet("h-notes-html", [{
         id: "n1",
         title: "Quick notes",
@@ -6463,90 +6361,89 @@ function App() {
         createdAt: new Date().toISOString()
       }]);
     }),
-    notes = _useState44[0],
-    setNotes = _useState44[1];
-  var _useState45 = useState(function () {
+    notes = _useState43[0],
+    setNotes = _useState43[1];
+  var _useState44 = useState(function () {
       return lsGet("h-exams-html", INITIAL_EXAM_DATES);
     }),
-    examDates = _useState45[0],
-    setExamDates = _useState45[1];
-  var _useState46 = useState(function () {
+    examDates = _useState44[0],
+    setExamDates = _useState44[1];
+  var _useState45 = useState(function () {
       return lsGet("h-cfields-html", Object.fromEntries(COURSES.map(function (c) {
         return [c.id, c.fields];
       })));
     }),
-    courseFields = _useState46[0],
-    setCourseFields = _useState46[1];
-  var _useState47 = useState("dashboard"),
-    view = _useState47[0],
-    setView = _useState47[1];
-  var _useState48 = useState("list"),
-    tv = _useState48[0],
-    setTv = _useState48[1];
-  var _useState49 = useState(null),
-    edit = _useState49[0],
-    setEdit = _useState49[1];
-  var _useState50 = useState(function () {
+    courseFields = _useState45[0],
+    setCourseFields = _useState45[1];
+  var _useState46 = useState("dashboard"),
+    view = _useState46[0],
+    setView = _useState46[1];
+  var _useState47 = useState("list"),
+    tv = _useState47[0],
+    setTv = _useState47[1];
+  var _useState48 = useState(null),
+    edit = _useState48[0],
+    setEdit = _useState48[1];
+  var _useState49 = useState(function () {
       return lsGet("h-theme-html", "polar");
     }),
-    theme = _useState50[0],
-    setTheme = _useState50[1];
-  var _useState51 = useState("All"),
-    fCat = _useState51[0],
-    setFCat = _useState51[1];
-  var _useState52 = useState("default"),
-    sortBy = _useState52[0],
-    setSortBy = _useState52[1];
-  var _useState53 = useState(false),
-    hideDone = _useState53[0],
-    setHideDone = _useState53[1];
-  var _useState54 = useState(true),
-    groupBycat = _useState54[0],
-    setGroupBycat = _useState54[1];
-  var _useState55 = useState(false),
-    showArchive = _useState55[0],
-    setShowArchive = _useState55[1];
-  var dragListRef = useRef(null);
-  var _useState56 = useState(true),
-    sidebarOpen = _useState56[0],
-    setSidebarOpen = _useState56[1];
-  var _useState57 = useState(""),
-    search = _useState57[0],
-    setSearch = _useState57[1];
+    theme = _useState49[0],
+    setTheme = _useState49[1];
+  var _useState50 = useState("All"),
+    fCat = _useState50[0],
+    setFCat = _useState50[1];
+  var _useState51 = useState("default"),
+    sortBy = _useState51[0],
+    setSortBy = _useState51[1];
+  var _useState52 = useState(false),
+    hideDone = _useState52[0],
+    setHideDone = _useState52[1];
+  var _useState53 = useState(true),
+    groupBycat = _useState53[0],
+    setGroupBycat = _useState53[1];
+  var _useState54 = useState(false),
+    showArchive = _useState54[0],
+    setShowArchive = _useState54[1];
+  var _useState55 = useState(true),
+    sidebarOpen = _useState55[0],
+    setSidebarOpen = _useState55[1];
+  var _useState56 = useState(""),
+    search = _useState56[0],
+    setSearch = _useState56[1];
+  var _useState57 = useState(null),
+    dragId = _useState57[0],
+    setDragId = _useState57[1];
   var _useState58 = useState(null),
-    dragId = _useState58[0],
-    setDragId = _useState58[1];
-  var _useState59 = useState(null),
-    dragTaskId = _useState59[0],
-    setDragTaskId = _useState59[1];
-  var _useState60 = useState({
+    dragTaskId = _useState58[0],
+    setDragTaskId = _useState58[1];
+  var _useState59 = useState({
       title: "",
       course: "maths",
       date: "",
       notes: ""
     }),
-    newDl = _useState60[0],
-    setNewDl = _useState60[1];
+    newDl = _useState59[0],
+    setNewDl = _useState59[1];
+  var _useState60 = useState(false),
+    showNewList = _useState60[0],
+    setShowNewList = _useState60[1];
   var _useState61 = useState(false),
-    showNewList = _useState61[0],
-    setShowNewList = _useState61[1];
+    showSearch = _useState61[0],
+    setShowSearch = _useState61[1];
   var _useState62 = useState(false),
-    showSearch = _useState62[0],
-    setShowSearch = _useState62[1];
-  var _useState63 = useState(false),
-    showSettings = _useState63[0],
-    setShowSettings = _useState63[1];
-  var _useState64 = useState("idle"),
-    syncStatus = _useState64[0],
-    setSyncStatus = _useState64[1];
-  var _useState65 = useState(false),
-    loaded = _useState65[0],
-    setLoaded = _useState65[1];
-  var _useState66 = useState(function () {
+    showSettings = _useState62[0],
+    setShowSettings = _useState62[1];
+  var _useState63 = useState("idle"),
+    syncStatus = _useState63[0],
+    setSyncStatus = _useState63[1];
+  var _useState64 = useState(false),
+    loaded = _useState64[0],
+    setLoaded = _useState64[1];
+  var _useState65 = useState(function () {
       return lsGet("h-notif", false);
     }),
-    notifEnabled = _useState66[0],
-    setNotifEnabled = _useState66[1];
+    notifEnabled = _useState65[0],
+    setNotifEnabled = _useState65[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
   var T = THEMES[theme];
@@ -6899,7 +6796,7 @@ function App() {
     setEdit(null);
   };
   var delTask = function () {
-    var _ref46 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
+    var _ref45 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
       return _regenerator().w(function (_context16) {
         while (1) switch (_context16.n) {
           case 0:
@@ -6916,7 +6813,7 @@ function App() {
       }, _callee16);
     }));
     return function delTask(_x0) {
-      return _ref46.apply(this, arguments);
+      return _ref45.apply(this, arguments);
     };
   }();
   var pinTask = function pinTask(id) {
@@ -6959,7 +6856,7 @@ function App() {
     });
   };
   var deleteList = function () {
-    var _ref47 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
+    var _ref46 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -6976,7 +6873,7 @@ function App() {
       }, _callee17);
     }));
     return function deleteList(_x1) {
-      return _ref47.apply(this, arguments);
+      return _ref46.apply(this, arguments);
     };
   }();
   var createList = function createList(l) {
@@ -7000,7 +6897,7 @@ function App() {
     });
   };
   var delDeadline = function () {
-    var _ref48 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
+    var _ref47 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -7017,7 +6914,7 @@ function App() {
       }, _callee18);
     }));
     return function delDeadline(_x10) {
-      return _ref48.apply(this, arguments);
+      return _ref47.apply(this, arguments);
     };
   }();
   var handleDrop = function handleDrop(status) {
@@ -7298,9 +7195,9 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref49) {
-    var v = _ref49[0],
-      l = _ref49[1];
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref48) {
+    var v = _ref48[0],
+      l = _ref48[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -7332,19 +7229,14 @@ function App() {
       margin: "0 auto"
     }
   }, view === "dashboard" && (isMobile ? React.createElement(MobileDashboard, {
-    tasks: tasks,
     lists: lists,
+    todayTasks: todayTasks,
     habits: habits,
     setHabits: setHabits,
     deadlines: deadlines,
     updateList: updateList,
     deleteList: deleteList,
     setView: setView,
-    setEdit: setEdit,
-    delTask: delTask,
-    pinTask: pinTask,
-    archiveTask: archiveTask,
-    quickDoneTask: quickDoneTask,
     T: T
   }) : React.createElement("div", {
     className: "fade-in"
@@ -7865,9 +7757,9 @@ function App() {
       fontWeight: 600,
       color: groupBycat ? T.accent : T.muted
     }
-  }, groupBycat ? "Grouped" : "Flat"), [["list", "All Tasks"], ["today", "Today"]].map(function (_ref50) {
-    var v = _ref50[0],
-      l = _ref50[1];
+  }, groupBycat ? "Grouped" : "Flat"), [["list", "All Tasks"], ["today", "Today"]].map(function (_ref49) {
+    var v = _ref49[0],
+      l = _ref49[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -8092,7 +7984,16 @@ function App() {
         fontWeight: 600,
         flexShrink: 0
       }
-    }, t.category), t.dueDate && function () {
+    }, t.category), React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: T.muted,
+        background: T.alt,
+        padding: "3px 9px",
+        borderRadius: 6,
+        border: "1px solid " + T.border
+      }
+    }, t.status), t.dueDate && function () {
       var d = dateFmt(t.dueDate);
       return React.createElement("span", {
         style: {
@@ -8222,7 +8123,16 @@ function App() {
           fontWeight: 600,
           flexShrink: 0
         }
-      }, t.category), t.dueDate && function () {
+      }, t.category), React.createElement("span", {
+        style: {
+          fontSize: 11,
+          color: T.muted,
+          background: T.alt,
+          padding: "3px 9px",
+          borderRadius: 6,
+          border: "1px solid " + T.border
+        }
+      }, t.status), t.dueDate && function () {
         var d = dateFmt(t.dueDate);
         return React.createElement("span", {
           style: {
@@ -8312,7 +8222,16 @@ function App() {
         fontWeight: 600,
         flexShrink: 0
       }
-    }, t.category), t.dueDate && function () {
+    }, t.category), React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: T.muted,
+        background: T.alt,
+        padding: "3px 9px",
+        borderRadius: 6,
+        border: "1px solid " + T.border
+      }
+    }, t.status), t.dueDate && function () {
       var d = dateFmt(t.dueDate);
       return React.createElement("span", {
         style: {
@@ -8489,32 +8408,15 @@ function App() {
       fontSize: 14,
       fontWeight: 700
     }
-  }, "Create your first list")), lists.map(function (list, idx) {
-    return React.createElement("div", {
+  }, "Create your first list")), lists.map(function (list) {
+    return React.createElement(ListPanel, {
       key: list.id,
-      draggable: true,
-      onDragStart: function onDragStart() {
-        dragListRef.current = idx;
-      },
-      onDragOver: function onDragOver(e) {
-        e.preventDefault();
-      },
-      onDrop: function onDrop() {
-        if (dragListRef.current === null || dragListRef.current === idx) return;
-        var nl = [].concat(lists);
-        var _nl$splice = nl.splice(dragListRef.current, 1),
-          m = _nl$splice[0];
-        nl.splice(idx, 0, m);
-        setLists(nl);
-        dragListRef.current = null;
-      }
-    }, React.createElement(ListPanel, {
       list: list,
       onUpdate: updateList,
       onDelete: deleteList,
       T: T,
       compact: false
-    }));
+    });
   })), view === "timetable" && React.createElement(TimetableView, {
     T: T,
     isMobile: isMobile
