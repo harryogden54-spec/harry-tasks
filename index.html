@@ -1145,21 +1145,6 @@ function Ic(_ref6) {
   }), React.createElement("polyline", {
     points: "14 2 14 8 20 8"
   })));
-  if (n === "book") return React.createElement("span", {
-    style: st
-  }, React.createElement("svg", {
-    width: w,
-    height: h,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "2",
-    strokeLinecap: "round"
-  }, React.createElement("path", {
-    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
-  }), React.createElement("path", {
-    d: "M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
-  })));
   if (n === "check") return React.createElement("span", {
     style: st
   }, React.createElement("svg", {
@@ -5453,14 +5438,264 @@ function useSwipe(onSwipeLeft, onSwipeRight, threshold) {
     onTouchEnd: onTouchEnd
   };
 }
-function WeatherWidget(_ref30) {
+function DashWeather(_ref30) {
   var T = _ref30.T;
   var _useState29 = useState(null),
-    weather = _useState29[0],
-    setWeather = _useState29[1];
-  var _useState30 = useState(true),
-    loading = _useState30[0],
-    setLoading = _useState30[1];
+    w = _useState29[0],
+    setW = _useState29[1];
+  useEffect(function () {
+    var cached = lsGet("h-weather-cache", null);
+    var age = lsGet("h-weather-time", 0);
+    if (cached && Date.now() - age < 1800000) {
+      setW(cached);
+      return;
+    }
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode,windspeed_10m&timezone=Europe/London").then(function (r) {
+      return r.json();
+    }).then(function (d) {
+      var code = d.current.weathercode;
+      var descs = {
+        0: "Clear",
+        1: "Mainly clear",
+        2: "Partly cloudy",
+        3: "Overcast",
+        45: "Foggy",
+        51: "Light drizzle",
+        53: "Drizzle",
+        55: "Heavy drizzle",
+        61: "Light rain",
+        63: "Rain",
+        65: "Heavy rain",
+        71: "Light snow",
+        73: "Snow",
+        80: "Showers",
+        95: "Thunderstorm"
+      };
+      var getType = function getType(c) {
+        if (c <= 1) return "sun";
+        if (c <= 3) return "cloud";
+        if (c <= 55) return "drizzle";
+        if (c <= 67) return "rain";
+        if (c <= 77) return "snow";
+        return "storm";
+      };
+      var data = {
+        temp: Math.round(d.current.temperature_2m),
+        desc: descs[code] || "",
+        type: getType(code),
+        wind: Math.round(d.current.windspeed_10m)
+      };
+      setW(data);
+      lsSet("h-weather-cache", data);
+      lsSet("h-weather-time", Date.now());
+    }).catch(function () {});
+  }, []);
+  if (!w) return null;
+  var iconColor = {
+    sun: T.accent,
+    cloud: T.muted,
+    drizzle: "#5E81AC",
+    rain: "#5E81AC",
+    snow: "#88C0D0",
+    storm: PRIORITY_COLOR.High
+  };
+  var svgs = {
+    sun: React.createElement("svg", {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: iconColor.sun,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("circle", {
+      cx: "12",
+      cy: "12",
+      r: "5"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "1",
+      x2: "12",
+      y2: "3"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "21",
+      x2: "12",
+      y2: "23"
+    }), React.createElement("line", {
+      x1: "4.22",
+      y1: "4.22",
+      x2: "5.64",
+      y2: "5.64"
+    }), React.createElement("line", {
+      x1: "18.36",
+      y1: "18.36",
+      x2: "19.78",
+      y2: "19.78"
+    }), React.createElement("line", {
+      x1: "1",
+      y1: "12",
+      x2: "3",
+      y2: "12"
+    }), React.createElement("line", {
+      x1: "21",
+      y1: "12",
+      x2: "23",
+      y2: "12"
+    }), React.createElement("line", {
+      x1: "4.22",
+      y1: "19.78",
+      x2: "5.64",
+      y2: "18.36"
+    }), React.createElement("line", {
+      x1: "18.36",
+      y1: "5.64",
+      x2: "19.78",
+      y2: "4.22"
+    })),
+    cloud: React.createElement("svg", {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: iconColor.cloud,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"
+    })),
+    drizzle: React.createElement("svg", {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: iconColor.drizzle,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"
+    }), React.createElement("line", {
+      x1: "8",
+      y1: "19",
+      x2: "8",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "16",
+      y1: "19",
+      x2: "16",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "21",
+      x2: "12",
+      y2: "23"
+    })),
+    rain: React.createElement("svg", {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: iconColor.rain,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"
+    }), React.createElement("line", {
+      x1: "8",
+      y1: "19",
+      x2: "8",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "16",
+      y1: "19",
+      x2: "16",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "21",
+      x2: "12",
+      y2: "23"
+    })),
+    snow: React.createElement("svg", {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: iconColor.snow,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"
+    }), React.createElement("line", {
+      x1: "8",
+      y1: "16",
+      x2: "8",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "16",
+      y1: "16",
+      x2: "16",
+      y2: "21"
+    })),
+    storm: React.createElement("svg", {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: iconColor.storm,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"
+    }), React.createElement("polyline", {
+      points: "13 11 9 17 15 17 11 23"
+    }))
+  };
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      background: T.surface,
+      border: "1px solid " + T.border,
+      borderRadius: 16,
+      padding: "16px 22px",
+      flexShrink: 0
+    }
+  }, React.createElement("div", {
+    style: {
+      flexShrink: 0
+    }
+  }, svgs[w.type] || svgs.cloud), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 32,
+      fontWeight: 800,
+      color: T.text,
+      lineHeight: 1,
+      letterSpacing: "-0.02em"
+    }
+  }, w.temp, "\xB0"), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: T.muted,
+      marginTop: 3
+    }
+  }, w.desc), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: T.muted,
+      marginTop: 1
+    }
+  }, "Edinburgh \xB7 ", w.wind, " km/h")));
+}
+function WeatherWidget(_ref31) {
+  var T = _ref31.T;
+  var _useState30 = useState(null),
+    weather = _useState30[0],
+    setWeather = _useState30[1];
+  var _useState31 = useState(true),
+    loading = _useState31[0],
+    setLoading = _useState31[1];
   useEffect(function () {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode,windspeed_10m&timezone=Europe/London').then(function (r) {
       return r.json();
@@ -5594,16 +5829,16 @@ function WeatherWidget(_ref30) {
     }
   }, "Edinburgh \xB7 Wind ", weather.wind, " km/h")));
 }
-function ProgressRing(_ref31) {
-  var pct = _ref31.pct,
-    _ref31$size = _ref31.size,
-    size = _ref31$size === void 0 ? 80 : _ref31$size,
-    _ref31$stroke = _ref31.stroke,
-    stroke = _ref31$stroke === void 0 ? 7 : _ref31$stroke,
-    color = _ref31.color,
-    T = _ref31.T,
-    label = _ref31.label,
-    value = _ref31.value;
+function ProgressRing(_ref32) {
+  var pct = _ref32.pct,
+    _ref32$size = _ref32.size,
+    size = _ref32$size === void 0 ? 80 : _ref32$size,
+    _ref32$stroke = _ref32.stroke,
+    stroke = _ref32$stroke === void 0 ? 7 : _ref32$stroke,
+    color = _ref32.color,
+    T = _ref32.T,
+    label = _ref32.label,
+    value = _ref32.value;
   var r = Math.round((size - stroke * 2) / 2);
   var circ = Math.round(2 * Math.PI * r);
   var dash = Math.round(pct / 100 * circ);
@@ -5678,21 +5913,21 @@ function ProgressRing(_ref31) {
     }
   }, label));
 }
-function NotesPage(_ref32) {
+function NotesPage(_ref33) {
   var _notes$;
-  var notes = _ref32.notes,
-    setNotes = _ref32.setNotes,
-    T = _ref32.T,
-    isMobile = _ref32.isMobile;
-  var _useState31 = useState(((_notes$ = notes[0]) == null ? void 0 : _notes$.id) || null),
-    activeId = _useState31[0],
-    setActiveId = _useState31[1];
-  var _useState32 = useState(null),
-    editingTitle = _useState32[0],
-    setEditingTitle = _useState32[1];
-  var _useState33 = useState(""),
-    titleVal = _useState33[0],
-    setTitleVal = _useState33[1];
+  var notes = _ref33.notes,
+    setNotes = _ref33.setNotes,
+    T = _ref33.T,
+    isMobile = _ref33.isMobile;
+  var _useState32 = useState(((_notes$ = notes[0]) == null ? void 0 : _notes$.id) || null),
+    activeId = _useState32[0],
+    setActiveId = _useState32[1];
+  var _useState33 = useState(null),
+    editingTitle = _useState33[0],
+    setEditingTitle = _useState33[1];
+  var _useState34 = useState(""),
+    titleVal = _useState34[0],
+    setTitleVal = _useState34[1];
   var active = notes.find(function (n) {
     return n.id === activeId;
   }) || notes[0];
@@ -6011,16 +6246,16 @@ function NotesPage(_ref32) {
     }
   }))));
 }
-function SwipeCard(_ref33) {
-  var onSwipeLeft = _ref33.onSwipeLeft,
-    children = _ref33.children,
-    T = _ref33.T;
-  var _useState34 = useState(0),
-    offset = _useState34[0],
-    setOffset = _useState34[1];
-  var _useState35 = useState(false),
-    swiped = _useState35[0],
-    setSwiped = _useState35[1];
+function SwipeCard(_ref34) {
+  var onSwipeLeft = _ref34.onSwipeLeft,
+    children = _ref34.children,
+    T = _ref34.T;
+  var _useState35 = useState(0),
+    offset = _useState35[0],
+    setOffset = _useState35[1];
+  var _useState36 = useState(false),
+    swiped = _useState36[0],
+    setSwiped = _useState36[1];
   var startX = useRef(null);
   var onTouchStart = function onTouchStart(e) {
     startX.current = e.touches[0].clientX;
@@ -6101,18 +6336,18 @@ var NAV_ITEMS = [{
   label: "Notes",
   icon: "note"
 }];
-function Sidebar(_ref34) {
-  var view = _ref34.view,
-    setView = _ref34.setView,
-    syncStatus = _ref34.syncStatus,
-    onSearch = _ref34.onSearch,
-    onSettings = _ref34.onSettings,
-    T = _ref34.T,
-    open = _ref34.open,
-    setOpen = _ref34.setOpen;
-  var _useState36 = useState(false),
-    hovered = _useState36[0],
-    setHovered = _useState36[1];
+function Sidebar(_ref35) {
+  var view = _ref35.view,
+    setView = _ref35.setView,
+    syncStatus = _ref35.syncStatus,
+    onSearch = _ref35.onSearch,
+    onSettings = _ref35.onSettings,
+    T = _ref35.T,
+    open = _ref35.open,
+    setOpen = _ref35.setOpen;
+  var _useState37 = useState(false),
+    hovered = _useState37[0],
+    setHovered = _useState37[1];
   var expanded = open || hovered;
   return React.createElement("div", {
     onMouseEnter: function onMouseEnter() {
@@ -6323,37 +6558,37 @@ function Sidebar(_ref34) {
   }, "Synced"))));
 }
 function App() {
-  var _useState37 = useState(function () {
+  var _useState38 = useState(function () {
       return lsGet("h-tasks-html", INITIAL_TASKS);
     }),
-    tasks = _useState37[0],
-    setTasks = _useState37[1];
-  var _useState38 = useState(function () {
+    tasks = _useState38[0],
+    setTasks = _useState38[1];
+  var _useState39 = useState(function () {
       return lsGet("h-courses-html", {});
     }),
-    cd = _useState38[0],
-    setCd = _useState38[1];
-  var _useState39 = useState(function () {
+    cd = _useState39[0],
+    setCd = _useState39[1];
+  var _useState40 = useState(function () {
       return lsGet("h-dl-html", []);
     }),
-    deadlines = _useState39[0],
-    setDeadlines = _useState39[1];
-  var _useState40 = useState(function () {
+    deadlines = _useState40[0],
+    setDeadlines = _useState40[1];
+  var _useState41 = useState(function () {
       return lsGet("h-lists-html", INITIAL_LISTS);
     }),
-    lists = _useState40[0],
-    setLists = _useState40[1];
-  var _useState41 = useState(function () {
+    lists = _useState41[0],
+    setLists = _useState41[1];
+  var _useState42 = useState(function () {
       return lsGet("h-habits-html", INITIAL_HABITS);
     }),
-    habits = _useState41[0],
-    setHabits = _useState41[1];
-  var _useState42 = useState(function () {
+    habits = _useState42[0],
+    setHabits = _useState42[1];
+  var _useState43 = useState(function () {
       return lsGet("h-archive-html", []);
     }),
-    archive = _useState42[0],
-    setArchive = _useState42[1];
-  var _useState43 = useState(function () {
+    archive = _useState43[0],
+    setArchive = _useState43[1];
+  var _useState44 = useState(function () {
       return lsGet("h-notes-html", [{
         id: "n1",
         title: "Quick notes",
@@ -6361,89 +6596,89 @@ function App() {
         createdAt: new Date().toISOString()
       }]);
     }),
-    notes = _useState43[0],
-    setNotes = _useState43[1];
-  var _useState44 = useState(function () {
+    notes = _useState44[0],
+    setNotes = _useState44[1];
+  var _useState45 = useState(function () {
       return lsGet("h-exams-html", INITIAL_EXAM_DATES);
     }),
-    examDates = _useState44[0],
-    setExamDates = _useState44[1];
-  var _useState45 = useState(function () {
+    examDates = _useState45[0],
+    setExamDates = _useState45[1];
+  var _useState46 = useState(function () {
       return lsGet("h-cfields-html", Object.fromEntries(COURSES.map(function (c) {
         return [c.id, c.fields];
       })));
     }),
-    courseFields = _useState45[0],
-    setCourseFields = _useState45[1];
-  var _useState46 = useState("dashboard"),
-    view = _useState46[0],
-    setView = _useState46[1];
-  var _useState47 = useState("list"),
-    tv = _useState47[0],
-    setTv = _useState47[1];
-  var _useState48 = useState(null),
-    edit = _useState48[0],
-    setEdit = _useState48[1];
-  var _useState49 = useState(function () {
+    courseFields = _useState46[0],
+    setCourseFields = _useState46[1];
+  var _useState47 = useState("dashboard"),
+    view = _useState47[0],
+    setView = _useState47[1];
+  var _useState48 = useState("list"),
+    tv = _useState48[0],
+    setTv = _useState48[1];
+  var _useState49 = useState(null),
+    edit = _useState49[0],
+    setEdit = _useState49[1];
+  var _useState50 = useState(function () {
       return lsGet("h-theme-html", "polar");
     }),
-    theme = _useState49[0],
-    setTheme = _useState49[1];
-  var _useState50 = useState("All"),
-    fCat = _useState50[0],
-    setFCat = _useState50[1];
-  var _useState51 = useState("default"),
-    sortBy = _useState51[0],
-    setSortBy = _useState51[1];
-  var _useState52 = useState(false),
-    hideDone = _useState52[0],
-    setHideDone = _useState52[1];
-  var _useState53 = useState(true),
-    groupBycat = _useState53[0],
-    setGroupBycat = _useState53[1];
-  var _useState54 = useState(false),
-    showArchive = _useState54[0],
-    setShowArchive = _useState54[1];
-  var _useState55 = useState(true),
-    sidebarOpen = _useState55[0],
-    setSidebarOpen = _useState55[1];
-  var _useState56 = useState(""),
-    search = _useState56[0],
-    setSearch = _useState56[1];
-  var _useState57 = useState(null),
-    dragId = _useState57[0],
-    setDragId = _useState57[1];
+    theme = _useState50[0],
+    setTheme = _useState50[1];
+  var _useState51 = useState("All"),
+    fCat = _useState51[0],
+    setFCat = _useState51[1];
+  var _useState52 = useState("default"),
+    sortBy = _useState52[0],
+    setSortBy = _useState52[1];
+  var _useState53 = useState(false),
+    hideDone = _useState53[0],
+    setHideDone = _useState53[1];
+  var _useState54 = useState(true),
+    groupBycat = _useState54[0],
+    setGroupBycat = _useState54[1];
+  var _useState55 = useState(false),
+    showArchive = _useState55[0],
+    setShowArchive = _useState55[1];
+  var _useState56 = useState(true),
+    sidebarOpen = _useState56[0],
+    setSidebarOpen = _useState56[1];
+  var _useState57 = useState(""),
+    search = _useState57[0],
+    setSearch = _useState57[1];
   var _useState58 = useState(null),
-    dragTaskId = _useState58[0],
-    setDragTaskId = _useState58[1];
-  var _useState59 = useState({
+    dragId = _useState58[0],
+    setDragId = _useState58[1];
+  var _useState59 = useState(null),
+    dragTaskId = _useState59[0],
+    setDragTaskId = _useState59[1];
+  var _useState60 = useState({
       title: "",
       course: "maths",
       date: "",
       notes: ""
     }),
-    newDl = _useState59[0],
-    setNewDl = _useState59[1];
-  var _useState60 = useState(false),
-    showNewList = _useState60[0],
-    setShowNewList = _useState60[1];
+    newDl = _useState60[0],
+    setNewDl = _useState60[1];
   var _useState61 = useState(false),
-    showSearch = _useState61[0],
-    setShowSearch = _useState61[1];
+    showNewList = _useState61[0],
+    setShowNewList = _useState61[1];
   var _useState62 = useState(false),
-    showSettings = _useState62[0],
-    setShowSettings = _useState62[1];
-  var _useState63 = useState("idle"),
-    syncStatus = _useState63[0],
-    setSyncStatus = _useState63[1];
-  var _useState64 = useState(false),
-    loaded = _useState64[0],
-    setLoaded = _useState64[1];
-  var _useState65 = useState(function () {
+    showSearch = _useState62[0],
+    setShowSearch = _useState62[1];
+  var _useState63 = useState(false),
+    showSettings = _useState63[0],
+    setShowSettings = _useState63[1];
+  var _useState64 = useState("idle"),
+    syncStatus = _useState64[0],
+    setSyncStatus = _useState64[1];
+  var _useState65 = useState(false),
+    loaded = _useState65[0],
+    setLoaded = _useState65[1];
+  var _useState66 = useState(function () {
       return lsGet("h-notif", false);
     }),
-    notifEnabled = _useState65[0],
-    setNotifEnabled = _useState65[1];
+    notifEnabled = _useState66[0],
+    setNotifEnabled = _useState66[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
   var T = THEMES[theme];
@@ -6796,7 +7031,7 @@ function App() {
     setEdit(null);
   };
   var delTask = function () {
-    var _ref45 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
+    var _ref46 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
       return _regenerator().w(function (_context16) {
         while (1) switch (_context16.n) {
           case 0:
@@ -6813,7 +7048,7 @@ function App() {
       }, _callee16);
     }));
     return function delTask(_x0) {
-      return _ref45.apply(this, arguments);
+      return _ref46.apply(this, arguments);
     };
   }();
   var pinTask = function pinTask(id) {
@@ -6856,7 +7091,7 @@ function App() {
     });
   };
   var deleteList = function () {
-    var _ref46 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
+    var _ref47 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -6873,7 +7108,7 @@ function App() {
       }, _callee17);
     }));
     return function deleteList(_x1) {
-      return _ref46.apply(this, arguments);
+      return _ref47.apply(this, arguments);
     };
   }();
   var createList = function createList(l) {
@@ -6897,7 +7132,7 @@ function App() {
     });
   };
   var delDeadline = function () {
-    var _ref47 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
+    var _ref48 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -6914,7 +7149,7 @@ function App() {
       }, _callee18);
     }));
     return function delDeadline(_x10) {
-      return _ref47.apply(this, arguments);
+      return _ref48.apply(this, arguments);
     };
   }();
   var handleDrop = function handleDrop(status) {
@@ -7195,9 +7430,9 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref48) {
-    var v = _ref48[0],
-      l = _ref48[1];
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref49) {
+    var v = _ref49[0],
+      l = _ref49[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -7245,63 +7480,64 @@ function App() {
     T: T
   }), React.createElement("div", {
     style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr auto",
-      gap: 14,
-      marginBottom: 20,
-      alignItems: "stretch"
+      marginBottom: 28
     }
-  }, [{
-    l: "Active",
-    v: tasks.filter(function (t) {
-      return t.status !== "Done";
-    }).length,
-    c: T.text
-  }, {
-    l: "Due Today",
-    v: todayTasks.length,
-    c: todayTasks.length ? PRIORITY_COLOR.Medium : T.text
-  }, {
-    l: "Overdue",
-    v: overdue.length,
-    c: overdue.length ? PRIORITY_COLOR.High : T.text
-  }].map(function (x) {
-    return React.createElement("div", {
-      key: x.l,
-      style: _extends({}, C, {
-        padding: 22
-      })
-    }, React.createElement("span", {
-      style: L
-    }, x.l), React.createElement("div", {
-      style: {
-        fontSize: 32,
-        fontWeight: 800,
-        color: x.c,
-        lineHeight: 1,
-        letterSpacing: "-0.02em"
-      }
-    }, x.v));
-  }), React.createElement("div", {
-    style: _extends({}, C, {
-      padding: 22,
+  }, React.createElement("div", {
+    style: {
       display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    })
-  }, React.createElement(ProgressRing, {
-    pct: totI > 0 ? Math.round(doneI / totI * 100) : 0,
-    size: 72,
-    stroke: 6,
-    color: doneI === totI ? "#A3BE8C" : T.accent,
-    T: T,
-    label: "Week",
-    value: totI > 0 ? Math.round(doneI / totI * 100) : 0
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 20
+    }
+  }, React.createElement("div", null, React.createElement("p", {
+    style: {
+      fontSize: 13,
+      fontWeight: 600,
+      color: T.muted,
+      marginBottom: 6,
+      letterSpacing: "0.02em"
+    }
+  }, new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  })), React.createElement("h1", {
+    style: {
+      fontSize: 34,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.03em",
+      lineHeight: 1.1,
+      margin: 0
+    }
+  }, function () {
+    var h = new Date().getHours();
+    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  }(), ", Harry"), overdue.length > 0 && React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: PRIORITY_COLOR.High,
+      fontWeight: 600,
+      marginTop: 8
+    }
+  }, overdue.length, " overdue task", overdue.length !== 1 ? "s" : "", " need attention"), overdue.length === 0 && todayTasks.length > 0 && React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      marginTop: 8
+    }
+  }, todayTasks.length, " task", todayTasks.length !== 1 ? "s" : "", " due today"), overdue.length === 0 && todayTasks.length === 0 && React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "#A3BE8C",
+      fontWeight: 600,
+      marginTop: 8
+    }
+  }, "All clear today")), React.createElement(DashWeather, {
+    T: T
   }))), React.createElement("div", {
     style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14,
       marginBottom: 20
     }
   }, React.createElement(QuickAdd, {
@@ -7312,8 +7548,6 @@ function App() {
     },
     T: T,
     isMobile: false
-  }), React.createElement(WeatherWidget, {
-    T: T
   })), React.createElement("div", {
     style: {
       marginBottom: 20
@@ -7757,9 +7991,9 @@ function App() {
       fontWeight: 600,
       color: groupBycat ? T.accent : T.muted
     }
-  }, groupBycat ? "Grouped" : "Flat"), [["list", "All Tasks"], ["today", "Today"]].map(function (_ref49) {
-    var v = _ref49[0],
-      l = _ref49[1];
+  }, groupBycat ? "Grouped" : "Flat"), [["list", "All Tasks"], ["today", "Today"]].map(function (_ref50) {
+    var v = _ref50[0],
+      l = _ref50[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
