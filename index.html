@@ -303,8 +303,9 @@ var INITIAL_EXAM_DATES = {
   env: "",
   construction: ""
 };
-var WEEKS = 10,
-  CURRENT_WEEK = 6;
+var WEEKS = 10;
+var SEMESTER_START = new Date("2026-01-12");
+var CURRENT_WEEK = Math.min(WEEKS, Math.max(1, Math.ceil((new Date() - SEMESTER_START) / (7 * 86400000))));
 var CATEGORIES = ["Daily", "School", "Personal"];
 var PRIORITIES = ["High", "Medium", "Low"];
 var STATUSES = ["To Do", "In Progress", "Done"];
@@ -1145,6 +1146,21 @@ function Ic(_ref6) {
   }), React.createElement("polyline", {
     points: "14 2 14 8 20 8"
   })));
+  if (n === "book") return React.createElement("span", {
+    style: st
+  }, React.createElement("svg", {
+    width: w,
+    height: h,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round"
+  }, React.createElement("path", {
+    d: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"
+  }), React.createElement("path", {
+    d: "M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"
+  })));
   if (n === "check") return React.createElement("span", {
     style: st
   }, React.createElement("svg", {
@@ -1192,82 +1208,83 @@ function DeadlineBanner(_ref7) {
     T = _ref7.T;
   var urgent = deadlines.filter(function (d) {
     var diff = Math.round((new Date(d.date + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 86400000);
-    return diff >= 0 && diff <= 3;
+    return diff >= 0 && diff <= 7;
   }).sort(function (a, b) {
     return a.date > b.date ? 1 : -1;
   });
   if (!urgent.length) return null;
-  var d = urgent[0];
-  var course = COURSES.find(function (c) {
-    return c.id === d.course;
-  });
-  var diff = Math.round((new Date(d.date + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 86400000);
-  var label = diff === 0 ? "Due TODAY" : diff === 1 ? "Due TOMORROW" : "Due in " + diff + " days";
   return React.createElement("div", {
-    className: "pulse",
     style: {
-      background: "linear-gradient(135deg," + PRIORITY_COLOR.High + "22," + PRIORITY_COLOR.High + "10)",
-      border: "1.5px solid " + PRIORITY_COLOR.High + "60",
+      background: "linear-gradient(135deg," + PRIORITY_COLOR.High + "18," + PRIORITY_COLOR.High + "08)",
+      border: "1.5px solid " + PRIORITY_COLOR.High + "50",
       borderRadius: 14,
-      padding: "14px 20px",
-      marginBottom: 18,
-      display: "flex",
-      alignItems: "center",
-      gap: 14
+      padding: "14px 18px",
+      marginBottom: 18
     }
   }, React.createElement("div", {
     style: {
-      color: PRIORITY_COLOR.High,
-      flexShrink: 0,
-      display: "flex"
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: urgent.length > 1 ? 10 : 0
     }
   }, React.createElement(Ic, {
-    n: "alert"
-  })), React.createElement("div", {
+    n: "alert",
+    color: PRIORITY_COLOR.High,
+    size: 15
+  }), React.createElement("span", {
     style: {
-      flex: 1
-    }
-  }, React.createElement("p", {
-    style: {
-      fontSize: 13,
+      fontSize: 11,
       fontWeight: 800,
       color: PRIORITY_COLOR.High,
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
-      marginBottom: 2
+      letterSpacing: "0.1em"
     }
-  }, label), React.createElement("p", {
-    style: {
-      fontSize: 15,
-      fontWeight: 600,
-      color: T.text,
-      margin: 0
-    }
-  }, d.title), course && React.createElement("p", {
-    style: {
-      fontSize: 12,
-      color: T.muted,
-      marginTop: 2
-    }
-  }, course.name)), React.createElement("div", {
-    style: {
-      textAlign: "right",
-      flexShrink: 0
-    }
-  }, React.createElement("p", {
-    style: {
-      fontSize: 20,
-      fontWeight: 800,
-      color: PRIORITY_COLOR.High,
-      lineHeight: 1
-    }
-  }, diff === 0 ? "0" : diff), React.createElement("p", {
-    style: {
-      fontSize: 10,
-      color: T.muted,
-      fontWeight: 600
-    }
-  }, diff === 0 ? "days" : "days left")));
+  }, "Upcoming Deadlines")), urgent.map(function (d) {
+    var course = COURSES.find(function (c) {
+      return c.id === d.course;
+    });
+    var diff = Math.round((new Date(d.date + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 86400000);
+    var label = diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : diff + "d";
+    return React.createElement("div", {
+      key: d.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "6px 0",
+        borderTop: "1px solid " + PRIORITY_COLOR.High + "20"
+      }
+    }, React.createElement("span", {
+      style: {
+        fontSize: 11,
+        fontWeight: 700,
+        color: diff <= 1 ? PRIORITY_COLOR.High : PRIORITY_COLOR.Medium,
+        minWidth: 52,
+        flexShrink: 0
+      }
+    }, label), React.createElement("span", {
+      style: {
+        flex: 1,
+        fontSize: 13,
+        fontWeight: 600,
+        color: T.text,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, d.title), course && React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: course.color,
+        background: course.color + "20",
+        padding: "2px 8px",
+        borderRadius: 4,
+        fontWeight: 600,
+        flexShrink: 0
+      }
+    }, course.short));
+  }));
 }
 function HabitsPanel(_ref8) {
   var habits = _ref8.habits,
@@ -5211,53 +5228,40 @@ function NewListModal(_ref28) {
   }, "Cancel"))));
 }
 function MobileDashboard(_ref29) {
-  var lists = _ref29.lists,
-    todayTasks = _ref29.todayTasks,
+  var tasks = _ref29.tasks,
+    lists = _ref29.lists,
     habits = _ref29.habits,
     setHabits = _ref29.setHabits,
     deadlines = _ref29.deadlines,
     updateList = _ref29.updateList,
     deleteList = _ref29.deleteList,
     setView = _ref29.setView,
+    setEdit = _ref29.setEdit,
+    delTask = _ref29.delTask,
+    pinTask = _ref29.pinTask,
+    archiveTask = _ref29.archiveTask,
+    quickDoneTask = _ref29.quickDoneTask,
     T = _ref29.T;
   var C = {
     background: T.surface,
     border: "1px solid " + T.border,
     borderRadius: 16,
-    padding: 18,
-    marginBottom: 14
+    padding: 16,
+    marginBottom: 12
   };
-  var now = new Date();
-  var hour = now.getHours();
-  var greet = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  var pending = tasks.filter(function (t) {
+    return t.status !== "Done";
+  }).sort(function (a, b) {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    if (isUrgent(a) !== isUrgent(b)) return isUrgent(a) ? -1 : 1;
+    if (a.dueDate && b.dueDate) return a.dueDate > b.dueDate ? 1 : -1;
+    if (a.dueDate && !b.dueDate) return -1;
+    if (!a.dueDate && b.dueDate) return 1;
+    return 0;
+  });
   return React.createElement("div", {
     className: "fade-in"
   }, React.createElement("div", {
-    style: {
-      marginBottom: 18
-    }
-  }, React.createElement("p", {
-    style: {
-      fontSize: 24,
-      fontWeight: 800,
-      color: T.text,
-      lineHeight: 1.2,
-      letterSpacing: "-0.02em"
-    }
-  }, greet, ", Harry"), React.createElement("p", {
-    style: {
-      fontSize: 13,
-      color: T.muted,
-      marginTop: 5
-    }
-  }, now.toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long"
-  }))), React.createElement(DeadlineBanner, {
-    deadlines: deadlines,
-    T: T
-  }), React.createElement("div", {
     style: {
       marginBottom: 14
     }
@@ -5272,14 +5276,152 @@ function MobileDashboard(_ref29) {
     isMobile: true
   })), React.createElement(NextClassCard, {
     T: T
-  }), React.createElement(HabitsPanel, {
+  }), React.createElement("div", {
+    style: _extends({}, C, {
+      padding: 0,
+      overflow: "hidden",
+      marginBottom: 14
+    })
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "14px 16px 10px"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 13,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Tasks"), React.createElement("button", {
+    onClick: function onClick() {
+      return setView("tasks");
+    },
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: T.accent,
+      fontSize: 12,
+      fontWeight: 700
+    }
+  }, "View all")), pending.length === 0 ? React.createElement("div", {
+    style: {
+      padding: "20px 16px 18px",
+      textAlign: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: 8,
+      color: "#A3BE8C"
+    }
+  }, React.createElement(Ic, {
+    n: "check",
+    size: 28
+  })), React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      fontWeight: 500
+    }
+  }, "All caught up \u2014 nothing left to do")) : pending.map(function (t, i) {
+    var d = dateFmt(t.dueDate);
+    return React.createElement("div", {
+      key: t.id,
+      onClick: function onClick() {
+        return setEdit(t);
+      },
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "11px 16px",
+        borderTop: i === 0 ? "none" : "1px solid " + T.border,
+        background: isUrgent(t) ? PRIORITY_COLOR.High + "08" : "transparent",
+        cursor: "pointer"
+      }
+    }, React.createElement("div", {
+      onClick: function onClick(e) {
+        e.stopPropagation();
+        quickDoneTask(t.id);
+      },
+      style: {
+        width: 22,
+        height: 22,
+        borderRadius: 6,
+        border: "2px solid " + T.border,
+        background: "transparent",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+        transition: "all 0.15s"
+      }
+    }), React.createElement("div", {
+      style: {
+        flex: 1,
+        minWidth: 0
+      }
+    }, React.createElement("p", {
+      style: {
+        margin: 0,
+        fontSize: 14,
+        fontWeight: t.pinned ? 700 : 500,
+        color: T.text,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, t.title), React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 5,
+        marginTop: 3,
+        alignItems: "center"
+      }
+    }, React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: CAT_COLOR[t.category],
+        fontWeight: 600
+      }
+    }, t.category), t.subtasks && t.subtasks.length > 0 && React.createElement("span", {
+      style: {
+        fontSize: 10,
+        color: T.muted
+      }
+    }, t.subtasks.filter(function (s) {
+      return s.done;
+    }).length, "/", t.subtasks.length))), t.pinned && React.createElement("span", {
+      style: {
+        flexShrink: 0,
+        display: "flex",
+        color: T.accent
+      }
+    }, React.createElement(Ic, {
+      n: "pinFill",
+      size: 11
+    })), d && React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: d.over ? PRIORITY_COLOR.High : d.today ? PRIORITY_COLOR.Medium : T.muted,
+        fontWeight: d.over || d.today ? 700 : 400,
+        flexShrink: 0
+      }
+    }, d.label));
+  })), React.createElement(HabitsPanel, {
     habits: habits,
     setHabits: setHabits,
     T: T
-  }), React.createElement("div", {
-    style: _extends({}, C, {
-      borderLeft: "4px solid " + PRIORITY_COLOR.Medium
-    })
+  }), lists.length > 0 && React.createElement("div", {
+    style: C
   }, React.createElement("div", {
     style: {
       display: "flex",
@@ -5295,102 +5437,7 @@ function MobileDashboard(_ref29) {
       textTransform: "uppercase",
       letterSpacing: "0.08em"
     }
-  }, "Today"), React.createElement("button", {
-    onClick: function onClick() {
-      return setView("tasks");
-    },
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: T.accent,
-      fontSize: 12,
-      fontWeight: 700
-    }
-  }, "All tasks \u2192")), todayTasks.length === 0 ? React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: "16px 0"
-    }
-  }, React.createElement("div", {
-    style: {
-      color: "#A3BE8C",
-      display: "flex",
-      justifyContent: "center",
-      marginBottom: 6
-    }
-  }, React.createElement("svg", {
-    width: "28",
-    height: "28",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "2",
-    strokeLinecap: "round"
-  }, React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "10"
-  }), React.createElement("polyline", {
-    points: "9 12 11 14 15 10"
-  }))), React.createElement("p", {
-    style: {
-      fontSize: 13,
-      color: T.muted
-    }
-  }, "Nothing due today")) : todayTasks.map(function (t) {
-    return React.createElement("div", {
-      key: t.id,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "10px 0",
-        borderBottom: "1px solid " + T.border
-      }
-    }, React.createElement("div", {
-      style: {
-        width: 8,
-        height: 8,
-        borderRadius: "50%",
-        background: PRIORITY_COLOR[t.priority],
-        flexShrink: 0
-      }
-    }), React.createElement("span", {
-      style: {
-        flex: 1,
-        fontSize: 14,
-        color: T.text,
-        fontWeight: 500
-      }
-    }, t.title), React.createElement("span", {
-      style: {
-        fontSize: 11,
-        color: CAT_COLOR[t.category],
-        background: CAT_COLOR[t.category] + "20",
-        padding: "3px 8px",
-        borderRadius: 6,
-        fontWeight: 600
-      }
-    }, t.category));
-  })), lists.length > 0 && React.createElement("div", {
-    style: C
-  }, React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 14
-    }
-  }, React.createElement("span", {
-    style: {
-      fontSize: 13,
-      fontWeight: 700,
-      color: T.muted,
-      textTransform: "uppercase",
-      letterSpacing: "0.08em"
-    }
-  }, "My Lists"), React.createElement("button", {
+  }, "Lists"), React.createElement("button", {
     onClick: function onClick() {
       return setView("lists");
     },
@@ -5402,13 +5449,13 @@ function MobileDashboard(_ref29) {
       fontSize: 12,
       fontWeight: 700
     }
-  }, "View all \u2192")), React.createElement("div", {
+  }, "View all")), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
-      gap: 10
+      gap: 8
     }
-  }, lists.map(function (list) {
+  }, lists.slice(0, 3).map(function (list) {
     return React.createElement(ListPanel, {
       key: list.id,
       list: list,
@@ -5462,7 +5509,6 @@ function DashWeather(_ref30) {
         45: "Foggy",
         51: "Light drizzle",
         53: "Drizzle",
-        55: "Heavy drizzle",
         61: "Light rain",
         63: "Rain",
         65: "Heavy rain",
@@ -5490,8 +5536,17 @@ function DashWeather(_ref30) {
       lsSet("h-weather-time", Date.now());
     }).catch(function () {});
   }, []);
-  if (!w) return null;
-  var iconColor = {
+  if (!w) return React.createElement("div", {
+    style: {
+      width: 120,
+      height: 80,
+      background: T.surface,
+      border: "1px solid " + T.border,
+      borderRadius: 16,
+      flexShrink: 0
+    }
+  });
+  var col = {
     sun: T.accent,
     cloud: T.muted,
     drizzle: "#5E81AC",
@@ -5499,13 +5554,13 @@ function DashWeather(_ref30) {
     snow: "#88C0D0",
     storm: PRIORITY_COLOR.High
   };
-  var svgs = {
+  var icon = {
     sun: React.createElement("svg", {
       width: "40",
       height: "40",
       viewBox: "0 0 24 24",
       fill: "none",
-      stroke: iconColor.sun,
+      stroke: col.sun,
       strokeWidth: "1.5",
       strokeLinecap: "round"
     }, React.createElement("circle", {
@@ -5542,23 +5597,13 @@ function DashWeather(_ref30) {
       y1: "12",
       x2: "23",
       y2: "12"
-    }), React.createElement("line", {
-      x1: "4.22",
-      y1: "19.78",
-      x2: "5.64",
-      y2: "18.36"
-    }), React.createElement("line", {
-      x1: "18.36",
-      y1: "5.64",
-      x2: "19.78",
-      y2: "4.22"
     })),
     cloud: React.createElement("svg", {
       width: "40",
       height: "40",
       viewBox: "0 0 24 24",
       fill: "none",
-      stroke: iconColor.cloud,
+      stroke: col.cloud,
       strokeWidth: "1.5",
       strokeLinecap: "round"
     }, React.createElement("path", {
@@ -5569,7 +5614,7 @@ function DashWeather(_ref30) {
       height: "40",
       viewBox: "0 0 24 24",
       fill: "none",
-      stroke: iconColor.drizzle,
+      stroke: col.drizzle,
       strokeWidth: "1.5",
       strokeLinecap: "round"
     }, React.createElement("path", {
@@ -5595,7 +5640,7 @@ function DashWeather(_ref30) {
       height: "40",
       viewBox: "0 0 24 24",
       fill: "none",
-      stroke: iconColor.rain,
+      stroke: col.rain,
       strokeWidth: "1.5",
       strokeLinecap: "round"
     }, React.createElement("path", {
@@ -5621,7 +5666,7 @@ function DashWeather(_ref30) {
       height: "40",
       viewBox: "0 0 24 24",
       fill: "none",
-      stroke: iconColor.snow,
+      stroke: col.snow,
       strokeWidth: "1.5",
       strokeLinecap: "round"
     }, React.createElement("path", {
@@ -5642,7 +5687,7 @@ function DashWeather(_ref30) {
       height: "40",
       viewBox: "0 0 24 24",
       fill: "none",
-      stroke: iconColor.storm,
+      stroke: col.storm,
       strokeWidth: "1.5",
       strokeLinecap: "round"
     }, React.createElement("path", {
@@ -5662,11 +5707,7 @@ function DashWeather(_ref30) {
       padding: "16px 22px",
       flexShrink: 0
     }
-  }, React.createElement("div", {
-    style: {
-      flexShrink: 0
-    }
-  }, svgs[w.type] || svgs.cloud), React.createElement("div", null, React.createElement("div", {
+  }, React.createElement("div", null, icon[w.type] || icon.cloud), React.createElement("div", null, React.createElement("div", {
     style: {
       fontSize: 32,
       fontWeight: 800,
@@ -6311,6 +6352,50 @@ function SwipeCard(_ref34) {
     onTouchEnd: onTouchEnd
   }, children));
 }
+function SidebarWeather(_ref35) {
+  var T = _ref35.T;
+  var _useState37 = useState(null),
+    w = _useState37[0],
+    setW = _useState37[1];
+  useEffect(function () {
+    var cached = lsGet("h-weather-cache", null);
+    if (cached) {
+      setW(cached);
+      return;
+    }
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode&timezone=Europe/London").then(function (r) {
+      return r.json();
+    }).then(function (d) {
+      var codes = {
+        0: "Clear",
+        1: "Clear",
+        2: "Cloudy",
+        3: "Overcast",
+        51: "Drizzle",
+        61: "Rain",
+        63: "Rain",
+        71: "Snow",
+        80: "Showers",
+        95: "Storm"
+      };
+      var data = {
+        temp: Math.round(d.current.temperature_2m),
+        desc: codes[d.current.weathercode] || ""
+      };
+      setW(data);
+      lsSet("h-weather-cache", data);
+      lsSet("h-weather-time", Date.now());
+    }).catch(function () {});
+  }, []);
+  if (!w) return null;
+  return React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: T.muted,
+      margin: "2px 0 0"
+    }
+  }, w.temp, "\xB0 \xB7 ", w.desc);
+}
 var NAV_ITEMS = [{
   id: "dashboard",
   label: "Dashboard",
@@ -6331,23 +6416,19 @@ var NAV_ITEMS = [{
   id: "courses",
   label: "Courses",
   icon: "book"
-}, {
-  id: "notes",
-  label: "Notes",
-  icon: "note"
 }];
-function Sidebar(_ref35) {
-  var view = _ref35.view,
-    setView = _ref35.setView,
-    syncStatus = _ref35.syncStatus,
-    onSearch = _ref35.onSearch,
-    onSettings = _ref35.onSettings,
-    T = _ref35.T,
-    open = _ref35.open,
-    setOpen = _ref35.setOpen;
-  var _useState37 = useState(false),
-    hovered = _useState37[0],
-    setHovered = _useState37[1];
+function Sidebar(_ref36) {
+  var view = _ref36.view,
+    setView = _ref36.setView,
+    syncStatus = _ref36.syncStatus,
+    onSearch = _ref36.onSearch,
+    onSettings = _ref36.onSettings,
+    T = _ref36.T,
+    open = _ref36.open,
+    setOpen = _ref36.setOpen;
+  var _useState38 = useState(false),
+    hovered = _useState38[0],
+    setHovered = _useState38[1];
   var expanded = open || hovered;
   return React.createElement("div", {
     onMouseEnter: function onMouseEnter() {
@@ -6459,6 +6540,25 @@ function Sidebar(_ref35) {
         borderRadius: "0 3px 3px 0"
       }
     }));
+  })), expanded && React.createElement("div", {
+    style: {
+      padding: "10px 16px 8px",
+      borderTop: "1px solid " + T.border,
+      flexShrink: 0
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: T.muted,
+      margin: 0
+    }
+  }, new Date().toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short"
+  })), React.createElement(SidebarWeather, {
+    T: T
   })), React.createElement("div", {
     style: {
       padding: expanded ? "10px 10px 16px" : "10px 8px 16px",
@@ -6558,37 +6658,37 @@ function Sidebar(_ref35) {
   }, "Synced"))));
 }
 function App() {
-  var _useState38 = useState(function () {
+  var _useState39 = useState(function () {
       return lsGet("h-tasks-html", INITIAL_TASKS);
     }),
-    tasks = _useState38[0],
-    setTasks = _useState38[1];
-  var _useState39 = useState(function () {
+    tasks = _useState39[0],
+    setTasks = _useState39[1];
+  var _useState40 = useState(function () {
       return lsGet("h-courses-html", {});
     }),
-    cd = _useState39[0],
-    setCd = _useState39[1];
-  var _useState40 = useState(function () {
+    cd = _useState40[0],
+    setCd = _useState40[1];
+  var _useState41 = useState(function () {
       return lsGet("h-dl-html", []);
     }),
-    deadlines = _useState40[0],
-    setDeadlines = _useState40[1];
-  var _useState41 = useState(function () {
+    deadlines = _useState41[0],
+    setDeadlines = _useState41[1];
+  var _useState42 = useState(function () {
       return lsGet("h-lists-html", INITIAL_LISTS);
     }),
-    lists = _useState41[0],
-    setLists = _useState41[1];
-  var _useState42 = useState(function () {
+    lists = _useState42[0],
+    setLists = _useState42[1];
+  var _useState43 = useState(function () {
       return lsGet("h-habits-html", INITIAL_HABITS);
     }),
-    habits = _useState42[0],
-    setHabits = _useState42[1];
-  var _useState43 = useState(function () {
+    habits = _useState43[0],
+    setHabits = _useState43[1];
+  var _useState44 = useState(function () {
       return lsGet("h-archive-html", []);
     }),
-    archive = _useState43[0],
-    setArchive = _useState43[1];
-  var _useState44 = useState(function () {
+    archive = _useState44[0],
+    setArchive = _useState44[1];
+  var _useState45 = useState(function () {
       return lsGet("h-notes-html", [{
         id: "n1",
         title: "Quick notes",
@@ -6596,89 +6696,92 @@ function App() {
         createdAt: new Date().toISOString()
       }]);
     }),
-    notes = _useState44[0],
-    setNotes = _useState44[1];
-  var _useState45 = useState(function () {
+    notes = _useState45[0],
+    setNotes = _useState45[1];
+  var _useState46 = useState(function () {
       return lsGet("h-exams-html", INITIAL_EXAM_DATES);
     }),
-    examDates = _useState45[0],
-    setExamDates = _useState45[1];
-  var _useState46 = useState(function () {
+    examDates = _useState46[0],
+    setExamDates = _useState46[1];
+  var _useState47 = useState(function () {
       return lsGet("h-cfields-html", Object.fromEntries(COURSES.map(function (c) {
         return [c.id, c.fields];
       })));
     }),
-    courseFields = _useState46[0],
-    setCourseFields = _useState46[1];
-  var _useState47 = useState("dashboard"),
-    view = _useState47[0],
-    setView = _useState47[1];
-  var _useState48 = useState("list"),
-    tv = _useState48[0],
-    setTv = _useState48[1];
-  var _useState49 = useState(null),
-    edit = _useState49[0],
-    setEdit = _useState49[1];
-  var _useState50 = useState(function () {
+    courseFields = _useState47[0],
+    setCourseFields = _useState47[1];
+  var _useState48 = useState("dashboard"),
+    view = _useState48[0],
+    setView = _useState48[1];
+  var _useState49 = useState("list"),
+    tv = _useState49[0],
+    setTv = _useState49[1];
+  var _useState50 = useState(null),
+    edit = _useState50[0],
+    setEdit = _useState50[1];
+  var _useState51 = useState(function () {
       return lsGet("h-theme-html", "polar");
     }),
-    theme = _useState50[0],
-    setTheme = _useState50[1];
-  var _useState51 = useState("All"),
-    fCat = _useState51[0],
-    setFCat = _useState51[1];
-  var _useState52 = useState("default"),
-    sortBy = _useState52[0],
-    setSortBy = _useState52[1];
-  var _useState53 = useState(false),
-    hideDone = _useState53[0],
-    setHideDone = _useState53[1];
-  var _useState54 = useState(true),
-    groupBycat = _useState54[0],
-    setGroupBycat = _useState54[1];
-  var _useState55 = useState(false),
-    showArchive = _useState55[0],
-    setShowArchive = _useState55[1];
-  var _useState56 = useState(true),
-    sidebarOpen = _useState56[0],
-    setSidebarOpen = _useState56[1];
-  var _useState57 = useState(""),
-    search = _useState57[0],
-    setSearch = _useState57[1];
-  var _useState58 = useState(null),
-    dragId = _useState58[0],
-    setDragId = _useState58[1];
+    theme = _useState51[0],
+    setTheme = _useState51[1];
+  var _useState52 = useState("All"),
+    fCat = _useState52[0],
+    setFCat = _useState52[1];
+  var _useState53 = useState("default"),
+    sortBy = _useState53[0],
+    setSortBy = _useState53[1];
+  var _useState54 = useState(false),
+    hideDone = _useState54[0],
+    setHideDone = _useState54[1];
+  var _useState55 = useState(true),
+    groupBycat = _useState55[0],
+    setGroupBycat = _useState55[1];
+  var _useState56 = useState(false),
+    showArchive = _useState56[0],
+    setShowArchive = _useState56[1];
+  var dragListRef = useRef(null);
+  var _useState57 = useState(function () {
+      return lsGet("h-sidebar", true);
+    }),
+    sidebarOpen = _useState57[0],
+    setSidebarOpen = _useState57[1];
+  var _useState58 = useState(""),
+    search = _useState58[0],
+    setSearch = _useState58[1];
   var _useState59 = useState(null),
-    dragTaskId = _useState59[0],
-    setDragTaskId = _useState59[1];
-  var _useState60 = useState({
+    dragId = _useState59[0],
+    setDragId = _useState59[1];
+  var _useState60 = useState(null),
+    dragTaskId = _useState60[0],
+    setDragTaskId = _useState60[1];
+  var _useState61 = useState({
       title: "",
       course: "maths",
       date: "",
       notes: ""
     }),
-    newDl = _useState60[0],
-    setNewDl = _useState60[1];
-  var _useState61 = useState(false),
-    showNewList = _useState61[0],
-    setShowNewList = _useState61[1];
+    newDl = _useState61[0],
+    setNewDl = _useState61[1];
   var _useState62 = useState(false),
-    showSearch = _useState62[0],
-    setShowSearch = _useState62[1];
+    showNewList = _useState62[0],
+    setShowNewList = _useState62[1];
   var _useState63 = useState(false),
-    showSettings = _useState63[0],
-    setShowSettings = _useState63[1];
-  var _useState64 = useState("idle"),
-    syncStatus = _useState64[0],
-    setSyncStatus = _useState64[1];
-  var _useState65 = useState(false),
-    loaded = _useState65[0],
-    setLoaded = _useState65[1];
-  var _useState66 = useState(function () {
+    showSearch = _useState63[0],
+    setShowSearch = _useState63[1];
+  var _useState64 = useState(false),
+    showSettings = _useState64[0],
+    setShowSettings = _useState64[1];
+  var _useState65 = useState("idle"),
+    syncStatus = _useState65[0],
+    setSyncStatus = _useState65[1];
+  var _useState66 = useState(false),
+    loaded = _useState66[0],
+    setLoaded = _useState66[1];
+  var _useState67 = useState(function () {
       return lsGet("h-notif", false);
     }),
-    notifEnabled = _useState66[0],
-    setNotifEnabled = _useState66[1];
+    notifEnabled = _useState67[0],
+    setNotifEnabled = _useState67[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
   var T = THEMES[theme];
@@ -6970,6 +7073,9 @@ function App() {
     lsSet("h-notif", notifEnabled);
   }, [notifEnabled]);
   useEffect(function () {
+    lsSet("h-sidebar", sidebarOpen);
+  }, [sidebarOpen]);
+  useEffect(function () {
     var h = function h(e) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -7031,7 +7137,7 @@ function App() {
     setEdit(null);
   };
   var delTask = function () {
-    var _ref46 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
+    var _ref47 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
       return _regenerator().w(function (_context16) {
         while (1) switch (_context16.n) {
           case 0:
@@ -7048,7 +7154,7 @@ function App() {
       }, _callee16);
     }));
     return function delTask(_x0) {
-      return _ref46.apply(this, arguments);
+      return _ref47.apply(this, arguments);
     };
   }();
   var pinTask = function pinTask(id) {
@@ -7080,7 +7186,9 @@ function App() {
   };
   var sortT = function sortT(arr) {
     return [].concat(arr).sort(function (a, b) {
-      return a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1;
+      if (a.status === "Done" !== (b.status === "Done")) return a.status === "Done" ? 1 : -1;
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return 0;
     });
   };
   var updateList = function updateList(updated) {
@@ -7091,7 +7199,7 @@ function App() {
     });
   };
   var deleteList = function () {
-    var _ref47 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
+    var _ref48 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -7108,7 +7216,7 @@ function App() {
       }, _callee17);
     }));
     return function deleteList(_x1) {
-      return _ref47.apply(this, arguments);
+      return _ref48.apply(this, arguments);
     };
   }();
   var createList = function createList(l) {
@@ -7132,7 +7240,7 @@ function App() {
     });
   };
   var delDeadline = function () {
-    var _ref48 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
+    var _ref49 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -7149,7 +7257,7 @@ function App() {
       }, _callee18);
     }));
     return function delDeadline(_x10) {
-      return _ref48.apply(this, arguments);
+      return _ref49.apply(this, arguments);
     };
   }();
   var handleDrop = function handleDrop(status) {
@@ -7180,7 +7288,13 @@ function App() {
       return arr;
     });
   };
+  var weekEnd = function () {
+    var d = new Date();
+    d.setDate(d.getDate() + (7 - (d.getDay() || 7)));
+    return d.toISOString().split("T")[0];
+  }();
   var baseFiltRaw = tasks.filter(function (t) {
+    if (fCat === "Week") return t.dueDate && t.dueDate >= TODAY && t.dueDate <= weekEnd && (!hideDone || t.status !== "Done");
     return (fCat === "All" || t.category === fCat) && (!search || t.title.toLowerCase().includes(search.toLowerCase())) && (!hideDone || t.status !== "Done");
   });
   var baseFilt = useMemo(function () {
@@ -7430,9 +7544,9 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref49) {
-    var v = _ref49[0],
-      l = _ref49[1];
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref50) {
+    var v = _ref50[0],
+      l = _ref50[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -7464,14 +7578,19 @@ function App() {
       margin: "0 auto"
     }
   }, view === "dashboard" && (isMobile ? React.createElement(MobileDashboard, {
+    tasks: tasks,
     lists: lists,
-    todayTasks: todayTasks,
     habits: habits,
     setHabits: setHabits,
     deadlines: deadlines,
     updateList: updateList,
     deleteList: deleteList,
     setView: setView,
+    setEdit: setEdit,
+    delTask: delTask,
+    pinTask: pinTask,
+    archiveTask: archiveTask,
+    quickDoneTask: quickDoneTask,
     T: T
   }) : React.createElement("div", {
     className: "fade-in"
@@ -7480,22 +7599,18 @@ function App() {
     T: T
   }), React.createElement("div", {
     style: {
-      marginBottom: 28
-    }
-  }, React.createElement("div", {
-    style: {
       display: "flex",
       alignItems: "flex-start",
       justifyContent: "space-between",
-      gap: 20
+      gap: 20,
+      marginBottom: 28
     }
   }, React.createElement("div", null, React.createElement("p", {
     style: {
       fontSize: 13,
       fontWeight: 600,
       color: T.muted,
-      marginBottom: 6,
-      letterSpacing: "0.02em"
+      marginBottom: 6
     }
   }, new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -7521,7 +7636,7 @@ function App() {
       fontWeight: 600,
       marginTop: 8
     }
-  }, overdue.length, " overdue task", overdue.length !== 1 ? "s" : "", " need attention"), overdue.length === 0 && todayTasks.length > 0 && React.createElement("p", {
+  }, overdue.length, " overdue task", overdue.length !== 1 ? "s" : "", " \u2014 needs attention"), overdue.length === 0 && todayTasks.length > 0 && React.createElement("p", {
     style: {
       fontSize: 13,
       color: T.muted,
@@ -7536,7 +7651,7 @@ function App() {
     }
   }, "All clear today")), React.createElement(DashWeather, {
     T: T
-  }))), React.createElement("div", {
+  })), React.createElement("div", {
     style: {
       marginBottom: 20
     }
@@ -7921,7 +8036,7 @@ function App() {
       display: "flex",
       gap: 4
     }
-  }, ["All"].concat(CATEGORIES).map(function (c) {
+  }, ["All"].concat(CATEGORIES, ["Week"]).map(function (c) {
     return React.createElement("button", {
       key: c,
       onClick: function onClick() {
@@ -7991,9 +8106,9 @@ function App() {
       fontWeight: 600,
       color: groupBycat ? T.accent : T.muted
     }
-  }, groupBycat ? "Grouped" : "Flat"), [["list", "All Tasks"], ["today", "Today"]].map(function (_ref50) {
-    var v = _ref50[0],
-      l = _ref50[1];
+  }, groupBycat ? "Grouped" : "Flat"), [["list", "List"], ["today", "Today"]].map(function (_ref51) {
+    var v = _ref51[0],
+      l = _ref51[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -8009,7 +8124,7 @@ function App() {
       overflowX: "auto",
       paddingBottom: 4
     }
-  }, ["All"].concat(CATEGORIES).map(function (c) {
+  }, ["All"].concat(CATEGORIES, ["Week"]).map(function (c) {
     return React.createElement("button", {
       key: c,
       onClick: function onClick() {
@@ -8218,16 +8333,15 @@ function App() {
         fontWeight: 600,
         flexShrink: 0
       }
-    }, t.category), React.createElement("span", {
+    }, t.category), t.subtasks && t.subtasks.length > 0 && React.createElement("span", {
       style: {
-        fontSize: 11,
+        fontSize: 10,
         color: T.muted,
-        background: T.alt,
-        padding: "3px 9px",
-        borderRadius: 6,
-        border: "1px solid " + T.border
+        flexShrink: 0
       }
-    }, t.status), t.dueDate && function () {
+    }, t.subtasks.filter(function (s) {
+      return s.done;
+    }).length, "/", t.subtasks.length), t.dueDate && function () {
       var d = dateFmt(t.dueDate);
       return React.createElement("span", {
         style: {
@@ -8357,16 +8471,15 @@ function App() {
           fontWeight: 600,
           flexShrink: 0
         }
-      }, t.category), React.createElement("span", {
+      }, t.category), t.subtasks && t.subtasks.length > 0 && React.createElement("span", {
         style: {
-          fontSize: 11,
+          fontSize: 10,
           color: T.muted,
-          background: T.alt,
-          padding: "3px 9px",
-          borderRadius: 6,
-          border: "1px solid " + T.border
+          flexShrink: 0
         }
-      }, t.status), t.dueDate && function () {
+      }, t.subtasks.filter(function (s) {
+        return s.done;
+      }).length, "/", t.subtasks.length), t.dueDate && function () {
         var d = dateFmt(t.dueDate);
         return React.createElement("span", {
           style: {
@@ -8456,16 +8569,15 @@ function App() {
         fontWeight: 600,
         flexShrink: 0
       }
-    }, t.category), React.createElement("span", {
+    }, t.category), t.subtasks && t.subtasks.length > 0 && React.createElement("span", {
       style: {
-        fontSize: 11,
+        fontSize: 10,
         color: T.muted,
-        background: T.alt,
-        padding: "3px 9px",
-        borderRadius: 6,
-        border: "1px solid " + T.border
+        flexShrink: 0
       }
-    }, t.status), t.dueDate && function () {
+    }, t.subtasks.filter(function (s) {
+      return s.done;
+    }).length, "/", t.subtasks.length), t.dueDate && function () {
       var d = dateFmt(t.dueDate);
       return React.createElement("span", {
         style: {
@@ -8642,15 +8754,32 @@ function App() {
       fontSize: 14,
       fontWeight: 700
     }
-  }, "Create your first list")), lists.map(function (list) {
-    return React.createElement(ListPanel, {
+  }, "Create your first list")), lists.map(function (list, idx) {
+    return React.createElement("div", {
       key: list.id,
+      draggable: true,
+      onDragStart: function onDragStart() {
+        dragListRef.current = idx;
+      },
+      onDragOver: function onDragOver(e) {
+        return e.preventDefault();
+      },
+      onDrop: function onDrop() {
+        if (dragListRef.current === null || dragListRef.current === idx) return;
+        var nl = [].concat(lists);
+        var _nl$splice = nl.splice(dragListRef.current, 1),
+          m = _nl$splice[0];
+        nl.splice(idx, 0, m);
+        setLists(nl);
+        dragListRef.current = null;
+      }
+    }, React.createElement(ListPanel, {
       list: list,
       onUpdate: updateList,
       onDelete: deleteList,
       T: T,
       compact: false
-    });
+    }));
   })), view === "timetable" && React.createElement(TimetableView, {
     T: T,
     isMobile: isMobile
