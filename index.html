@@ -10,13 +10,13 @@
   <link rel="apple-touch-icon" href="icon.png"/>
   <title>Harry — Tasks</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:'Geist',sans-serif}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',sans-serif}
     ::-webkit-scrollbar{width:6px;height:6px}
     ::-webkit-scrollbar-track{background:transparent}
     ::-webkit-scrollbar-thumb{background:#C8D4E3;border-radius:6px}
-    input,select,textarea{font-family:'Geist',sans-serif}
+    input,select,textarea{font-family:'Plus Jakarta Sans',sans-serif}
     html,body{height:100%;overflow:hidden}
     #root{height:100%;overflow:hidden}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -437,6 +437,71 @@ var CLASS_TYPE_COLOR = {
   Tutorial: "#B48EAD"
 };
 var THEMES = {
+  navy: {
+    label: "Navy",
+    bg: "#F4F1EB",
+    surface: "#FDFAF4",
+    alt: "#EBE7DC",
+    border: "#D4CDB8",
+    text: "#1A1F2E",
+    muted: "#7A7560",
+    accent: "#1E3A5F",
+    fg: "#FFFFFF",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#FDFAF4 0%,#EEE9DC 100%)"
+  },
+  desert: {
+    label: "Desert",
+    bg: "#F7F0E6",
+    surface: "#FDFAF5",
+    alt: "#EDE5D8",
+    border: "#D9CEBA",
+    text: "#2C1F14",
+    muted: "#8C7B6A",
+    accent: "#C4622D",
+    fg: "#FFFFFF",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#FDFAF5 0%,#F2E8D8 100%)"
+  },
+  sage: {
+    label: "Sage",
+    bg: "#F0F4EE",
+    surface: "#FAFCF9",
+    alt: "#E4EBE2",
+    border: "#C8D5C4",
+    text: "#1E2B1A",
+    muted: "#6B7D65",
+    accent: "#4A7C59",
+    fg: "#FFFFFF",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#FAFCF9 0%,#EBF2E8 100%)"
+  },
+  aurora: {
+    label: "Aurora",
+    bg: "#F5F0F3",
+    surface: "#FDF8FB",
+    alt: "#EDE5EA",
+    border: "#D8C8D2",
+    text: "#2A1F26",
+    muted: "#8C7080",
+    accent: "#A0527A",
+    fg: "#FFFFFF",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#FDF8FB 0%,#F3E8EF 100%)"
+  },
+  forest: {
+    label: "Forest",
+    bg: "#F2F5EE",
+    surface: "#FAFDF8",
+    alt: "#E4EBE0",
+    border: "#C4D0BC",
+    text: "#1A2418",
+    muted: "#627558",
+    accent: "#8B6914",
+    fg: "#FFFFFF",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#FAFDF8 0%,#EAF0E5 100%)"
+  },
   slate: {
     label: "Slate",
     bg: "#F1F2F6",
@@ -450,19 +515,6 @@ var THEMES = {
     dark: false,
     navGrad: "linear-gradient(160deg,#FFFFFF 0%,#F4F5FA 100%)"
   },
-  warm: {
-    label: "Warm",
-    bg: "#F5F3EF",
-    surface: "#FDFCFA",
-    alt: "#EDEAE4",
-    border: "#D8D3CA",
-    text: "#1C1917",
-    muted: "#78716C",
-    accent: "#7C5CB8",
-    fg: "#FFFFFF",
-    dark: false,
-    navGrad: "linear-gradient(160deg,#FDFCFA 0%,#F5F2EB 100%)"
-  },
   dusk: {
     label: "Dusk",
     bg: "#2A2840",
@@ -471,7 +523,7 @@ var THEMES = {
     border: "#3D3B5A",
     text: "#E8E6F4",
     muted: "#8580A8",
-    accent: "#A89BF0",
+    accent: "#C4956A",
     fg: "#1A1830",
     dark: true,
     navGrad: "linear-gradient(160deg,#353354 0%,#2D2B48 100%)"
@@ -488,6 +540,32 @@ var THEMES = {
     fg: "#151520",
     dark: true,
     navGrad: "linear-gradient(160deg,#201F32 0%,#181728 100%)"
+  },
+  deepforest: {
+    label: "Deep Forest",
+    bg: "#0F1A0E",
+    surface: "#162014",
+    alt: "#0F1A0E",
+    border: "#243520",
+    text: "#D4E8CE",
+    muted: "#5A7A52",
+    accent: "#C4A832",
+    fg: "#0F1A0E",
+    dark: true,
+    navGrad: "linear-gradient(160deg,#1A2618 0%,#121C10 100%)"
+  },
+  dune: {
+    label: "Dune",
+    bg: "#1C1610",
+    surface: "#251E15",
+    alt: "#1C1610",
+    border: "#3A2E20",
+    text: "#E8DCC8",
+    muted: "#7A6A50",
+    accent: "#D4845A",
+    fg: "#1C1610",
+    dark: true,
+    navGrad: "linear-gradient(160deg,#2A2218 0%,#1E180E 100%)"
   }
 };
 var INITIAL_TASKS = [{
@@ -3981,178 +4059,59 @@ function CourseWeekGrid(_ref22) {
     }, allDone ? "✓" : "", wkDone, "/", fields.length)));
   }))))));
 }
-function FlexItem(_ref23) {
-  var item = _ref23.item,
-    listColor = _ref23.listColor,
-    onUpdate = _ref23.onUpdate,
+function ListCard(_ref23) {
+  var list = _ref23.list,
+    onOpen = _ref23.onOpen,
     onDelete = _ref23.onDelete,
-    T = _ref23.T,
-    dragHandlers = _ref23.dragHandlers;
+    T = _ref23.T;
+  var rows = list.rows || [];
+  var cols = list.columns || [];
+  var doneCount = rows.filter(function (r) {
+    return cols.length > 0 && Object.values(r.checks || {}).some(Boolean);
+  }).length;
   var _useState15 = useState(false),
-    editText = _useState15[0],
-    setEditText = _useState15[1];
-  var _useState16 = useState(item.text || ""),
-    tv = _useState16[0],
-    setTv = _useState16[1];
-  var _useState17 = useState(!!item.note),
-    showNote = _useState17[0],
-    setShowNote = _useState17[1];
-  var _useState18 = useState(!!item.url),
-    showUrl = _useState18[0],
-    setShowUrl = _useState18[1];
-  var saveT = function saveT() {
-    if (tv.trim()) onUpdate({
-      text: tv.trim()
-    });
-    setEditText(false);
-  };
-  var handleCheck = function handleCheck(e) {
-    e.stopPropagation();
-    if (item.hasCheck) {
-      onUpdate({
-        done: !item.done
-      });
-    } else {
-      onUpdate({
-        hasCheck: true
-      });
-    }
-  };
+    hov = _useState15[0],
+    setHov = _useState15[1];
   return React.createElement("div", {
-    draggable: true,
-    onDragStart: dragHandlers.onDragStart,
-    onDragOver: dragHandlers.onDragOver,
-    onDrop: dragHandlers.onDrop,
-    onDragEnd: dragHandlers.onDragEnd,
+    onClick: onOpen,
+    onMouseEnter: function onMouseEnter() {
+      return setHov(true);
+    },
+    onMouseLeave: function onMouseLeave() {
+      return setHov(false);
+    },
     style: {
       background: T.surface,
-      border: "1px solid " + T.border,
-      borderRadius: 10,
-      padding: "10px 12px",
-      marginBottom: 6,
-      opacity: item.done && item.hasCheck ? 0.65 : 1,
-      transition: "opacity 0.15s"
+      border: "1.5px solid " + (hov ? list.color + "80" : T.border),
+      borderTop: "4px solid " + list.color,
+      borderRadius: 14,
+      padding: "16px 18px",
+      cursor: "pointer",
+      transition: "all 0.18s cubic-bezier(0.16,1,0.3,1)",
+      transform: hov ? "translateY(-2px)" : "none",
+      boxShadow: hov ? "0 8px 24px " + list.color + "20" : "0 1px 4px rgba(0,0,0,0.04)"
     }
   }, React.createElement("div", {
     style: {
       display: "flex",
-      alignItems: "center",
-      gap: 9
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      marginBottom: 10
     }
-  }, React.createElement("span", {
+  }, React.createElement("h3", {
     style: {
-      color: T.border,
-      cursor: "grab",
-      display: "flex",
-      alignItems: "center",
-      userSelect: "none"
-    }
-  }, React.createElement(Ic, {
-    n: "drag",
-    color: T.border
-  })), React.createElement("div", {
-    onClick: handleCheck,
-    title: item.hasCheck ? "Toggle done" : "Click to add checkbox",
-    style: {
-      width: 20,
-      height: 20,
-      borderRadius: 5,
-      border: "2px solid " + (item.hasCheck ? item.done ? listColor : listColor + "60" : T.border),
-      background: item.hasCheck && item.done ? listColor : "transparent",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0,
-      transition: "all 0.15s"
-    }
-  }, item.hasCheck && item.done && React.createElement("span", {
-    style: {
-      color: "#fff",
-      fontSize: 11,
-      fontWeight: 800
-    }
-  }, "\u2713"), !item.hasCheck && React.createElement("span", {
-    style: {
-      fontSize: 8,
-      color: T.border
-    }
-  }, "+")), editText ? React.createElement("input", {
-    autoFocus: true,
-    value: tv,
-    onChange: function onChange(e) {
-      return setTv(e.target.value);
-    },
-    onBlur: saveT,
-    onKeyDown: function onKeyDown(e) {
-      if (e.key === "Enter") saveT();
-      if (e.key === "Escape") {
-        setTv(item.text);
-        setEditText(false);
-      }
-    },
-    style: {
-      flex: 1,
-      border: "1px solid " + T.border,
-      borderRadius: 6,
-      padding: "4px 8px",
-      fontSize: 14,
+      margin: 0,
+      fontSize: 15,
+      fontWeight: 700,
       color: T.text,
-      background: T.alt,
-      outline: "none"
+      letterSpacing: "-0.01em",
+      lineHeight: 1.2
     }
-  }) : React.createElement("span", {
-    onClick: function onClick() {
-      return setEditText(true);
-    },
-    style: {
-      flex: 1,
-      fontSize: 14,
-      color: item.done && item.hasCheck ? T.muted : T.text,
-      textDecoration: item.done && item.hasCheck ? "line-through" : "none",
-      cursor: "text",
-      lineHeight: 1.4
-    }
-  }, item.text || "Untitled"), React.createElement("button", {
+  }, list.name), React.createElement("button", {
     onClick: function onClick(e) {
       e.stopPropagation();
-      setShowUrl(function (s) {
-        return !s;
-      });
+      onDelete(list.id);
     },
-    title: "Add link",
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "2px 3px",
-      display: "flex",
-      alignItems: "center"
-    }
-  }, React.createElement(Ic, {
-    n: "link",
-    color: item.url ? listColor : T.border
-  })), React.createElement("button", {
-    onClick: function onClick(e) {
-      e.stopPropagation();
-      setShowNote(function (s) {
-        return !s;
-      });
-    },
-    title: "Add note",
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "2px 3px",
-      display: "flex",
-      alignItems: "center"
-    }
-  }, React.createElement(Ic, {
-    n: "note",
-    color: item.note ? listColor : T.border
-  })), React.createElement("button", {
-    onClick: onDelete,
     style: {
       background: "none",
       border: "none",
@@ -4160,376 +4119,300 @@ function FlexItem(_ref23) {
       color: T.muted,
       fontSize: 18,
       padding: 0,
-      lineHeight: 1
+      lineHeight: 1,
+      opacity: hov ? 1 : 0,
+      transition: "opacity 0.15s"
     }
-  }, "\xD7")), (showUrl || item.url) && React.createElement("div", {
-    style: {
-      marginTop: 7,
-      marginLeft: 29
-    }
-  }, item.url ? React.createElement("div", {
+  }, "\xD7")), cols.length > 0 && React.createElement("div", {
     style: {
       display: "flex",
+      gap: 4,
+      marginBottom: 10,
+      flexWrap: "wrap"
+    }
+  }, cols.map(function (c) {
+    return React.createElement("span", {
+      key: c.id,
+      style: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: list.color,
+        background: list.color + "18",
+        padding: "2px 7px",
+        borderRadius: 4
+      }
+    }, c.label);
+  })), rows.length === 0 ? React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      margin: 0
+    }
+  }, "No items yet") : React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 5
+    }
+  }, rows.slice(0, 5).map(function (row) {
+    return React.createElement("div", {
+      key: row.id,
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "5px 8px",
+        background: T.alt,
+        borderRadius: 7
+      }
+    }, cols.map(function (c) {
+      return React.createElement("div", {
+        key: c.id,
+        style: {
+          width: 14,
+          height: 14,
+          borderRadius: 3,
+          flexShrink: 0,
+          border: "1.5px solid " + ((row.checks || {})[c.id] ? list.color : T.border),
+          background: (row.checks || {})[c.id] ? list.color : "transparent"
+        }
+      });
+    }), React.createElement("span", {
+      style: {
+        flex: 1,
+        fontSize: 13,
+        color: T.text,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, row.text || "—"));
+  }), rows.length > 5 && React.createElement("p", {
+    style: {
+      fontSize: 11,
+      color: T.muted,
+      margin: "3px 0 0 8px"
+    }
+  }, "+", rows.length - 5, " more")), React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
       alignItems: "center",
-      gap: 6
+      marginTop: 12,
+      paddingTop: 10,
+      borderTop: "1px solid " + T.border
     }
-  }, React.createElement("a", {
-    href: item.url,
-    target: "_blank",
-    rel: "noreferrer",
+  }, React.createElement("span", {
     style: {
-      flex: 1,
-      fontSize: 12,
-      color: T.accent,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
+      fontSize: 11,
+      color: T.muted
     }
-  }, item.url), React.createElement("button", {
-    onClick: function onClick() {
-      onUpdate({
-        url: ""
-      });
-      setShowUrl(false);
-    },
+  }, rows.length, " item", rows.length !== 1 ? "s" : ""), cols.length > 0 && rows.length > 0 && React.createElement("span", {
     style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: T.muted,
-      fontSize: 14
+      fontSize: 11,
+      color: T.muted
     }
-  }, "\xD7")) : React.createElement("input", {
-    autoFocus: true,
-    value: item.url || "",
-    onChange: function onChange(e) {
-      return onUpdate({
-        url: e.target.value
-      });
-    },
-    placeholder: "https://\u2026",
-    style: {
-      width: "100%",
-      border: "1px solid " + T.border,
-      borderRadius: 6,
-      padding: "5px 9px",
-      fontSize: 12,
-      color: T.text,
-      background: T.alt,
-      outline: "none"
-    }
-  })), (showNote || item.note) && React.createElement("div", {
-    style: {
-      marginTop: 7,
-      marginLeft: 29,
-      paddingLeft: 10,
-      borderLeft: "2px solid " + listColor + "40"
-    }
-  }, React.createElement("textarea", {
-    value: item.note || "",
-    onChange: function onChange(e) {
-      return onUpdate({
-        note: e.target.value
-      });
-    },
-    placeholder: "Add a note\u2026",
-    style: {
-      width: "100%",
-      border: "none",
-      background: "transparent",
-      outline: "none",
-      fontSize: 12,
-      color: T.muted,
-      resize: "none",
-      minHeight: 36,
-      lineHeight: 1.5,
-      fontFamily: "inherit"
-    }
-  })));
+  }, doneCount, "/", rows.length, " checked")));
 }
-function ListPanel(_ref24) {
+function ListDocument(_ref24) {
   var list = _ref24.list,
     onUpdate = _ref24.onUpdate,
-    onDelete = _ref24.onDelete,
-    T = _ref24.T,
-    compact = _ref24.compact;
-  var _useState19 = useState(""),
-    newText = _useState19[0],
-    setNewText = _useState19[1];
-  var _useState20 = useState(false),
-    editingName = _useState20[0],
-    setEditingName = _useState20[1];
-  var _useState21 = useState(list.name),
-    nameVal = _useState21[0],
-    setNameVal = _useState21[1];
-  var _useState22 = useState(true),
-    open = _useState22[0],
-    setOpen = _useState22[1];
+    onClose = _ref24.onClose,
+    T = _ref24.T;
+  var _useState16 = useState(false),
+    nameEditing = _useState16[0],
+    setNameEditing = _useState16[1];
+  var _useState17 = useState(list.name),
+    nameVal = _useState17[0],
+    setNameVal = _useState17[1];
+  var _useState18 = useState(""),
+    newColLabel = _useState18[0],
+    setNewColLabel = _useState18[1];
+  var _useState19 = useState(false),
+    addingCol = _useState19[0],
+    setAddingCol = _useState19[1];
+  var _useState20 = useState(""),
+    newRowText = _useState20[0],
+    setNewRowText = _useState20[1];
+  var _useState21 = useState(null),
+    editingCell = _useState21[0],
+    setEditingCell = _useState21[1];
+  var _useState22 = useState(""),
+    editVal = _useState22[0],
+    setEditVal = _useState22[1];
   var _useState23 = useState(false),
     editColor = _useState23[0],
     setEditColor = _useState23[1];
-  var dragOver = useRef(null),
-    dragItem = useRef(null);
-  var items = [].concat(list.items || []).sort(function (a, b) {
+  var cols = list.columns || [];
+  var rows = [].concat(list.rows || []).sort(function (a, b) {
     return (a.order || 0) - (b.order || 0);
   });
-  var checkItems = items.filter(function (i) {
-    return i.hasCheck;
-  });
-  var doneCount = checkItems.filter(function (i) {
-    return i.done;
-  }).length;
   var upd = function upd(nl) {
     return onUpdate(nl);
-  };
-  var updItems = function updItems(ni) {
-    return upd(_extends({}, list, {
-      items: ni
-    }));
-  };
-  var addItem = function addItem() {
-    if (!newText.trim()) return;
-    var max = items.length ? Math.max.apply(Math, items.map(function (i) {
-      return i.order || 0;
-    })) + 1 : 0;
-    updItems([].concat(list.items, [{
-      id: "li" + Date.now(),
-      text: newText.trim(),
-      url: "",
-      note: "",
-      done: false,
-      hasCheck: false,
-      order: max
-    }]));
-    setNewText("");
-  };
-  var updItem = function updItem(id, patch) {
-    return updItems(list.items.map(function (i) {
-      return i.id === id ? _extends({}, i, patch) : i;
-    }));
-  };
-  var deleteItem = function deleteItem(id) {
-    return updItems(list.items.filter(function (i) {
-      return i.id !== id;
-    }));
   };
   var saveName = function saveName() {
     if (nameVal.trim()) upd(_extends({}, list, {
       name: nameVal.trim()
     }));
-    setEditingName(false);
+    setNameEditing(false);
   };
-  var dh = function dh(idx) {
-    return {
-      onDragStart: function onDragStart(e) {
-        dragItem.current = idx;
-        e.dataTransfer.effectAllowed = "move";
-      },
-      onDragOver: function onDragOver(e) {
-        e.preventDefault();
-        dragOver.current = idx;
-      },
-      onDrop: function onDrop(e) {
-        e.preventDefault();
-        if (dragItem.current === null || dragItem.current === dragOver.current) return;
-        var s = [].concat(list.items).sort(function (a, b) {
-          return (a.order || 0) - (b.order || 0);
-        });
-        var m = s.splice(dragItem.current, 1)[0];
-        s.splice(dragOver.current, 0, m);
-        updItems(s.map(function (it, i) {
-          return _extends({}, it, {
-            order: i
-          });
-        }));
-        dragItem.current = null;
-        dragOver.current = null;
-      },
-      onDragEnd: function onDragEnd() {
-        dragItem.current = null;
-        dragOver.current = null;
-      }
+  var addCol = function addCol() {
+    if (!newColLabel.trim()) return;
+    var c = {
+      id: "c" + Date.now(),
+      label: newColLabel.trim()
     };
+    upd(_extends({}, list, {
+      columns: [].concat(cols, [c])
+    }));
+    setNewColLabel("");
+    setAddingCol(false);
   };
-  if (compact) {
-    return React.createElement("div", {
-      style: {
-        background: T.surface,
-        border: "1px solid " + T.border,
-        borderLeft: "4px solid " + list.color,
-        borderRadius: 16,
-        padding: 18
-      },
-      className: "card-enter"
-    }, React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        marginBottom: 10
-      }
-    }, React.createElement("span", {
-      style: {
-        fontSize: 14,
-        fontWeight: 700,
-        color: T.text,
-        flex: 1
-      }
-    }, list.name), checkItems.length > 0 && React.createElement("span", {
-      style: {
-        fontSize: 12,
-        color: T.muted
-      }
-    }, doneCount, "/", checkItems.length)), items.length === 0 && React.createElement("p", {
-      style: {
-        fontSize: 13,
-        color: T.muted
-      }
-    }, "No items yet."), items.slice(0, 5).map(function (item) {
-      return React.createElement("div", {
-        key: item.id,
-        style: {
-          display: "flex",
-          alignItems: "center",
-          gap: 9,
-          padding: "6px 0",
-          borderBottom: "1px solid " + T.border
-        }
-      }, item.hasCheck ? React.createElement("div", {
-        onClick: function onClick(e) {
-          e.stopPropagation();
-          updItem(item.id, {
-            done: !item.done
-          });
-        },
-        style: {
-          width: 18,
-          height: 18,
-          borderRadius: 4,
-          border: "2px solid " + (item.done ? list.color : T.border),
-          background: item.done ? list.color : "transparent",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0
-        }
-      }, item.done && React.createElement("span", {
-        style: {
-          color: "#fff",
-          fontSize: 10,
-          fontWeight: 800
-        }
-      }, "\u2713")) : React.createElement("div", {
-        style: {
-          width: 5,
-          height: 5,
-          borderRadius: "50%",
-          background: list.color,
-          flexShrink: 0,
-          marginLeft: 2
-        }
-      }), item.url ? React.createElement("a", {
-        href: item.url,
-        target: "_blank",
-        rel: "noreferrer",
-        style: {
-          flex: 1,
-          fontSize: 13,
-          color: T.accent,
-          textDecoration: "none",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap"
-        }
-      }, item.text || item.url) : React.createElement("span", {
-        style: {
-          flex: 1,
-          fontSize: 13,
-          color: item.done && item.hasCheck ? T.muted : T.text,
-          textDecoration: item.done && item.hasCheck ? "line-through" : "none",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap"
-        }
-      }, item.text));
-    }), items.length > 5 && React.createElement("p", {
-      style: {
-        fontSize: 12,
-        color: T.muted,
-        marginTop: 7
-      }
-    }, "+", items.length - 5, " more"), checkItems.length > 0 && React.createElement("div", {
-      style: {
-        marginTop: 11,
-        height: 3,
-        background: T.border,
-        borderRadius: 2
-      }
-    }, React.createElement("div", {
-      style: {
-        height: "100%",
-        width: (checkItems.length ? Math.round(doneCount / checkItems.length * 100) : 0) + "%",
-        background: list.color,
-        borderRadius: 2,
-        transition: "width 0.3s"
-      }
-    })));
-  }
+  var delCol = function delCol(id) {
+    return upd(_extends({}, list, {
+      columns: cols.filter(function (c) {
+        return c.id !== id;
+      })
+    }));
+  };
+  var addRow = function addRow() {
+    if (!newRowText.trim()) return;
+    var r = {
+      id: "r" + Date.now(),
+      text: newRowText.trim(),
+      checks: {},
+      note: "",
+      order: rows.length
+    };
+    upd(_extends({}, list, {
+      rows: [].concat(list.rows || [], [r])
+    }));
+    setNewRowText("");
+  };
+  var updRow = function updRow(id, patch) {
+    return upd(_extends({}, list, {
+      rows: (list.rows || []).map(function (r) {
+        return r.id === id ? _extends({}, r, patch) : r;
+      })
+    }));
+  };
+  var delRow = function delRow(id) {
+    return upd(_extends({}, list, {
+      rows: (list.rows || []).filter(function (r) {
+        return r.id !== id;
+      })
+    }));
+  };
+  var toggleCheck = function toggleCheck(rowId, colId) {
+    var _extends2;
+    var row = (list.rows || []).find(function (r) {
+      return r.id === rowId;
+    });
+    if (!row) return;
+    updRow(rowId, {
+      checks: _extends({}, row.checks || {}, (_extends2 = {}, _extends2[colId] = !(row.checks || {})[colId], _extends2))
+    });
+  };
+  var startEdit = function startEdit(rowId, field, val) {
+    setEditingCell({
+      rowId: rowId,
+      field: field
+    });
+    setEditVal(val || "");
+  };
+  var saveEdit = function saveEdit() {
+    var _updRow;
+    if (!editingCell) return;
+    updRow(editingCell.rowId, (_updRow = {}, _updRow[editingCell.field] = editVal, _updRow));
+    setEditingCell(null);
+  };
   return React.createElement("div", {
+    className: "page-enter",
     style: {
-      background: T.surface,
-      border: "1px solid " + T.border,
-      borderRadius: 16,
-      marginBottom: 16,
-      overflow: "hidden"
-    },
-    className: "slide-in"
+      position: "relative"
+    }
   }, React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
       gap: 12,
-      padding: "14px 20px",
-      borderBottom: open ? "1px solid " + T.border : "none",
-      background: T.alt
+      marginBottom: 24
+    }
+  }, React.createElement("button", {
+    onClick: onClose,
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: T.muted,
+      display: "flex",
+      alignItems: "center",
+      gap: 4,
+      fontSize: 13,
+      fontWeight: 600,
+      padding: "6px 10px",
+      borderRadius: 8,
+      transition: "background 0.15s"
+    },
+    onMouseEnter: function onMouseEnter(e) {
+      return e.currentTarget.style.background = T.alt;
+    },
+    onMouseLeave: function onMouseLeave(e) {
+      return e.currentTarget.style.background = "transparent";
+    }
+  }, React.createElement("svg", {
+    width: "16",
+    height: "16",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5",
+    strokeLinecap: "round"
+  }, React.createElement("polyline", {
+    points: "15 18 9 12 15 6"
+  })), "Lists"), React.createElement("div", {
+    style: {
+      width: 1,
+      height: 20,
+      background: T.border
+    }
+  }), React.createElement("div", {
+    style: {
+      position: "relative"
     }
   }, React.createElement("div", {
-    style: {
-      position: "relative",
-      cursor: "pointer"
-    },
     onClick: function onClick() {
       return setEditColor(function (v) {
         return !v;
       });
-    }
-  }, React.createElement("div", {
+    },
     style: {
-      width: 12,
-      height: 12,
-      borderRadius: 3,
-      background: list.color
+      width: 20,
+      height: 20,
+      borderRadius: 5,
+      background: list.color,
+      cursor: "pointer",
+      flexShrink: 0
     }
   }), editColor && React.createElement("div", {
     style: {
       position: "absolute",
-      top: 18,
+      top: 28,
       left: 0,
       background: T.surface,
       border: "1px solid " + T.border,
-      borderRadius: 10,
-      padding: 10,
+      borderRadius: 12,
+      padding: 12,
       display: "grid",
       gridTemplateColumns: "repeat(5,1fr)",
-      gap: 6,
-      zIndex: 50,
-      width: 140
+      gap: 8,
+      zIndex: 100,
+      width: 160
     },
     onClick: function onClick(e) {
       return e.stopPropagation();
     }
-  }, LIST_COLORS.map(function (c) {
+  }, ["#C4622D", "#4A7C59", "#1E3A5F", "#A0527A", "#8B6914", "#5B6AD0", "#C4956A", "#7A6A50", "#627558", "#8580A8"].map(function (c) {
     return React.createElement("div", {
       key: c,
       onClick: function onClick() {
@@ -4539,15 +4422,15 @@ function ListPanel(_ref24) {
         setEditColor(false);
       },
       style: {
-        width: 18,
-        height: 18,
-        borderRadius: 4,
+        width: 22,
+        height: 22,
+        borderRadius: 5,
         background: c,
         cursor: "pointer",
-        border: c === list.color ? "2.5px solid " + T.text : "2px solid transparent"
+        border: c === list.color ? "3px solid " + T.text : "2px solid transparent"
       }
     });
-  }))), editingName ? React.createElement("input", {
+  }))), nameEditing ? React.createElement("input", {
     autoFocus: true,
     value: nameVal,
     onChange: function onChange(e) {
@@ -4558,121 +4441,316 @@ function ListPanel(_ref24) {
       if (e.key === "Enter") saveName();
       if (e.key === "Escape") {
         setNameVal(list.name);
-        setEditingName(false);
+        setNameEditing(false);
       }
     },
     style: {
-      flex: 1,
-      border: "1.5px solid " + T.border,
+      fontSize: 22,
+      fontWeight: 800,
+      color: T.text,
+      background: "transparent",
+      border: "2px solid " + T.accent,
       borderRadius: 8,
-      padding: "5px 10px",
-      fontSize: 14,
-      fontWeight: 700,
+      padding: "4px 10px",
+      outline: "none",
+      fontFamily: "inherit",
+      letterSpacing: "-0.02em"
+    }
+  }) : React.createElement("h1", {
+    onDoubleClick: function onDoubleClick() {
+      return setNameEditing(true);
+    },
+    style: {
+      fontSize: 22,
+      fontWeight: 800,
       color: T.text,
-      background: T.surface,
-      outline: "none"
+      margin: 0,
+      cursor: "text",
+      letterSpacing: "-0.02em"
     }
-  }) : React.createElement("span", {
-    onClick: function onClick() {
-      return setEditingName(true);
-    },
+  }, list.name)), React.createElement("div", {
     style: {
-      fontSize: 14,
-      fontWeight: 700,
-      color: T.text,
-      flex: 1,
-      cursor: "text"
+      overflowX: "auto",
+      marginBottom: 16
     }
-  }, list.name), checkItems.length > 0 && React.createElement(React.Fragment, null, React.createElement("span", {
+  }, React.createElement("table", {
     style: {
-      fontSize: 12,
-      color: doneCount === checkItems.length && checkItems.length > 0 ? "#A3BE8C" : T.muted,
-      fontWeight: 600
+      width: "100%",
+      borderCollapse: "separate",
+      borderSpacing: 0,
+      tableLayout: "fixed"
     }
-  }, doneCount, "/", checkItems.length), React.createElement("div", {
-    style: {
-      width: 50,
-      height: 3,
-      background: T.border,
-      borderRadius: 2,
-      marginLeft: 4,
-      marginRight: 8
-    }
-  }, React.createElement("div", {
-    style: {
-      height: "100%",
-      width: (checkItems.length ? Math.round(doneCount / checkItems.length * 100) : 0) + "%",
-      background: list.color,
-      borderRadius: 2,
-      transition: "width 0.3s"
-    }
-  }))), React.createElement("button", {
-    onClick: function onClick() {
-      return setOpen(function (o) {
-        return !o;
-      });
-    },
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: T.muted,
-      fontSize: 13,
-      padding: "2px 4px"
-    }
-  }, open ? "▲" : "▼"), React.createElement("button", {
-    onClick: function onClick() {
-      return onDelete(list.id);
-    },
-    style: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: T.muted,
-      fontSize: 20,
-      padding: 0,
-      lineHeight: 1
-    }
-  }, "\xD7")), open && React.createElement("div", {
-    style: {
-      padding: "14px 20px 0"
-    }
-  }, items.length === 0 && React.createElement("p", {
-    style: {
-      fontSize: 14,
-      color: T.muted,
-      marginBottom: 14
-    }
-  }, "No items yet \u2014 add one below."), items.map(function (item, idx) {
-    return React.createElement(FlexItem, {
-      key: item.id,
-      item: item,
-      listColor: list.color,
-      onUpdate: function onUpdate(patch) {
-        return updItem(item.id, patch);
-      },
-      onDelete: function onDelete() {
-        return deleteItem(item.id);
-      },
-      T: T,
-      dragHandlers: dh(idx)
+  }, React.createElement("colgroup", null, cols.map(function () {
+    return React.createElement("col", {
+      key: Math.random(),
+      style: {
+        width: 90
+      }
     });
-  }), React.createElement("div", {
+  }), React.createElement("col", {
+    style: {
+      width: "auto"
+    }
+  }), React.createElement("col", {
+    style: {
+      width: 200
+    }
+  }), React.createElement("col", {
+    style: {
+      width: 36
+    }
+  })), React.createElement("thead", null, React.createElement("tr", null, cols.map(function (c) {
+    return React.createElement("th", {
+      key: c.id,
+      style: {
+        padding: "8px 10px",
+        textAlign: "center",
+        background: T.alt,
+        borderBottom: "2px solid " + T.border,
+        borderRight: "1px solid " + T.border,
+        whiteSpace: "nowrap"
+      }
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 5
+      }
+    }, React.createElement("span", {
+      style: {
+        fontSize: 11,
+        fontWeight: 700,
+        color: list.color,
+        textTransform: "uppercase",
+        letterSpacing: "0.06em"
+      }
+    }, c.label), React.createElement("button", {
+      onClick: function onClick() {
+        return delCol(c.id);
+      },
+      style: {
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: T.muted,
+        fontSize: 14,
+        padding: 0,
+        lineHeight: 1
+      }
+    }, "\xD7")));
+  }), React.createElement("th", {
+    style: {
+      padding: "8px 14px",
+      textAlign: "left",
+      background: T.alt,
+      borderBottom: "2px solid " + T.border,
+      borderRight: "1px solid " + T.border
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.06em"
+    }
+  }, "Item")), React.createElement("th", {
+    style: {
+      padding: "8px 14px",
+      textAlign: "left",
+      background: T.alt,
+      borderBottom: "2px solid " + T.border,
+      borderRight: "1px solid " + T.border
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.06em"
+    }
+  }, "Note")), React.createElement("th", {
+    style: {
+      background: T.alt,
+      borderBottom: "2px solid " + T.border
+    }
+  }))), React.createElement("tbody", null, rows.map(function (row, i) {
+    return React.createElement("tr", {
+      key: row.id,
+      style: {
+        background: i % 2 === 0 ? T.surface : T.alt + "60"
+      },
+      onMouseEnter: function onMouseEnter(e) {
+        return e.currentTarget.style.background = list.color + "08";
+      },
+      onMouseLeave: function onMouseLeave(e) {
+        return e.currentTarget.style.background = i % 2 === 0 ? T.surface : T.alt + "60";
+      }
+    }, cols.map(function (c) {
+      return React.createElement("td", {
+        key: c.id,
+        style: {
+          padding: "10px",
+          textAlign: "center",
+          borderBottom: "1px solid " + T.border,
+          borderRight: "1px solid " + T.border
+        }
+      }, React.createElement("div", {
+        onClick: function onClick() {
+          return toggleCheck(row.id, c.id);
+        },
+        style: {
+          width: 22,
+          height: 22,
+          borderRadius: 6,
+          cursor: "pointer",
+          margin: "0 auto",
+          border: "2px solid " + ((row.checks || {})[c.id] ? list.color : T.border),
+          background: (row.checks || {})[c.id] ? list.color : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.15s"
+        }
+      }, (row.checks || {})[c.id] && React.createElement("svg", {
+        width: "12",
+        height: "12",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "#fff",
+        strokeWidth: "3.5",
+        strokeLinecap: "round"
+      }, React.createElement("polyline", {
+        points: "20 6 9 17 4 12"
+      }))));
+    }), React.createElement("td", {
+      style: {
+        padding: "0",
+        borderBottom: "1px solid " + T.border,
+        borderRight: "1px solid " + T.border
+      }
+    }, (editingCell == null ? void 0 : editingCell.rowId) === row.id && (editingCell == null ? void 0 : editingCell.field) === "text" ? React.createElement("input", {
+      autoFocus: true,
+      value: editVal,
+      onChange: function onChange(e) {
+        return setEditVal(e.target.value);
+      },
+      onBlur: saveEdit,
+      onKeyDown: function onKeyDown(e) {
+        return e.key === "Enter" && saveEdit();
+      },
+      style: {
+        width: "100%",
+        border: "none",
+        outline: "none",
+        padding: "10px 14px",
+        fontSize: 14,
+        color: T.text,
+        background: "transparent",
+        fontFamily: "inherit"
+      }
+    }) : React.createElement("div", {
+      onClick: function onClick() {
+        return startEdit(row.id, "text", row.text);
+      },
+      style: {
+        padding: "10px 14px",
+        fontSize: 14,
+        color: row.text ? T.text : T.muted,
+        cursor: "text",
+        minHeight: 42,
+        lineHeight: 1.4
+      }
+    }, row.text || React.createElement("span", {
+      style: {
+        fontStyle: "italic",
+        opacity: 0.5
+      }
+    }, "Click to edit"))), React.createElement("td", {
+      style: {
+        padding: "0",
+        borderBottom: "1px solid " + T.border,
+        borderRight: "1px solid " + T.border
+      }
+    }, (editingCell == null ? void 0 : editingCell.rowId) === row.id && (editingCell == null ? void 0 : editingCell.field) === "note" ? React.createElement("input", {
+      autoFocus: true,
+      value: editVal,
+      onChange: function onChange(e) {
+        return setEditVal(e.target.value);
+      },
+      onBlur: saveEdit,
+      onKeyDown: function onKeyDown(e) {
+        return e.key === "Enter" && saveEdit();
+      },
+      style: {
+        width: "100%",
+        border: "none",
+        outline: "none",
+        padding: "10px 14px",
+        fontSize: 13,
+        color: T.text,
+        background: "transparent",
+        fontFamily: "inherit"
+      }
+    }) : React.createElement("div", {
+      onClick: function onClick() {
+        return startEdit(row.id, "note", row.note);
+      },
+      style: {
+        padding: "10px 14px",
+        fontSize: 13,
+        color: T.muted,
+        cursor: "text",
+        minHeight: 42
+      }
+    }, row.note || React.createElement("span", {
+      style: {
+        fontStyle: "italic",
+        opacity: 0.4
+      }
+    }, "\u2014"))), React.createElement("td", {
+      style: {
+        padding: "4px 6px",
+        textAlign: "center",
+        borderBottom: "1px solid " + T.border
+      }
+    }, React.createElement("button", {
+      onClick: function onClick() {
+        return delRow(row.id);
+      },
+      style: {
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: T.muted,
+        fontSize: 16,
+        padding: "2px 4px",
+        lineHeight: 1,
+        opacity: 0.4,
+        transition: "opacity 0.15s"
+      },
+      onMouseEnter: function onMouseEnter(e) {
+        return e.currentTarget.style.opacity = "1";
+      },
+      onMouseLeave: function onMouseLeave(e) {
+        return e.currentTarget.style.opacity = "0.4";
+      }
+    }, "\xD7")));
+  })))), React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
-      padding: "12px 0 16px",
-      position: "sticky",
-      bottom: 0,
-      background: T.surface
+      marginBottom: 20
     }
   }, React.createElement("input", {
-    value: newText,
+    value: newRowText,
     onChange: function onChange(e) {
-      return setNewText(e.target.value);
+      return setNewRowText(e.target.value);
     },
     onKeyDown: function onKeyDown(e) {
-      return e.key === "Enter" && addItem();
+      return e.key === "Enter" && addRow();
     },
     placeholder: "Add item\u2026",
     style: {
@@ -4682,11 +4760,18 @@ function ListPanel(_ref24) {
       padding: "10px 14px",
       fontSize: 14,
       color: T.text,
-      background: T.alt,
-      outline: "none"
+      background: T.surface,
+      outline: "none",
+      fontFamily: "inherit"
+    },
+    onFocus: function onFocus(e) {
+      return e.target.style.borderColor = T.accent;
+    },
+    onBlur: function onBlur(e) {
+      return e.target.style.borderColor = T.border;
     }
   }), React.createElement("button", {
-    onClick: addItem,
+    onClick: addRow,
     style: {
       background: list.color,
       color: "#fff",
@@ -4697,7 +4782,89 @@ function ListPanel(_ref24) {
       fontSize: 14,
       fontWeight: 700
     }
-  }, "Add"))));
+  }, "Add")), React.createElement("div", {
+    style: {
+      borderTop: "1px solid " + T.border,
+      paddingTop: 16
+    }
+  }, addingCol ? React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center"
+    }
+  }, React.createElement("input", {
+    autoFocus: true,
+    value: newColLabel,
+    onChange: function onChange(e) {
+      return setNewColLabel(e.target.value);
+    },
+    onKeyDown: function onKeyDown(e) {
+      if (e.key === "Enter") addCol();
+      if (e.key === "Escape") setAddingCol(false);
+    },
+    placeholder: "Column name (e.g. Sold, Shipped)",
+    style: {
+      flex: 1,
+      border: "1.5px solid " + T.accent,
+      borderRadius: 10,
+      padding: "9px 14px",
+      fontSize: 14,
+      color: T.text,
+      background: T.surface,
+      outline: "none",
+      fontFamily: "inherit"
+    }
+  }), React.createElement("button", {
+    onClick: addCol,
+    style: {
+      background: T.accent,
+      color: "#fff",
+      border: "none",
+      borderRadius: 10,
+      padding: "9px 18px",
+      cursor: "pointer",
+      fontSize: 14,
+      fontWeight: 700
+    }
+  }, "Add"), React.createElement("button", {
+    onClick: function onClick() {
+      return setAddingCol(false);
+    },
+    style: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: T.muted,
+      fontSize: 20
+    }
+  }, "\xD7")) : React.createElement("button", {
+    onClick: function onClick() {
+      return setAddingCol(true);
+    },
+    style: {
+      background: "none",
+      border: "1.5px dashed " + T.border,
+      borderRadius: 10,
+      padding: "9px 18px",
+      cursor: "pointer",
+      fontSize: 13,
+      color: T.muted,
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      transition: "all 0.15s"
+    },
+    onMouseEnter: function onMouseEnter(e) {
+      e.currentTarget.style.borderColor = T.accent;
+      e.currentTarget.style.color = T.accent;
+    },
+    onMouseLeave: function onMouseLeave(e) {
+      e.currentTarget.style.borderColor = T.border;
+      e.currentTarget.style.color = T.muted;
+    }
+  }, "+ Add column")));
 }
 function NewListModal(_ref25) {
   var onSave = _ref25.onSave,
@@ -5082,18 +5249,19 @@ function MobileDashboard(_ref26) {
     }
   }, "View all \u2192")), React.createElement("div", {
     style: {
-      display: "flex",
-      flexDirection: "column",
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
       gap: 10
     }
   }, lists.map(function (list) {
-    return React.createElement(ListPanel, {
+    return React.createElement(ListCard, {
       key: list.id,
       list: list,
-      onUpdate: updateList,
+      onOpen: function onOpen() {
+        return setView("lists");
+      },
       onDelete: deleteList,
-      T: T,
-      compact: true
+      T: T
     });
   }))));
 }
@@ -6315,8 +6483,8 @@ function TaskModal(_ref34) {
     setNs = _useState37[1];
   var u = function u(k, v) {
     return setF(function (x) {
-      var _extends2;
-      return _extends({}, x, (_extends2 = {}, _extends2[k] = v, _extends2));
+      var _extends3;
+      return _extends({}, x, (_extends3 = {}, _extends3[k] = v, _extends3));
     });
   };
   var save = function save() {
@@ -6742,40 +6910,43 @@ function TaskCard(_ref36) {
     style = _ref36.style,
     animDelay = _ref36.animDelay;
   var _useState38 = useState(false),
-    pressed = _useState38[0],
-    setPressed = _useState38[1];
+    hovered = _useState38[0],
+    setHovered = _useState38[1];
   var tag = taskTag(task);
   var d = dateFmt(task.dueDate);
   var isDone = taskDone(task);
-  var urgent = !isDone && (task.priority === "High" || task.dueDate && new Date(task.dueDate + "T12:00:00") <= new Date(TODAY + "T12:00:00"));
+  var isUrgentTask = !isDone && task.priority === "High";
+  var isOverdue = !isDone && task.dueDate && new Date(task.dueDate + "T12:00:00") < new Date(TODAY + "T12:00:00");
+  var accentColor = isOverdue ? PRIORITY_COLOR.High : isUrgentTask ? PRIORITY_COLOR.High : tag.color;
   return React.createElement("div", {
     onClick: function onClick() {
       return onEdit(task);
     },
     className: "card-enter",
+    onMouseEnter: function onMouseEnter() {
+      return setHovered(true);
+    },
+    onMouseLeave: function onMouseLeave() {
+      return setHovered(false);
+    },
     style: _extends({
       background: T.surface,
-      border: "1px solid " + (urgent ? PRIORITY_COLOR.High + "60" : T.border),
-      borderRadius: 16,
-      padding: "14px 16px",
-      marginBottom: 8,
+      border: "1.5px solid " + (hovered ? isOverdue ? PRIORITY_COLOR.High + "80" : T.accent + "50" : isOverdue ? PRIORITY_COLOR.High + "40" : T.border),
+      borderLeft: "4px solid " + (isDone ? T.border : accentColor),
+      borderRadius: 14,
+      padding: "13px 14px 13px 16px",
+      marginBottom: 7,
       cursor: "pointer",
-      transition: "transform 0.18s, box-shadow 0.18s",
-      opacity: isDone ? 0.5 : 1,
+      transition: "all 0.18s cubic-bezier(0.16,1,0.3,1)",
+      transform: hovered ? "translateY(-1px)" : "translateY(0)",
+      boxShadow: hovered ? "0 6px 20px " + accentColor + "18" : "0 1px 4px rgba(0,0,0,0.04)",
+      opacity: isDone ? 0.55 : 1,
       animationDelay: (animDelay || 0) + "ms"
-    }, style),
-    onMouseEnter: function onMouseEnter(e) {
-      e.currentTarget.style.transform = "translateY(-2px)";
-      e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.1)";
-    },
-    onMouseLeave: function onMouseLeave(e) {
-      e.currentTarget.style.transform = "";
-      e.currentTarget.style.boxShadow = "";
-    }
+    }, style)
   }, React.createElement("div", {
     style: {
       display: "flex",
-      alignItems: "flex-start",
+      alignItems: "center",
       gap: 10
     }
   }, React.createElement("div", {
@@ -6783,34 +6954,36 @@ function TaskCard(_ref36) {
       e.stopPropagation();
       onToggleDone(task.id);
     },
-    className: pressed ? "bounce" : "",
-    onMouseDown: function onMouseDown() {
-      return setPressed(true);
-    },
-    onMouseUp: function onMouseUp() {
-      return setPressed(false);
-    },
     style: {
-      width: 22,
-      height: 22,
+      width: 20,
+      height: 20,
       borderRadius: 6,
-      border: "2px solid " + (isDone ? "#4CAF50" : T.border),
+      border: "2px solid " + (isDone ? "#4CAF50" : hovered ? T.accent : T.border),
       background: isDone ? "#4CAF50" : "transparent",
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
-      transition: "all 0.2s",
-      marginTop: 1
+      transition: "all 0.18s"
+    },
+    onMouseEnter: function onMouseEnter(e) {
+      e.stopPropagation();
+      e.currentTarget.style.borderColor = isDone ? "#4CAF50" : T.accent;
+      e.currentTarget.style.background = isDone ? "#4CAF50" : T.accent + "15";
+    },
+    onMouseLeave: function onMouseLeave(e) {
+      e.stopPropagation();
+      e.currentTarget.style.borderColor = isDone ? "#4CAF50" : T.border;
+      e.currentTarget.style.background = isDone ? "#4CAF50" : "transparent";
     }
   }, isDone && React.createElement("svg", {
-    width: "12",
-    height: "12",
+    width: "11",
+    height: "11",
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "#fff",
-    strokeWidth: "3",
+    strokeWidth: "3.5",
     strokeLinecap: "round"
   }, React.createElement("polyline", {
     points: "20 6 9 17 4 12"
@@ -6821,69 +6994,64 @@ function TaskCard(_ref36) {
     }
   }, React.createElement("p", {
     style: {
-      margin: "0 0 6px",
+      margin: 0,
       fontSize: 14,
-      fontWeight: 600,
+      fontWeight: isDone ? 400 : 600,
       color: isDone ? T.muted : T.text,
       textDecoration: isDone ? "line-through" : "none",
-      lineHeight: 1.35,
+      lineHeight: 1.3,
       overflow: "hidden",
       textOverflow: "ellipsis",
-      whiteSpace: "nowrap"
+      whiteSpace: "nowrap",
+      letterSpacing: "-0.01em"
     }
-  }, task.title || "Untitled"), React.createElement("div", {
+  }, task.title || "Untitled")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 5,
-      flexWrap: "wrap",
-      alignItems: "center"
-    }
-  }, React.createElement("span", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: tag.color,
-      background: tag.color + "20",
-      padding: "2px 8px",
-      borderRadius: 5
-    }
-  }, tag.label), React.createElement("span", {
-    style: {
-      display: "flex",
       alignItems: "center",
-      gap: 3,
-      fontSize: 11,
-      color: PRIORITY_COLOR[task.priority]
+      flexShrink: 0
     }
-  }, React.createElement("span", {
+  }, task.subtasks && task.subtasks.length > 0 && React.createElement("span", {
     style: {
-      width: 6,
-      height: 6,
-      borderRadius: "50%",
-      background: PRIORITY_COLOR[task.priority],
-      display: "inline-block"
-    }
-  }), task.priority), d && React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: d.over ? PRIORITY_COLOR.High : d.today ? "#D08770" : T.muted,
-      fontWeight: d.over || d.today ? 700 : 400
-    }
-  }, d.label), task.subtasks && task.subtasks.length > 0 && React.createElement("span", {
-    style: {
-      fontSize: 11,
+      fontSize: 10,
       color: T.muted,
-      marginLeft: 2
+      background: T.alt,
+      padding: "2px 6px",
+      borderRadius: 4
     }
   }, task.subtasks.filter(function (s) {
     return s.done;
-  }).length, "/", task.subtasks.length))), React.createElement("div", {
+  }).length, "/", task.subtasks.length), d && React.createElement("span", {
     style: {
-      display: "flex",
-      gap: 4,
-      flexShrink: 0
+      fontSize: 11,
+      fontWeight: isOverdue ? 700 : 500,
+      color: isOverdue ? PRIORITY_COLOR.High : d.today ? PRIORITY_COLOR.Medium : T.muted,
+      background: isOverdue ? PRIORITY_COLOR.High + "15" : d.today ? PRIORITY_COLOR.Medium + "15" : "transparent",
+      padding: isOverdue || d.today ? "2px 6px" : "0",
+      borderRadius: 4
     }
-  }, React.createElement("button", {
+  }, d.label), React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: tag.color,
+      background: tag.color + "18",
+      padding: "2px 7px",
+      borderRadius: 4,
+      letterSpacing: "0.02em"
+    }
+  }, tag.label), task.pinned && React.createElement("span", {
+    style: {
+      color: T.accent,
+      display: "flex",
+      alignItems: "center"
+    }
+  }, React.createElement(Ic, {
+    n: "pinFill",
+    size: 11,
+    color: "currentColor"
+  })), React.createElement("button", {
     onClick: function onClick(e) {
       e.stopPropagation();
       onPin(task.id);
@@ -6893,13 +7061,13 @@ function TaskCard(_ref36) {
       border: "none",
       cursor: "pointer",
       padding: "2px",
-      display: "flex",
+      display: hovered ? "flex" : "none",
       alignItems: "center",
-      color: task.pinned ? T.accent : T.border
+      color: task.pinned ? T.accent : T.muted
     }
   }, React.createElement(Ic, {
     n: task.pinned ? "pinFill" : "pin",
-    size: 13,
+    size: 12,
     color: "currentColor"
   })), React.createElement("button", {
     onClick: function onClick(e) {
@@ -6911,15 +7079,25 @@ function TaskCard(_ref36) {
       border: "none",
       cursor: "pointer",
       padding: "2px",
-      display: "flex",
+      display: hovered ? "flex" : "none",
       alignItems: "center",
       color: T.muted
     }
   }, React.createElement(Ic, {
     n: "close",
-    size: 14,
+    size: 13,
     color: "currentColor"
-  })))));
+  })))), task.notes && !isDone && React.createElement("p", {
+    style: {
+      margin: "5px 0 0 30px",
+      fontSize: 12,
+      color: T.muted,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      lineHeight: 1.4
+    }
+  }, task.notes));
 }
 function TasksView(_ref37) {
   var tasks = _ref37.tasks,
@@ -7583,38 +7761,303 @@ function TodayPage(_ref38) {
     })));
   })));
 }
+function ListsView(_ref39) {
+  var lists = _ref39.lists,
+    setLists = _ref39.setLists,
+    updateList = _ref39.updateList,
+    deleteList = _ref39.deleteList,
+    T = _ref39.T,
+    isMobile = _ref39.isMobile;
+  var _useState46 = useState(null),
+    openId = _useState46[0],
+    setOpenId = _useState46[1];
+  var _useState47 = useState(false),
+    showNew = _useState47[0],
+    setShowNew = _useState47[1];
+  var openList = lists.find(function (l) {
+    return l.id === openId;
+  });
+  var createList = function createList(name, color) {
+    var nl = {
+      id: "l" + Date.now(),
+      name: name,
+      color: color,
+      columns: [],
+      rows: [],
+      createdAt: new Date().toISOString()
+    };
+    setLists(function (p) {
+      return [].concat(p, [nl]);
+    });
+    setOpenId(nl.id);
+    setShowNew(false);
+  };
+  if (openList) {
+    return React.createElement(ListDocument, {
+      list: openList,
+      onUpdate: updateList,
+      onClose: function onClose() {
+        return setOpenId(null);
+      },
+      T: T
+    });
+  }
+  return React.createElement("div", {
+    className: "page-enter"
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 24
+    }
+  }, React.createElement("h1", {
+    style: {
+      fontSize: isMobile ? 20 : 26,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.02em",
+      margin: 0
+    }
+  }, "Lists"), React.createElement("button", {
+    onClick: function onClick() {
+      return setShowNew(true);
+    },
+    style: {
+      background: T.accent,
+      color: "#fff",
+      border: "none",
+      borderRadius: 10,
+      padding: "10px 20px",
+      cursor: "pointer",
+      fontSize: 14,
+      fontWeight: 700,
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, React.createElement(Ic, {
+    n: "plus",
+    size: 14,
+    color: "#fff"
+  }), " New List")), lists.length === 0 && !showNew && React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: "60px 0"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center",
+      marginBottom: 14,
+      color: T.muted
+    }
+  }, React.createElement("svg", {
+    width: "48",
+    height: "48",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.2",
+    strokeLinecap: "round"
+  }, React.createElement("path", {
+    d: "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+  }), React.createElement("rect", {
+    x: "9",
+    y: "3",
+    width: "6",
+    height: "4",
+    rx: "2"
+  }), React.createElement("line", {
+    x1: "9",
+    y1: "12",
+    x2: "15",
+    y2: "12"
+  }), React.createElement("line", {
+    x1: "9",
+    y1: "16",
+    x2: "12",
+    y2: "16"
+  }))), React.createElement("p", {
+    style: {
+      fontSize: 16,
+      fontWeight: 600,
+      color: T.text,
+      marginBottom: 6
+    }
+  }, "No lists yet"), React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted
+    }
+  }, "Create a list to track anything \u2014 tasks, items, trackers")), showNew && React.createElement(NewListInline, {
+    onCreate: createList,
+    onCancel: function onCancel() {
+      return setShowNew(false);
+    },
+    T: T
+  }), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill,minmax(260px,1fr))",
+      gap: 14
+    }
+  }, lists.map(function (list) {
+    return React.createElement(ListCard, {
+      key: list.id,
+      list: list,
+      onOpen: function onOpen() {
+        return setOpenId(list.id);
+      },
+      onDelete: deleteList,
+      T: T
+    });
+  })));
+}
+function NewListInline(_ref40) {
+  var onCreate = _ref40.onCreate,
+    onCancel = _ref40.onCancel,
+    T = _ref40.T;
+  var _useState48 = useState(""),
+    name = _useState48[0],
+    setName = _useState48[1];
+  var _useState49 = useState("#C4622D"),
+    color = _useState49[0],
+    setColor = _useState49[1];
+  var COLORS = ["#C4622D", "#4A7C59", "#1E3A5F", "#A0527A", "#8B6914", "#5B6AD0", "#C4956A", "#627558", "#8580A8", "#7A6A50"];
+  return React.createElement("div", {
+    style: {
+      background: T.surface,
+      border: "1.5px solid " + T.accent,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 20
+    },
+    className: "slide-up"
+  }, React.createElement("h3", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: T.text,
+      margin: "0 0 14px"
+    }
+  }, "New list"), React.createElement("input", {
+    autoFocus: true,
+    value: name,
+    onChange: function onChange(e) {
+      return setName(e.target.value);
+    },
+    onKeyDown: function onKeyDown(e) {
+      if (e.key === "Enter" && name.trim()) onCreate(name.trim(), color);
+      if (e.key === "Escape") onCancel();
+    },
+    placeholder: "List name\u2026",
+    style: {
+      width: "100%",
+      border: "1.5px solid " + T.border,
+      borderRadius: 10,
+      padding: "10px 14px",
+      fontSize: 14,
+      color: T.text,
+      background: T.alt,
+      outline: "none",
+      fontFamily: "inherit",
+      marginBottom: 14
+    },
+    onFocus: function onFocus(e) {
+      return e.target.style.borderColor = T.accent;
+    },
+    onBlur: function onBlur(e) {
+      return e.target.style.borderColor = T.border;
+    }
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 16
+    }
+  }, COLORS.map(function (c) {
+    return React.createElement("div", {
+      key: c,
+      onClick: function onClick() {
+        return setColor(c);
+      },
+      style: {
+        width: 26,
+        height: 26,
+        borderRadius: 6,
+        background: c,
+        cursor: "pointer",
+        border: c === color ? "3px solid " + T.text : "2px solid transparent",
+        transition: "transform 0.1s"
+      }
+    });
+  })), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, React.createElement("button", {
+    onClick: function onClick() {
+      return name.trim() && onCreate(name.trim(), color);
+    },
+    style: {
+      flex: 1,
+      background: color,
+      color: "#fff",
+      border: "none",
+      borderRadius: 10,
+      padding: "11px 0",
+      cursor: "pointer",
+      fontSize: 14,
+      fontWeight: 700
+    }
+  }, "Create"), React.createElement("button", {
+    onClick: onCancel,
+    style: {
+      flex: 1,
+      background: T.alt,
+      color: T.muted,
+      border: "none",
+      borderRadius: 10,
+      padding: "11px 0",
+      cursor: "pointer",
+      fontSize: 14
+    }
+  }, "Cancel")));
+}
 function App() {
-  var _useState46 = useState(function () {
+  var _useState50 = useState(function () {
       return lsGet("h-tasks-html", INITIAL_TASKS);
     }),
-    tasks = _useState46[0],
-    setTasks = _useState46[1];
-  var _useState47 = useState(function () {
+    tasks = _useState50[0],
+    setTasks = _useState50[1];
+  var _useState51 = useState(function () {
       return lsGet("h-courses-html", {});
     }),
-    cd = _useState47[0],
-    setCd = _useState47[1];
-  var _useState48 = useState(function () {
+    cd = _useState51[0],
+    setCd = _useState51[1];
+  var _useState52 = useState(function () {
       return lsGet("h-dl-html", []);
     }),
-    deadlines = _useState48[0],
-    setDeadlines = _useState48[1];
-  var _useState49 = useState(function () {
+    deadlines = _useState52[0],
+    setDeadlines = _useState52[1];
+  var _useState53 = useState(function () {
       return lsGet("h-lists-html", INITIAL_LISTS);
     }),
-    lists = _useState49[0],
-    setLists = _useState49[1];
-  var _useState50 = useState(function () {
+    lists = _useState53[0],
+    setLists = _useState53[1];
+  var _useState54 = useState(function () {
       return lsGet("h-habits-html", INITIAL_HABITS);
     }),
-    habits = _useState50[0],
-    setHabits = _useState50[1];
-  var _useState51 = useState(function () {
+    habits = _useState54[0],
+    setHabits = _useState54[1];
+  var _useState55 = useState(function () {
       return lsGet("h-archive-html", []);
     }),
-    archive = _useState51[0],
-    setArchive = _useState51[1];
-  var _useState52 = useState(function () {
+    archive = _useState55[0],
+    setArchive = _useState55[1];
+  var _useState56 = useState(function () {
       return lsGet("h-notes-html", [{
         id: "n1",
         title: "Quick notes",
@@ -7622,97 +8065,97 @@ function App() {
         createdAt: new Date().toISOString()
       }]);
     }),
-    notes = _useState52[0],
-    setNotes = _useState52[1];
-  var _useState53 = useState(function () {
+    notes = _useState56[0],
+    setNotes = _useState56[1];
+  var _useState57 = useState(function () {
       return lsGet("h-exams-html", INITIAL_EXAM_DATES);
     }),
-    examDates = _useState53[0],
-    setExamDates = _useState53[1];
-  var _useState54 = useState(function () {
+    examDates = _useState57[0],
+    setExamDates = _useState57[1];
+  var _useState58 = useState(function () {
       return lsGet("h-cfields-html", Object.fromEntries(COURSES.map(function (c) {
         return [c.id, c.fields];
       })));
     }),
-    courseFields = _useState54[0],
-    setCourseFields = _useState54[1];
-  var _useState55 = useState("dashboard"),
-    view = _useState55[0],
-    setView = _useState55[1];
-  var _useState56 = useState("list"),
-    tv = _useState56[0],
-    setTv = _useState56[1];
-  var _useState57 = useState(null),
-    edit = _useState57[0],
-    setEdit = _useState57[1];
-  var _useState58 = useState(function () {
-      return lsGet("h-theme-html", "slate");
+    courseFields = _useState58[0],
+    setCourseFields = _useState58[1];
+  var _useState59 = useState("dashboard"),
+    view = _useState59[0],
+    setView = _useState59[1];
+  var _useState60 = useState("list"),
+    tv = _useState60[0],
+    setTv = _useState60[1];
+  var _useState61 = useState(null),
+    edit = _useState61[0],
+    setEdit = _useState61[1];
+  var _useState62 = useState(function () {
+      return lsGet("h-theme-html", "navy");
     }),
-    theme = _useState58[0],
-    setTheme = _useState58[1];
-  var _useState59 = useState("All"),
-    fCat = _useState59[0],
-    setFCat = _useState59[1];
-  var _useState60 = useState(false),
-    hideDone = _useState60[0],
-    setHideDone = _useState60[1];
-  var _useState61 = useState(true),
-    groupBycat = _useState61[0],
-    setGroupBycat = _useState61[1];
-  var _useState62 = useState(false),
-    showArchive = _useState62[0],
-    setShowArchive = _useState62[1];
-  var _useState63 = useState(false),
-    showDoneInTasks = _useState63[0],
-    setShowDoneInTasks = _useState63[1];
-  var _useState64 = useState(true),
-    sidebarOpen = _useState64[0],
-    setSidebarOpen = _useState64[1];
-  var _useState65 = useState(function () {
+    theme = _useState62[0],
+    setTheme = _useState62[1];
+  var _useState63 = useState("All"),
+    fCat = _useState63[0],
+    setFCat = _useState63[1];
+  var _useState64 = useState(false),
+    hideDone = _useState64[0],
+    setHideDone = _useState64[1];
+  var _useState65 = useState(true),
+    groupBycat = _useState65[0],
+    setGroupBycat = _useState65[1];
+  var _useState66 = useState(false),
+    showArchive = _useState66[0],
+    setShowArchive = _useState66[1];
+  var _useState67 = useState(false),
+    showDoneInTasks = _useState67[0],
+    setShowDoneInTasks = _useState67[1];
+  var _useState68 = useState(true),
+    sidebarOpen = _useState68[0],
+    setSidebarOpen = _useState68[1];
+  var _useState69 = useState(function () {
       return lsGet("h-fontscale", 1);
     }),
-    fontScale = _useState65[0],
-    setFontScale = _useState65[1];
-  var _useState66 = useState(""),
-    search = _useState66[0],
-    setSearch = _useState66[1];
-  var _useState67 = useState(null),
-    dragId = _useState67[0],
-    setDragId = _useState67[1];
-  var _useState68 = useState(null),
-    dragTaskId = _useState68[0],
-    setDragTaskId = _useState68[1];
-  var _useState69 = useState({
+    fontScale = _useState69[0],
+    setFontScale = _useState69[1];
+  var _useState70 = useState(""),
+    search = _useState70[0],
+    setSearch = _useState70[1];
+  var _useState71 = useState(null),
+    dragId = _useState71[0],
+    setDragId = _useState71[1];
+  var _useState72 = useState(null),
+    dragTaskId = _useState72[0],
+    setDragTaskId = _useState72[1];
+  var _useState73 = useState({
       title: "",
       course: "maths",
       date: "",
       notes: ""
     }),
-    newDl = _useState69[0],
-    setNewDl = _useState69[1];
-  var _useState70 = useState(false),
-    showNewList = _useState70[0],
-    setShowNewList = _useState70[1];
-  var _useState71 = useState(false),
-    showSearch = _useState71[0],
-    setShowSearch = _useState71[1];
-  var _useState72 = useState(false),
-    showSettings = _useState72[0],
-    setShowSettings = _useState72[1];
-  var _useState73 = useState("idle"),
-    syncStatus = _useState73[0],
-    setSyncStatus = _useState73[1];
+    newDl = _useState73[0],
+    setNewDl = _useState73[1];
   var _useState74 = useState(false),
-    loaded = _useState74[0],
-    setLoaded = _useState74[1];
-  var _useState75 = useState(function () {
+    showNewList = _useState74[0],
+    setShowNewList = _useState74[1];
+  var _useState75 = useState(false),
+    showSearch = _useState75[0],
+    setShowSearch = _useState75[1];
+  var _useState76 = useState(false),
+    showSettings = _useState76[0],
+    setShowSettings = _useState76[1];
+  var _useState77 = useState("idle"),
+    syncStatus = _useState77[0],
+    setSyncStatus = _useState77[1];
+  var _useState78 = useState(false),
+    loaded = _useState78[0],
+    setLoaded = _useState78[1];
+  var _useState79 = useState(function () {
       return lsGet("h-notif", false);
     }),
-    notifEnabled = _useState75[0],
-    setNotifEnabled = _useState75[1];
+    notifEnabled = _useState79[0],
+    setNotifEnabled = _useState79[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
-  var T = THEMES[theme] || THEMES["slate"];
+  var T = THEMES[theme] || THEMES["navy"];
   window.__setTasks = setTasks;
   useEffect(function () {
     function loadAll() {
@@ -8069,7 +8512,7 @@ function App() {
     setEdit(null);
   };
   var delTask = function () {
-    var _ref49 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
+    var _ref51 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
       return _regenerator().w(function (_context16) {
         while (1) switch (_context16.n) {
           case 0:
@@ -8086,7 +8529,7 @@ function App() {
       }, _callee16);
     }));
     return function delTask(_x0) {
-      return _ref49.apply(this, arguments);
+      return _ref51.apply(this, arguments);
     };
   }();
   var pinTask = function pinTask(id) {
@@ -8110,8 +8553,8 @@ function App() {
   };
   var tog = function tog(cid, wk, fld) {
     return setCd(function (p) {
-      var _extends3;
-      return _extends({}, p, (_extends3 = {}, _extends3[cid + "-" + wk + "-" + fld] = !p[cid + "-" + wk + "-" + fld], _extends3));
+      var _extends4;
+      return _extends({}, p, (_extends4 = {}, _extends4[cid + "-" + wk + "-" + fld] = !p[cid + "-" + wk + "-" + fld], _extends4));
     });
   };
   var get = function get(cid, wk, fld) {
@@ -8130,7 +8573,7 @@ function App() {
     });
   };
   var deleteList = function () {
-    var _ref50 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
+    var _ref52 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -8147,7 +8590,7 @@ function App() {
       }, _callee17);
     }));
     return function deleteList(_x1) {
-      return _ref50.apply(this, arguments);
+      return _ref52.apply(this, arguments);
     };
   }();
   var createList = function createList(l) {
@@ -8171,7 +8614,7 @@ function App() {
     });
   };
   var delDeadline = function () {
-    var _ref51 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
+    var _ref53 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -8188,7 +8631,7 @@ function App() {
       }, _callee18);
     }));
     return function delDeadline(_x10) {
-      return _ref51.apply(this, arguments);
+      return _ref53.apply(this, arguments);
     };
   }();
   var handleDrop = function handleDrop(status) {
@@ -8449,9 +8892,9 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref52) {
-    var v = _ref52[0],
-      l = _ref52[1];
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref54) {
+    var v = _ref54[0],
+      l = _ref54[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -8749,7 +9192,7 @@ function App() {
     }
   }, React.createElement("span", {
     style: L
-  }, "My Lists"), React.createElement("button", {
+  }, "Lists"), React.createElement("button", {
     onClick: function onClick() {
       return setView("lists");
     },
@@ -8764,17 +9207,18 @@ function App() {
   }, "View all \u2192")), React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))",
-      gap: 12
+      gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
+      gap: 10
     }
   }, lists.map(function (list) {
-    return React.createElement(ListPanel, {
+    return React.createElement(ListCard, {
       key: list.id,
       list: list,
-      onUpdate: updateList,
+      onOpen: function onOpen() {
+        return setView("lists");
+      },
       onDelete: deleteList,
-      T: T,
-      compact: true
+      T: T
     });
   }))), upcomingDl.length > 0 && React.createElement("div", {
     style: C
@@ -8850,96 +9294,14 @@ function App() {
     archive: archive,
     setArchive: setArchive,
     restoreTask: restoreTask
-  }), view === "lists" && React.createElement("div", {
-    className: "page-enter"
-  }, React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 20
-    }
-  }, React.createElement("span", {
-    style: {
-      fontSize: isMobile ? 19 : 22,
-      fontWeight: 800,
-      color: T.text,
-      letterSpacing: "-0.02em"
-    }
-  }, "My Lists"), React.createElement("button", {
-    onClick: function onClick() {
-      return setShowNewList(true);
-    },
-    style: {
-      background: T.accent,
-      color: "#fff",
-      border: "none",
-      borderRadius: 10,
-      padding: "11px 22px",
-      cursor: "pointer",
-      fontSize: 14,
-      fontWeight: 700
-    }
-  }, "+ New List")), lists.length === 0 && React.createElement("div", {
-    style: _extends({}, C, {
-      textAlign: "center",
-      padding: 56
-    })
-  }, React.createElement("div", {
-    style: {
-      color: T.muted,
-      display: "flex",
-      justifyContent: "center",
-      marginBottom: 12
-    }
-  }, React.createElement("svg", {
-    width: "48",
-    height: "48",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "1.2",
-    strokeLinecap: "round"
-  }, React.createElement("polyline", {
-    points: "9 11 12 14 22 4"
-  }), React.createElement("path", {
-    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
-  }))), React.createElement("p", {
-    style: {
-      fontSize: 16,
-      color: T.muted,
-      marginBottom: 6
-    }
-  }, "No lists yet."), React.createElement("p", {
-    style: {
-      fontSize: 13,
-      color: T.muted,
-      marginBottom: 22
-    }
-  }, "Create a checklist, notes pad, link collection or simple list."), React.createElement("button", {
-    onClick: function onClick() {
-      return setShowNewList(true);
-    },
-    style: {
-      background: T.accent,
-      color: "#fff",
-      border: "none",
-      borderRadius: 10,
-      padding: "12px 28px",
-      cursor: "pointer",
-      fontSize: 14,
-      fontWeight: 700
-    }
-  }, "Create your first list")), lists.map(function (list) {
-    return React.createElement(ListPanel, {
-      key: list.id,
-      list: list,
-      onUpdate: updateList,
-      onDelete: deleteList,
-      T: T,
-      compact: false
-    });
-  })), view === "timetable" && React.createElement(TimetableView, {
+  }), view === "lists" && React.createElement(ListsView, {
+    lists: lists,
+    setLists: setLists,
+    updateList: updateList,
+    deleteList: deleteList,
+    T: T,
+    isMobile: isMobile
+  }), view === "timetable" && React.createElement(TimetableView, {
     T: T,
     isMobile: isMobile
   }), view === "courses" && React.createElement("div", {
@@ -9120,15 +9482,15 @@ function App() {
       examDate: examDates[course.id],
       onExamChange: function onExamChange(id, val) {
         return setExamDates(function (p) {
-          var _extends4;
-          return _extends({}, p, (_extends4 = {}, _extends4[id] = val, _extends4));
+          var _extends5;
+          return _extends({}, p, (_extends5 = {}, _extends5[id] = val, _extends5));
         });
       },
       courseFields: courseFields[course.id] || course.fields,
       onFieldsChange: function onFieldsChange(id, fields) {
         return setCourseFields(function (p) {
-          var _extends5;
-          return _extends({}, p, (_extends5 = {}, _extends5[id] = fields, _extends5));
+          var _extends6;
+          return _extends({}, p, (_extends6 = {}, _extends6[id] = fields, _extends6));
         });
       }
     });
