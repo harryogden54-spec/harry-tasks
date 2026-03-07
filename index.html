@@ -440,6 +440,7 @@ var THEMES = {
   navy: {
     label: "Navy",
     bg: "#F4F1EB",
+    mesh: "radial-gradient(ellipse at 20% 50%,#dde8f0 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#e8e4d8 0%,transparent 50%),#F4F1EB",
     surface: "#FDFAF4",
     alt: "#EBE7DC",
     border: "#D4CDB8",
@@ -453,6 +454,7 @@ var THEMES = {
   desert: {
     label: "Desert",
     bg: "#F7F0E6",
+    mesh: "radial-gradient(ellipse at 70% 30%,#f0d8c0 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,#e8d4b8 0%,transparent 50%),#F7F0E6",
     surface: "#FDFAF5",
     alt: "#EDE5D8",
     border: "#D9CEBA",
@@ -466,6 +468,7 @@ var THEMES = {
   sage: {
     label: "Sage",
     bg: "#F0F4EE",
+    mesh: "radial-gradient(ellipse at 30% 40%,#d8ecd4 0%,transparent 55%),radial-gradient(ellipse at 75% 70%,#e4edd8 0%,transparent 50%),#F0F4EE",
     surface: "#FAFCF9",
     alt: "#E4EBE2",
     border: "#C8D5C4",
@@ -479,6 +482,7 @@ var THEMES = {
   aurora: {
     label: "Aurora",
     bg: "#F5F0F3",
+    mesh: "radial-gradient(ellipse at 60% 30%,#f0d8e8 0%,transparent 55%),radial-gradient(ellipse at 20% 70%,#e8d8f0 0%,transparent 50%),#F5F0F3",
     surface: "#FDF8FB",
     alt: "#EDE5EA",
     border: "#D8C8D2",
@@ -492,6 +496,7 @@ var THEMES = {
   forest: {
     label: "Forest",
     bg: "#F2F5EE",
+    mesh: "radial-gradient(ellipse at 40% 60%,#d8e8cc 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#e8f0d8 0%,transparent 50%),#F2F5EE",
     surface: "#FAFDF8",
     alt: "#E4EBE0",
     border: "#C4D0BC",
@@ -505,6 +510,7 @@ var THEMES = {
   slate: {
     label: "Slate",
     bg: "#F1F2F6",
+    mesh: "radial-gradient(ellipse at 30% 50%,#e0e4f8 0%,transparent 55%),radial-gradient(ellipse at 80% 30%,#dde8f4 0%,transparent 50%),#F1F2F6",
     surface: "#FFFFFF",
     alt: "#E8EAF0",
     border: "#D1D5E0",
@@ -518,6 +524,7 @@ var THEMES = {
   dusk: {
     label: "Dusk",
     bg: "#2A2840",
+    mesh: "radial-gradient(ellipse at 20% 50%,#3d3560 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#3a2850 0%,transparent 50%),#2A2840",
     surface: "#323152",
     alt: "#2A2840",
     border: "#3D3B5A",
@@ -531,6 +538,7 @@ var THEMES = {
   midnight: {
     label: "Midnight",
     bg: "#151520",
+    mesh: "radial-gradient(ellipse at 30% 40%,#201840 0%,transparent 55%),radial-gradient(ellipse at 75% 70%,#181530 0%,transparent 50%),#151520",
     surface: "#1E1D2E",
     alt: "#151520",
     border: "#2A2840",
@@ -544,6 +552,7 @@ var THEMES = {
   deepforest: {
     label: "Deep Forest",
     bg: "#0F1A0E",
+    mesh: "radial-gradient(ellipse at 40% 50%,#162414 0%,transparent 55%),radial-gradient(ellipse at 75% 25%,#0e1c0c 0%,transparent 50%),#0F1A0E",
     surface: "#162014",
     alt: "#0F1A0E",
     border: "#243520",
@@ -557,6 +566,7 @@ var THEMES = {
   dune: {
     label: "Dune",
     bg: "#1C1610",
+    mesh: "radial-gradient(ellipse at 30% 60%,#2a2010 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#241a0c 0%,transparent 50%),#1C1610",
     surface: "#251E15",
     alt: "#1C1610",
     border: "#3A2E20",
@@ -6218,10 +6228,6 @@ var NAV_ITEMS = [{
   id: "courses",
   label: "Courses",
   icon: "book"
-}, {
-  id: "notes",
-  label: "Notes",
-  icon: "note"
 }];
 function Sidebar(_ref33) {
   var view = _ref33.view,
@@ -6901,6 +6907,7 @@ function TaskModal(_ref34) {
   }, "Cancel"))));
 }
 function TaskCard(_ref36) {
+  var _COURSES$find;
   var task = _ref36.task,
     onEdit = _ref36.onEdit,
     onDelete = _ref36.onDelete,
@@ -6915,9 +6922,25 @@ function TaskCard(_ref36) {
   var tag = taskTag(task);
   var d = dateFmt(task.dueDate);
   var isDone = taskDone(task);
-  var isUrgentTask = !isDone && task.priority === "High";
   var isOverdue = !isDone && task.dueDate && new Date(task.dueDate + "T12:00:00") < new Date(TODAY + "T12:00:00");
+  var isUrgentTask = !isDone && task.priority === "High";
   var accentColor = isOverdue ? PRIORITY_COLOR.High : isUrgentTask ? PRIORITY_COLOR.High : tag.color;
+  var courseName = task.type === "Uni" && task.courseId ? (_COURSES$find = COURSES.find(function (c) {
+    return c.id === task.courseId;
+  })) == null ? void 0 : _COURSES$find.name : null;
+  var glassStyle = T.dark ? {
+    background: "rgba(255,255,255,0.06)",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid rgba(255,255,255," + (hovered ? 0.2 : 0.1) + ")",
+    boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)" : "0 2px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)"
+  } : {
+    background: "rgba(255,255,255," + (hovered ? 0.85 : 0.65) + ")",
+    backdropFilter: "blur(20px) saturate(180%)",
+    WebkitBackdropFilter: "blur(20px) saturate(180%)",
+    border: "1px solid rgba(255,255,255," + (hovered ? 0.9 : 0.7) + ")",
+    boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9)" : "0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)"
+  };
   return React.createElement("div", {
     onClick: function onClick() {
       return onEdit(task);
@@ -6929,24 +6952,34 @@ function TaskCard(_ref36) {
     onMouseLeave: function onMouseLeave() {
       return setHovered(false);
     },
-    style: _extends({
-      background: T.surface,
-      border: "1.5px solid " + (hovered ? isOverdue ? PRIORITY_COLOR.High + "80" : T.accent + "50" : isOverdue ? PRIORITY_COLOR.High + "40" : T.border),
-      borderLeft: "4px solid " + (isDone ? T.border : accentColor),
-      borderRadius: 14,
-      padding: "13px 14px 13px 16px",
-      marginBottom: 7,
+    style: _extends({}, glassStyle, {
+      borderLeft: "3px solid " + (isDone ? T.border : accentColor),
+      borderRadius: 16,
+      padding: "14px 16px",
+      marginBottom: 8,
       cursor: "pointer",
-      transition: "all 0.18s cubic-bezier(0.16,1,0.3,1)",
-      transform: hovered ? "translateY(-1px)" : "translateY(0)",
-      boxShadow: hovered ? "0 6px 20px " + accentColor + "18" : "0 1px 4px rgba(0,0,0,0.04)",
+      transition: "all 0.22s cubic-bezier(0.16,1,0.3,1)",
+      transform: hovered ? "translateY(-2px) scale(1.005)" : "translateY(0) scale(1)",
       opacity: isDone ? 0.55 : 1,
-      animationDelay: (animDelay || 0) + "ms"
+      animationDelay: (animDelay || 0) + "ms",
+      position: "relative",
+      overflow: "hidden"
     }, style)
-  }, React.createElement("div", {
+  }, !isDone && React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 1,
+      background: "linear-gradient(90deg,transparent," + accentColor + "40,transparent)",
+      opacity: hovered ? 1 : 0,
+      transition: "opacity 0.3s"
+    }
+  }), React.createElement("div", {
     style: {
       display: "flex",
-      alignItems: "center",
+      alignItems: "flex-start",
       gap: 10
     }
   }, React.createElement("div", {
@@ -6965,17 +6998,22 @@ function TaskCard(_ref36) {
       alignItems: "center",
       justifyContent: "center",
       flexShrink: 0,
+      marginTop: 2,
       transition: "all 0.18s"
     },
     onMouseEnter: function onMouseEnter(e) {
       e.stopPropagation();
-      e.currentTarget.style.borderColor = isDone ? "#4CAF50" : T.accent;
-      e.currentTarget.style.background = isDone ? "#4CAF50" : T.accent + "15";
+      if (!isDone) {
+        e.currentTarget.style.borderColor = T.accent;
+        e.currentTarget.style.background = T.accent + "20";
+      }
     },
     onMouseLeave: function onMouseLeave(e) {
       e.stopPropagation();
-      e.currentTarget.style.borderColor = isDone ? "#4CAF50" : T.border;
-      e.currentTarget.style.background = isDone ? "#4CAF50" : "transparent";
+      if (!isDone) {
+        e.currentTarget.style.borderColor = T.border;
+        e.currentTarget.style.background = "transparent";
+      }
     }
   }, isDone && React.createElement("svg", {
     width: "11",
@@ -6994,64 +7032,88 @@ function TaskCard(_ref36) {
     }
   }, React.createElement("p", {
     style: {
-      margin: 0,
+      margin: "0 0 5px",
       fontSize: 14,
       fontWeight: isDone ? 400 : 600,
       color: isDone ? T.muted : T.text,
       textDecoration: isDone ? "line-through" : "none",
-      lineHeight: 1.3,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
+      lineHeight: 1.35,
       letterSpacing: "-0.01em"
     }
-  }, task.title || "Untitled")), React.createElement("div", {
+  }, task.title || "Untitled"), courseName && !isDone && React.createElement("p", {
+    style: {
+      margin: "0 0 5px",
+      fontSize: 12,
+      fontWeight: 500,
+      color: tag.color,
+      lineHeight: 1.3
+    }
+  }, courseName), task.notes && !isDone && React.createElement("p", {
+    style: {
+      margin: "0 0 6px",
+      fontSize: 12,
+      color: T.muted,
+      lineHeight: 1.5,
+      display: "-webkit-box",
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: "vertical",
+      overflow: "hidden"
+    }
+  }, task.notes), React.createElement("div", {
     style: {
       display: "flex",
       gap: 5,
+      flexWrap: "wrap",
       alignItems: "center",
-      flexShrink: 0
+      marginTop: 2
     }
-  }, task.subtasks && task.subtasks.length > 0 && React.createElement("span", {
+  }, React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: tag.color,
+      background: tag.color + "20",
+      padding: "2px 7px",
+      borderRadius: 20,
+      letterSpacing: "0.02em"
+    }
+  }, tag.label), task.priority !== "Low" && React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 600,
+      color: PRIORITY_COLOR[task.priority],
+      background: PRIORITY_COLOR[task.priority] + "18",
+      padding: "2px 7px",
+      borderRadius: 20
+    }
+  }, task.priority), d && React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: isOverdue ? 700 : 500,
+      color: isOverdue ? PRIORITY_COLOR.High : d.today ? PRIORITY_COLOR.Medium : T.muted,
+      background: isOverdue ? PRIORITY_COLOR.High + "15" : d.today ? PRIORITY_COLOR.Medium + "12" : "transparent",
+      padding: isOverdue || d.today ? "2px 7px" : "0",
+      borderRadius: 20
+    }
+  }, d.label), task.subtasks && task.subtasks.length > 0 && React.createElement("span", {
     style: {
       fontSize: 10,
       color: T.muted,
       background: T.alt,
       padding: "2px 6px",
-      borderRadius: 4
+      borderRadius: 20
     }
   }, task.subtasks.filter(function (s) {
     return s.done;
-  }).length, "/", task.subtasks.length), d && React.createElement("span", {
+  }).length, "/", task.subtasks.length))), React.createElement("div", {
     style: {
-      fontSize: 11,
-      fontWeight: isOverdue ? 700 : 500,
-      color: isOverdue ? PRIORITY_COLOR.High : d.today ? PRIORITY_COLOR.Medium : T.muted,
-      background: isOverdue ? PRIORITY_COLOR.High + "15" : d.today ? PRIORITY_COLOR.Medium + "15" : "transparent",
-      padding: isOverdue || d.today ? "2px 6px" : "0",
-      borderRadius: 4
-    }
-  }, d.label), React.createElement("span", {
-    style: {
-      fontSize: 10,
-      fontWeight: 700,
-      color: tag.color,
-      background: tag.color + "18",
-      padding: "2px 7px",
-      borderRadius: 4,
-      letterSpacing: "0.02em"
-    }
-  }, tag.label), task.pinned && React.createElement("span", {
-    style: {
-      color: T.accent,
       display: "flex",
-      alignItems: "center"
+      gap: 3,
+      flexShrink: 0,
+      opacity: hovered ? 1 : 0,
+      transition: "opacity 0.15s"
     }
-  }, React.createElement(Ic, {
-    n: "pinFill",
-    size: 11,
-    color: "currentColor"
-  })), React.createElement("button", {
+  }, React.createElement("button", {
     onClick: function onClick(e) {
       e.stopPropagation();
       onPin(task.id);
@@ -7060,8 +7122,8 @@ function TaskCard(_ref36) {
       background: "none",
       border: "none",
       cursor: "pointer",
-      padding: "2px",
-      display: hovered ? "flex" : "none",
+      padding: "3px",
+      display: "flex",
       alignItems: "center",
       color: task.pinned ? T.accent : T.muted
     }
@@ -7078,26 +7140,16 @@ function TaskCard(_ref36) {
       background: "none",
       border: "none",
       cursor: "pointer",
-      padding: "2px",
-      display: hovered ? "flex" : "none",
+      padding: "3px",
+      display: "flex",
       alignItems: "center",
       color: T.muted
     }
   }, React.createElement(Ic, {
     n: "close",
-    size: 13,
+    size: 12,
     color: "currentColor"
-  })))), task.notes && !isDone && React.createElement("p", {
-    style: {
-      margin: "5px 0 0 30px",
-      fontSize: 12,
-      color: T.muted,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-      lineHeight: 1.4
-    }
-  }, task.notes));
+  })))));
 }
 function TasksView(_ref37) {
   var tasks = _ref37.tasks,
@@ -7484,10 +7536,10 @@ function TodayPage(_ref38) {
     }
   }, React.createElement("div", null, React.createElement("h1", {
     style: {
-      fontSize: isMobile ? 22 : 28,
+      fontSize: isMobile ? 24 : 32,
       fontWeight: 800,
       color: T.text,
-      letterSpacing: "-0.02em",
+      letterSpacing: "-0.03em",
       margin: 0
     }
   }, "Today"), React.createElement("p", {
@@ -8764,8 +8816,9 @@ function App() {
   return React.createElement("div", {
     style: {
       height: "100vh",
-      background: T.bg,
-      transition: "background 0.35s",
+      background: T.mesh || T.bg,
+      transition: "background 0.5s",
+      backgroundSize: "cover",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
       overflow: "hidden"
