@@ -8305,29 +8305,9 @@ function App() {
       return arr;
     });
   };
-  var baseFiltRaw = tasks.filter(function (t) {
-    return (fCat === "All" || t.type === fCat || t.courseId === fCat) && (!search || t.title.toLowerCase().includes(search.toLowerCase())) && (!hideDone || t.status !== "Done");
+  var baseFilt = tasks.filter(function (t) {
+    return !taskDone(t);
   });
-  var baseFilt = useMemo(function () {
-    var arr = [].concat(baseFiltRaw);
-    if (sortBy === "dueDate") arr.sort(function (a, b) {
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-      return a.dueDate > b.dueDate ? 1 : -1;
-    });else if (sortBy === "priority") {
-      var ord = {
-        High: 0,
-        Medium: 1,
-        Low: 2
-      };
-      arr.sort(function (a, b) {
-        return ord[a.priority] - ord[b.priority];
-      });
-    } else if (sortBy === "created") arr.sort(function (a, b) {
-      return b.createdAt > a.createdAt ? 1 : -1;
-    });
-    return arr;
-  }, [baseFiltRaw, sortBy]);
   var todayTasks = tasks.filter(function (t) {
     return t.dueDate === TODAY && t.status !== "Done";
   });
