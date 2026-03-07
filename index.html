@@ -437,145 +437,125 @@ var CLASS_TYPE_COLOR = {
   Tutorial: "#B48EAD"
 };
 var THEMES = {
-  navy: {
-    label: "Navy",
+  nord: {
+    label: "Nord Classic",
+    bg: "#ECEFF4",
+    surface: "#FFFFFF",
+    alt: "#E5E9F0",
+    border: "#D8DEE9",
+    text: "#2E3440",
+    muted: "#6B7A8D",
+    accent: "#5E81AC",
+    accent2: "#B48EAD",
+    fg: "#fff",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#fff 0%,#EAF0F8 100%)",
+    mesh: "radial-gradient(ellipse at 20% 50%,#BBDEFB30 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#E1BEE730 0%,transparent 50%),#ECEFF4"
+  },
+  nordwarm: {
+    label: "Nord Warm",
+    bg: "#2E3440",
+    surface: "#3B4252",
+    alt: "#2E3440",
+    border: "#434C5E",
+    text: "#ECEFF4",
+    muted: "#8A9BB0",
+    accent: "#D08770",
+    accent2: "#BF616A",
+    fg: "#2E3440",
+    dark: true,
+    navGrad: "linear-gradient(160deg,#3B4252 0%,#353C4A 100%)",
+    mesh: "radial-gradient(ellipse at 20% 50%,#D0877030 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#BF616A28 0%,transparent 50%),#2E3440"
+  },
+  rlnavy: {
+    label: "RL Navy",
     bg: "#F4F1EB",
-    mesh: "radial-gradient(ellipse at 20% 50%,#dde8f0 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#e8e4d8 0%,transparent 50%),#F4F1EB",
     surface: "#FDFAF4",
     alt: "#EBE7DC",
     border: "#D4CDB8",
     text: "#1A1F2E",
     muted: "#7A7560",
     accent: "#1E3A5F",
-    fg: "#FFFFFF",
+    accent2: "#9A7B4F",
+    fg: "#fff",
     dark: false,
-    navGrad: "linear-gradient(160deg,#FDFAF4 0%,#EEE9DC 100%)"
+    navGrad: "linear-gradient(160deg,#FDFAF4 0%,#EEE9DC 100%)",
+    mesh: "radial-gradient(ellipse at 20% 50%,#1E3A5F18 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,#9A7B4F14 0%,transparent 50%),#F4F1EB"
+  },
+  rlcountry: {
+    label: "RL Country",
+    bg: "#F2EDE4",
+    surface: "#FAF6EE",
+    alt: "#E8E0D0",
+    border: "#CEC4B0",
+    text: "#1E2418",
+    muted: "#706858",
+    accent: "#3A5A30",
+    accent2: "#8B3A1A",
+    fg: "#fff",
+    dark: false,
+    navGrad: "linear-gradient(160deg,#FAF6EE 0%,#EDE5D8 100%)",
+    mesh: "radial-gradient(ellipse at 30% 60%,#3A5A3018 0%,transparent 55%),radial-gradient(ellipse at 75% 25%,#8B3A1A14 0%,transparent 50%),#F2EDE4"
   },
   desert: {
-    label: "Desert",
+    label: "Alto Desert",
     bg: "#F7F0E6",
-    mesh: "radial-gradient(ellipse at 70% 30%,#f0d8c0 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,#e8d4b8 0%,transparent 50%),#F7F0E6",
     surface: "#FDFAF5",
     alt: "#EDE5D8",
     border: "#D9CEBA",
     text: "#2C1F14",
     muted: "#8C7B6A",
     accent: "#C4622D",
-    fg: "#FFFFFF",
+    accent2: "#9B6B8A",
+    fg: "#fff",
     dark: false,
-    navGrad: "linear-gradient(160deg,#FDFAF5 0%,#F2E8D8 100%)"
+    navGrad: "linear-gradient(160deg,#FDFAF5 0%,#F2E8D8 100%)",
+    mesh: "radial-gradient(ellipse at 70% 30%,#C4622D20 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,#9B6B8A18 0%,transparent 50%),#F7F0E6"
   },
-  sage: {
-    label: "Sage",
-    bg: "#F0F4EE",
-    mesh: "radial-gradient(ellipse at 30% 40%,#d8ecd4 0%,transparent 55%),radial-gradient(ellipse at 75% 70%,#e4edd8 0%,transparent 50%),#F0F4EE",
-    surface: "#FAFCF9",
-    alt: "#E4EBE2",
+  aurora: {
+    label: "Alto Aurora",
+    bg: "#1A1628",
+    surface: "#241E38",
+    alt: "#1A1628",
+    border: "#342C50",
+    text: "#EDE8F8",
+    muted: "#8880A8",
+    accent: "#C4956A",
+    accent2: "#9B7DC4",
+    fg: "#1A1628",
+    dark: true,
+    navGrad: "linear-gradient(160deg,#261E3C 0%,#1E1830 100%)",
+    mesh: "radial-gradient(ellipse at 30% 40%,#C4956A25 0%,transparent 55%),radial-gradient(ellipse at 75% 70%,#9B7DC428 0%,transparent 50%),#1A1628"
+  },
+  slate: {
+    label: "Slate + Sage",
+    bg: "#F0F3F0",
+    surface: "#FAFCFA",
+    alt: "#E4EBE4",
     border: "#C8D5C4",
     text: "#1E2B1A",
     muted: "#6B7D65",
     accent: "#4A7C59",
-    fg: "#FFFFFF",
+    accent2: "#5B6AD0",
+    fg: "#fff",
     dark: false,
-    navGrad: "linear-gradient(160deg,#FAFCF9 0%,#EBF2E8 100%)"
+    navGrad: "linear-gradient(160deg,#FAFCFA 0%,#EBF2E8 100%)",
+    mesh: "radial-gradient(ellipse at 40% 60%,#4A7C5920 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#5B6AD018 0%,transparent 50%),#F0F3F0"
   },
-  aurora: {
-    label: "Aurora",
-    bg: "#F5F0F3",
-    mesh: "radial-gradient(ellipse at 60% 30%,#f0d8e8 0%,transparent 55%),radial-gradient(ellipse at 20% 70%,#e8d8f0 0%,transparent 50%),#F5F0F3",
-    surface: "#FDF8FB",
-    alt: "#EDE5EA",
-    border: "#D8C8D2",
-    text: "#2A1F26",
-    muted: "#8C7080",
-    accent: "#A0527A",
-    fg: "#FFFFFF",
-    dark: false,
-    navGrad: "linear-gradient(160deg,#FDF8FB 0%,#F3E8EF 100%)"
-  },
-  forest: {
-    label: "Forest",
-    bg: "#F2F5EE",
-    mesh: "radial-gradient(ellipse at 40% 60%,#d8e8cc 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#e8f0d8 0%,transparent 50%),#F2F5EE",
-    surface: "#FAFDF8",
-    alt: "#E4EBE0",
-    border: "#C4D0BC",
-    text: "#1A2418",
-    muted: "#627558",
-    accent: "#8B6914",
-    fg: "#FFFFFF",
-    dark: false,
-    navGrad: "linear-gradient(160deg,#FAFDF8 0%,#EAF0E5 100%)"
-  },
-  slate: {
-    label: "Slate",
-    bg: "#F1F2F6",
-    mesh: "radial-gradient(ellipse at 30% 50%,#e0e4f8 0%,transparent 55%),radial-gradient(ellipse at 80% 30%,#dde8f4 0%,transparent 50%),#F1F2F6",
-    surface: "#FFFFFF",
-    alt: "#E8EAF0",
-    border: "#D1D5E0",
-    text: "#1A1D2E",
-    muted: "#6E7491",
-    accent: "#5B6AD0",
-    fg: "#FFFFFF",
-    dark: false,
-    navGrad: "linear-gradient(160deg,#FFFFFF 0%,#F4F5FA 100%)"
-  },
-  dusk: {
-    label: "Dusk",
-    bg: "#2A2840",
-    mesh: "radial-gradient(ellipse at 20% 50%,#3d3560 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#3a2850 0%,transparent 50%),#2A2840",
-    surface: "#323152",
-    alt: "#2A2840",
-    border: "#3D3B5A",
-    text: "#E8E6F4",
-    muted: "#8580A8",
-    accent: "#C4956A",
-    fg: "#1A1830",
+  charcoal: {
+    label: "Charcoal + Gold",
+    bg: "#141414",
+    surface: "#1E1E1E",
+    alt: "#141414",
+    border: "#2A2A2A",
+    text: "#F0EAD8",
+    muted: "#7A7060",
+    accent: "#C9A84C",
+    accent2: "#8B7355",
+    fg: "#141414",
     dark: true,
-    navGrad: "linear-gradient(160deg,#353354 0%,#2D2B48 100%)"
-  },
-  midnight: {
-    label: "Midnight",
-    bg: "#151520",
-    mesh: "radial-gradient(ellipse at 30% 40%,#201840 0%,transparent 55%),radial-gradient(ellipse at 75% 70%,#181530 0%,transparent 50%),#151520",
-    surface: "#1E1D2E",
-    alt: "#151520",
-    border: "#2A2840",
-    text: "#D8D6F0",
-    muted: "#5C5880",
-    accent: "#8B82E8",
-    fg: "#151520",
-    dark: true,
-    navGrad: "linear-gradient(160deg,#201F32 0%,#181728 100%)"
-  },
-  deepforest: {
-    label: "Deep Forest",
-    bg: "#0F1A0E",
-    mesh: "radial-gradient(ellipse at 40% 50%,#162414 0%,transparent 55%),radial-gradient(ellipse at 75% 25%,#0e1c0c 0%,transparent 50%),#0F1A0E",
-    surface: "#162014",
-    alt: "#0F1A0E",
-    border: "#243520",
-    text: "#D4E8CE",
-    muted: "#5A7A52",
-    accent: "#C4A832",
-    fg: "#0F1A0E",
-    dark: true,
-    navGrad: "linear-gradient(160deg,#1A2618 0%,#121C10 100%)"
-  },
-  dune: {
-    label: "Dune",
-    bg: "#1C1610",
-    mesh: "radial-gradient(ellipse at 30% 60%,#2a2010 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,#241a0c 0%,transparent 50%),#1C1610",
-    surface: "#251E15",
-    alt: "#1C1610",
-    border: "#3A2E20",
-    text: "#E8DCC8",
-    muted: "#7A6A50",
-    accent: "#D4845A",
-    fg: "#1C1610",
-    dark: true,
-    navGrad: "linear-gradient(160deg,#2A2218 0%,#1E180E 100%)"
+    navGrad: "linear-gradient(160deg,#202020 0%,#181818 100%)",
+    mesh: "radial-gradient(ellipse at 30% 50%,#C9A84C22 0%,transparent 55%),radial-gradient(ellipse at 80% 25%,#8B735520 0%,transparent 50%),#141414"
   }
 };
 var INITIAL_TASKS = [{
@@ -6315,7 +6295,7 @@ function Sidebar(_ref33) {
         border: "none",
         background: view === item.id ? T.accent + "18" : "transparent",
         cursor: "pointer",
-        color: view === item.id ? T.accent : T.muted,
+        color: view === item.id ? item.color || T.accent : T.muted,
         marginBottom: 2,
         justifyContent: expanded ? "flex-start" : "center",
         transition: "all 0.15s",
@@ -6343,7 +6323,19 @@ function Sidebar(_ref33) {
         fontSize: 13,
         fontWeight: view === item.id ? 700 : 500
       }
-    }, item.label), view === item.id && !expanded && React.createElement("div", {
+    }, item.label), expanded && item.id === "tasks" && overdueCount > 0 && React.createElement("span", {
+      style: {
+        marginLeft: "auto",
+        background: PRIORITY_COLOR.High,
+        color: "#fff",
+        fontSize: 9,
+        fontWeight: 800,
+        borderRadius: 10,
+        padding: "1px 5px",
+        minWidth: 14,
+        textAlign: "center"
+      }
+    }, overdueCount), view === item.id && !expanded && React.createElement("div", {
       style: {
         position: "absolute",
         left: 0,
@@ -6945,13 +6937,13 @@ function TaskCard(_ref36) {
     backdropFilter: "blur(20px) saturate(180%)",
     WebkitBackdropFilter: "blur(20px) saturate(180%)",
     border: "1px solid rgba(255,255,255," + (hovered ? 0.2 : 0.1) + ")",
-    boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)" : "0 2px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)"
+    boxShadow: hovered ? "0 8px 32px " + accentColor + "35, inset 0 1px 0 rgba(255,255,255,0.1)" : "0 2px 12px " + accentColor + "20, inset 0 1px 0 rgba(255,255,255,0.06)"
   } : {
     background: "rgba(255,255,255," + (hovered ? 0.85 : 0.65) + ")",
     backdropFilter: "blur(20px) saturate(180%)",
     WebkitBackdropFilter: "blur(20px) saturate(180%)",
     border: "1px solid rgba(255,255,255," + (hovered ? 0.9 : 0.7) + ")",
-    boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9)" : "0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)"
+    boxShadow: hovered ? "0 8px 32px " + accentColor + "25, inset 0 1px 0 rgba(255,255,255,0.9)" : "0 2px 8px " + accentColor + "14, inset 0 1px 0 rgba(255,255,255,0.8)"
   };
   return React.createElement("div", {
     onClick: function onClick() {
@@ -6966,6 +6958,7 @@ function TaskCard(_ref36) {
     },
     style: _extends({}, glassStyle, {
       borderLeft: "3px solid " + (isDone ? T.border : accentColor),
+      borderRight: "3px solid " + (isDone ? T.border : PRIORITY_COLOR[task.priority]),
       borderRadius: 16,
       padding: "14px 16px",
       marginBottom: 8,
@@ -7680,42 +7673,97 @@ function TodayPage(_ref38) {
     }
   }, React.createElement("div", {
     style: {
+      position: "relative",
+      marginBottom: 24,
+      borderRadius: 20,
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      background: T.dark ? "rgba(76,175,80,0.12)" : "rgba(76,175,80,0.1)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      border: "1px solid rgba(76,175,80,0.2)",
+      borderRadius: 20,
+      padding: "22px 26px",
+      position: "relative"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 3,
+      background: "linear-gradient(90deg,#4CAF50,#81C784,#4CAF50)",
+      backgroundSize: "200% auto",
+      animation: "gradientShift 3s ease infinite"
+    }
+  }), React.createElement("div", {
+    style: {
       display: "flex",
-      justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: 28
+      justifyContent: "space-between",
+      gap: 16
     }
-  }, React.createElement("div", null, React.createElement("h1", {
+  }, React.createElement("div", {
     style: {
-      fontSize: isMobile ? 24 : 32,
-      fontWeight: 800,
-      color: T.text,
-      letterSpacing: "-0.03em",
-      margin: 0
+      flex: 1
     }
-  }, "Today"), React.createElement("p", {
+  }, React.createElement("p", {
     style: {
-      fontSize: 13,
-      color: T.muted,
-      marginTop: 4
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#4CAF50",
+      textTransform: "uppercase",
+      letterSpacing: "0.12em",
+      margin: "0 0 6px"
     }
   }, new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
     month: "long"
-  }))), done.length > 0 && React.createElement("button", {
+  })), React.createElement("h1", {
+    style: {
+      fontSize: isMobile ? 26 : 34,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.03em",
+      margin: "0 0 6px"
+    }
+  }, "Today"), React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      margin: 0
+    }
+  }, pending.length === 0 && done.length === 0 ? "Nothing added yet" : pending.length === 0 ? "All " + done.length + " done!" : pending.length + " left" + (done.length > 0 ? ", " + done.length + " done" : ""))), items.length > 0 && React.createElement(ProgressRing, {
+    pct: Math.round(done.length / Math.max(items.length, 1) * 100),
+    size: 56,
+    stroke: 5,
+    color: "#4CAF50",
+    T: T,
+    label: "",
+    value: Math.round(done.length / Math.max(items.length, 1) * 100) + "%"
+  })))), done.length > 0 && React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginBottom: 12
+    }
+  }, React.createElement("button", {
     onClick: clearDone,
     style: {
       background: "none",
       border: "1px solid " + T.border,
       borderRadius: 8,
-      padding: "7px 14px",
+      padding: "6px 12px",
       cursor: "pointer",
       fontSize: 12,
       color: T.muted,
       fontWeight: 600
     }
-  }, "Clear done (", done.length, ")")), React.createElement("div", {
+  }, "Clear ", done.length, " done")), React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -8425,7 +8473,7 @@ function App() {
     edit = _useState63[0],
     setEdit = _useState63[1];
   var _useState64 = useState(function () {
-      return lsGet("h-theme-html", "navy");
+      return lsGet("h-theme-html", "nord");
     }),
     theme = _useState64[0],
     setTheme = _useState64[1];
@@ -8491,7 +8539,7 @@ function App() {
     setNotifEnabled = _useState81[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
-  var T = THEMES[theme] || THEMES["navy"];
+  var T = THEMES[theme] || THEMES["nord"];
   window.__setTasks = setTasks;
   useEffect(function () {
     function loadAll() {
@@ -9122,7 +9170,8 @@ function App() {
       return setShowSettings(true);
     },
     open: sidebarOpen,
-    setOpen: setSidebarOpen
+    setOpen: setSidebarOpen,
+    overdueCount: overdue.length
   }), isMobile && React.createElement("div", {
     style: {
       background: T.navGrad,
@@ -9282,6 +9331,137 @@ function App() {
     T: T
   }), React.createElement("div", {
     style: {
+      position: "relative",
+      marginBottom: 24,
+      borderRadius: 22,
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.65)",
+      backdropFilter: "blur(24px)",
+      WebkitBackdropFilter: "blur(24px)",
+      border: "1px solid " + (T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.85)"),
+      borderRadius: 22,
+      padding: "26px 32px",
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 3,
+      background: "linear-gradient(90deg," + T.accent + "," + (T.accent2 || T.accent) + "," + T.accent + ")",
+      backgroundSize: "200% auto",
+      animation: "gradientShift 4s ease infinite"
+    }
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 20
+    }
+  }, React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: T.accent,
+      textTransform: "uppercase",
+      letterSpacing: "0.12em",
+      marginBottom: 8
+    }
+  }, new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  })), React.createElement("h1", {
+    style: {
+      fontSize: 44,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.04em",
+      lineHeight: 0.95,
+      margin: "0 0 12px"
+    }
+  }, React.createElement("span", {
+    style: {
+      display: "block",
+      fontSize: 22,
+      fontWeight: 600,
+      letterSpacing: "-0.02em",
+      color: T.muted
+    }
+  }, function () {
+    var h = new Date().getHours();
+    return h < 12 ? "Good morning," : h < 17 ? "Good afternoon," : "Good evening,";
+  }()), React.createElement("span", {
+    style: {
+      backgroundImage: "linear-gradient(135deg," + T.accent + "," + (T.accent2 || T.accent) + "," + T.accent + ")",
+      backgroundSize: "200% auto",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      animation: "gradientShift 4s ease infinite"
+    }
+  }, "Harry.")), overdue.length > 0 ? React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: PRIORITY_COLOR.High,
+      fontWeight: 700,
+      margin: 0,
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, React.createElement("span", {
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: PRIORITY_COLOR.High,
+      display: "inline-block"
+    }
+  }), overdue.length, " overdue \xB7 ", tasks.filter(function (t) {
+    return !taskDone(t);
+  }).length, " active") : todayTasks.length > 0 ? React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      margin: 0
+    }
+  }, todayTasks.length, " due today \xB7 ", tasks.filter(function (t) {
+    return !taskDone(t);
+  }).length, " active") : React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: "#4CAF50",
+      fontWeight: 600,
+      margin: 0,
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, React.createElement("span", {
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: "#4CAF50",
+      display: "inline-block"
+    }
+  }), "All clear today")), React.createElement(DashWeather, {
+    T: T
+  })))), React.createElement("div", {
+    style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr auto",
       gap: 14,
@@ -9368,9 +9548,28 @@ function App() {
     T: T
   })), React.createElement("div", {
     style: {
-      marginBottom: 20
+      marginBottom: 20,
+      background: T.dark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      border: "1px solid " + (T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.8)"),
+      borderRadius: 16,
+      overflow: "hidden"
     }
-  }, React.createElement(HabitsPanel, {
+  }, React.createElement("div", {
+    style: {
+      padding: "10px 18px 6px",
+      borderBottom: "1px solid " + T.border
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: T.accent,
+      textTransform: "uppercase",
+      letterSpacing: "0.12em"
+    }
+  }, "Daily Habits")), React.createElement(HabitsPanel, {
     habits: habits,
     setHabits: setHabits,
     T: T
