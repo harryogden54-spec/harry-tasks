@@ -6252,8 +6252,10 @@ function Sidebar(_ref33) {
     style: {
       width: expanded ? 220 : 56,
       flexShrink: 0,
-      background: T.navGrad,
-      borderRight: "1px solid " + T.border,
+      background: T.dark ? "rgba(20,18,40,0.55)" : "rgba(255,255,255,0.55)",
+      backdropFilter: "blur(24px) saturate(180%)",
+      WebkitBackdropFilter: "blur(24px) saturate(180%)",
+      borderRight: "1px solid " + (T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)"),
       display: "flex",
       flexDirection: "column",
       transition: "width 0.2s ease",
@@ -6329,7 +6331,8 @@ function Sidebar(_ref33) {
       style: {
         flexShrink: 0,
         display: "flex",
-        alignItems: "center"
+        alignItems: "center",
+        animation: view === item.id ? "iconPop 0.3s cubic-bezier(0.16,1,0.3,1)" : "none"
       }
     }, React.createElement(Ic, {
       n: item.icon,
@@ -6501,14 +6504,18 @@ function TaskModal(_ref34) {
   var ov = isMobile ? {
     position: "fixed",
     inset: 0,
-    background: "rgba(20,18,40,0.7)",
+    background: T.dark ? "rgba(10,8,30,0.75)" : "rgba(20,18,60,0.35)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
     zIndex: 1000,
     display: "flex",
     alignItems: "flex-end"
   } : {
     position: "fixed",
     inset: 0,
-    background: "rgba(20,18,40,0.55)",
+    background: T.dark ? "rgba(10,8,30,0.65)" : "rgba(20,18,60,0.25)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
     zIndex: 1000,
     display: "flex",
     alignItems: "center",
@@ -6516,22 +6523,27 @@ function TaskModal(_ref34) {
     padding: 24
   };
   var inn = isMobile ? {
-    background: T.surface,
+    background: T.dark ? "rgba(30,28,50,0.92)" : "rgba(255,255,255,0.88)",
+    backdropFilter: "blur(32px)",
+    WebkitBackdropFilter: "blur(32px)",
     borderRadius: "24px 24px 0 0",
     width: "100%",
     maxHeight: "94vh",
     overflow: "auto",
-    padding: "24px 22px 40px"
+    padding: "24px 22px 40px",
+    border: "1px solid rgba(255,255,255,0.2)"
   } : {
-    background: T.surface,
+    background: T.dark ? "rgba(30,28,50,0.92)" : "rgba(255,255,255,0.88)",
+    backdropFilter: "blur(32px)",
+    WebkitBackdropFilter: "blur(32px)",
     borderRadius: 20,
     width: "100%",
     maxWidth: 520,
     maxHeight: "90vh",
     overflow: "auto",
     padding: 32,
-    border: "1px solid " + T.border,
-    boxShadow: "0 24px 64px rgba(0,0,0,0.2)"
+    border: "1px solid rgba(255,255,255,0.25)",
+    boxShadow: "0 32px 80px rgba(0,0,0,0.25)"
   };
   var inp = {
     width: "100%",
@@ -7407,15 +7419,18 @@ function TasksView(_ref37) {
       style: {
         padding: "6px 14px",
         borderRadius: 20,
-        border: "1.5px solid " + (filter === c.id ? c.color || T.accent : T.border),
-        background: filter === c.id ? (c.color || T.accent) + "20" : "transparent",
+        border: "1.5px solid " + (filter === c.id ? (c.color || T.accent) + "80" : "rgba(255,255,255,0.3)"),
+        background: filter === c.id ? (c.color || T.accent) + "25" : T.dark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.5)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
         cursor: "pointer",
         fontSize: 12,
         fontWeight: filter === c.id ? 700 : 500,
         color: filter === c.id ? c.color || T.accent : T.muted,
         whiteSpace: "nowrap",
         flexShrink: 0,
-        transition: "all 0.15s"
+        transition: "all 0.15s",
+        boxShadow: filter === c.id ? "0 2px 12px " + (c.color || T.accent) + "30" : "none"
       }
     }, c.label);
   })), sorted.length === 0 && React.createElement("div", {
@@ -7445,7 +7460,143 @@ function TasksView(_ref37) {
       fontSize: 13,
       color: T.muted
     }
-  }, "Add a task to get started")), React.createElement("div", {
+  }, "Add a task to get started")), !isMobile ? React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 20,
+      alignItems: "start"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 12,
+      padding: "8px 12px",
+      background: TYPE_COLOR.Personal + "15",
+      borderRadius: 10,
+      border: "1px solid " + TYPE_COLOR.Personal + "30"
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 8,
+      height: 8,
+      borderRadius: "50%",
+      background: TYPE_COLOR.Personal
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: TYPE_COLOR.Personal,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Personal"), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: T.muted,
+      marginLeft: "auto"
+    }
+  }, sorted.filter(function (t) {
+    return t.type === "Personal";
+  }).length)), React.createElement("div", {
+    className: "stagger"
+  }, sorted.filter(function (t) {
+    return t.type === "Personal";
+  }).map(function (t, i) {
+    return React.createElement(TaskCard, {
+      key: t.id,
+      task: t,
+      onEdit: setEdit,
+      onDelete: delTask,
+      onToggleDone: quickDone,
+      onPin: pinTask2,
+      T: T,
+      animDelay: Math.min(i * 30, 160)
+    });
+  }), sorted.filter(function (t) {
+    return t.type === "Personal";
+  }).length === 0 && React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: "32px 16px",
+      color: T.muted,
+      fontSize: 13
+    }
+  }, "No personal tasks"))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 12,
+      padding: "8px 12px",
+      background: TYPE_COLOR.Uni + "15",
+      borderRadius: 10,
+      border: "1px solid " + TYPE_COLOR.Uni + "30"
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 8,
+      height: 8,
+      borderRadius: "50%",
+      background: TYPE_COLOR.Uni
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      color: TYPE_COLOR.Uni,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Uni"), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: T.muted,
+      marginLeft: "auto"
+    }
+  }, sorted.filter(function (t) {
+    return t.type === "Uni";
+  }).length)), sorted.filter(function (t) {
+    return t.type === "Uni";
+  }).length > 0 ? React.createElement("div", {
+    className: "stagger"
+  }, sorted.filter(function (t) {
+    return t.type === "Uni";
+  }).map(function (t, i) {
+    return React.createElement(TaskCard, {
+      key: t.id,
+      task: t,
+      onEdit: setEdit,
+      onDelete: delTask,
+      onToggleDone: quickDone,
+      onPin: pinTask2,
+      T: T,
+      animDelay: Math.min(i * 30, 160)
+    });
+  })) : React.createElement("div", {
+    style: {
+      background: T.dark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)",
+      backdropFilter: "blur(16px)",
+      WebkitBackdropFilter: "blur(16px)",
+      border: "1px solid " + (T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)"),
+      borderRadius: 16,
+      padding: 20
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      marginBottom: 12
+    }
+  }, "No uni tasks \u2014 next class"), React.createElement(NextClassCard, {
+    T: T
+  })))) : React.createElement("div", {
     className: "stagger"
   }, sorted.map(function (t, i) {
     return React.createElement(TaskCard, {
@@ -8078,38 +8229,171 @@ function NewListInline(_ref40) {
     }
   }, "Cancel")));
 }
+function OrbBackground(_ref41) {
+  var T = _ref41.T;
+  var orbs = T.dark ? [{
+    w: 500,
+    h: 500,
+    top: "-10%",
+    left: "-5%",
+    color: T.accent + "30",
+    anim: "orbFloat1 18s ease-in-out infinite"
+  }, {
+    w: 400,
+    h: 400,
+    top: "40%",
+    right: "-8%",
+    color: T.accent + "20",
+    anim: "orbFloat2 22s ease-in-out infinite"
+  }, {
+    w: 300,
+    h: 300,
+    bottom: "5%",
+    left: "30%",
+    color: T.accent + "18",
+    anim: "orbFloat3 28s ease-in-out infinite"
+  }] : [{
+    w: 600,
+    h: 600,
+    top: "-15%",
+    left: "-10%",
+    color: T.accent + "18",
+    anim: "orbFloat1 18s ease-in-out infinite"
+  }, {
+    w: 450,
+    h: 450,
+    top: "30%",
+    right: "-12%",
+    color: T.accent + "12",
+    anim: "orbFloat2 22s ease-in-out infinite"
+  }, {
+    w: 350,
+    h: 350,
+    bottom: "0%",
+    left: "25%",
+    color: T.accent + "10",
+    anim: "orbFloat3 28s ease-in-out infinite"
+  }];
+  return React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      pointerEvents: "none",
+      overflow: "hidden",
+      zIndex: 0
+    }
+  }, orbs.map(function (o, i) {
+    return React.createElement("div", {
+      key: i,
+      style: {
+        position: "absolute",
+        borderRadius: "50%",
+        width: o.w,
+        height: o.h,
+        top: o.top,
+        left: o.left,
+        right: o.right,
+        bottom: o.bottom,
+        background: "radial-gradient(circle," + o.color + " 0%,transparent 70%)",
+        animation: o.anim,
+        filter: "blur(40px)"
+      }
+    });
+  }));
+}
+function RollNum(_ref42) {
+  var value = _ref42.value,
+    style = _ref42.style;
+  var _useState50 = useState(value),
+    display = _useState50[0],
+    setDisplay = _useState50[1];
+  var _useState51 = useState(0),
+    key = _useState51[0],
+    setKey = _useState51[1];
+  useEffect(function () {
+    if (value !== display) {
+      setKey(function (k) {
+        return k + 1;
+      });
+      setDisplay(value);
+    }
+  }, [value]);
+  return React.createElement("span", {
+    key: key,
+    className: "roll-enter",
+    style: style
+  }, display);
+}
+function PageHero(_ref43) {
+  var title = _ref43.title,
+    T = _ref43.T,
+    children = _ref43.children;
+  return React.createElement("div", {
+    style: {
+      position: "relative",
+      marginBottom: 28,
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      background: "linear-gradient(135deg," + T.accent + "18 0%,transparent 60%)",
+      borderRadius: 20,
+      pointerEvents: "none"
+    }
+  }), React.createElement("div", {
+    style: {
+      position: "relative",
+      padding: "24px 28px",
+      background: T.dark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      border: "1px solid " + (T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.8)"),
+      borderRadius: 20
+    }
+  }, React.createElement("h1", {
+    style: {
+      fontSize: 28,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.03em",
+      margin: "0 0 4px"
+    }
+  }, title), children));
+}
 function App() {
-  var _useState50 = useState(function () {
+  var _useState52 = useState(function () {
       return lsGet("h-tasks-html", INITIAL_TASKS);
     }),
-    tasks = _useState50[0],
-    setTasks = _useState50[1];
-  var _useState51 = useState(function () {
+    tasks = _useState52[0],
+    setTasks = _useState52[1];
+  var _useState53 = useState(function () {
       return lsGet("h-courses-html", {});
     }),
-    cd = _useState51[0],
-    setCd = _useState51[1];
-  var _useState52 = useState(function () {
+    cd = _useState53[0],
+    setCd = _useState53[1];
+  var _useState54 = useState(function () {
       return lsGet("h-dl-html", []);
     }),
-    deadlines = _useState52[0],
-    setDeadlines = _useState52[1];
-  var _useState53 = useState(function () {
+    deadlines = _useState54[0],
+    setDeadlines = _useState54[1];
+  var _useState55 = useState(function () {
       return lsGet("h-lists-html", INITIAL_LISTS);
     }),
-    lists = _useState53[0],
-    setLists = _useState53[1];
-  var _useState54 = useState(function () {
+    lists = _useState55[0],
+    setLists = _useState55[1];
+  var _useState56 = useState(function () {
       return lsGet("h-habits-html", INITIAL_HABITS);
     }),
-    habits = _useState54[0],
-    setHabits = _useState54[1];
-  var _useState55 = useState(function () {
+    habits = _useState56[0],
+    setHabits = _useState56[1];
+  var _useState57 = useState(function () {
       return lsGet("h-archive-html", []);
     }),
-    archive = _useState55[0],
-    setArchive = _useState55[1];
-  var _useState56 = useState(function () {
+    archive = _useState57[0],
+    setArchive = _useState57[1];
+  var _useState58 = useState(function () {
       return lsGet("h-notes-html", [{
         id: "n1",
         title: "Quick notes",
@@ -8117,94 +8401,94 @@ function App() {
         createdAt: new Date().toISOString()
       }]);
     }),
-    notes = _useState56[0],
-    setNotes = _useState56[1];
-  var _useState57 = useState(function () {
+    notes = _useState58[0],
+    setNotes = _useState58[1];
+  var _useState59 = useState(function () {
       return lsGet("h-exams-html", INITIAL_EXAM_DATES);
     }),
-    examDates = _useState57[0],
-    setExamDates = _useState57[1];
-  var _useState58 = useState(function () {
+    examDates = _useState59[0],
+    setExamDates = _useState59[1];
+  var _useState60 = useState(function () {
       return lsGet("h-cfields-html", Object.fromEntries(COURSES.map(function (c) {
         return [c.id, c.fields];
       })));
     }),
-    courseFields = _useState58[0],
-    setCourseFields = _useState58[1];
-  var _useState59 = useState("dashboard"),
-    view = _useState59[0],
-    setView = _useState59[1];
-  var _useState60 = useState("list"),
-    tv = _useState60[0],
-    setTv = _useState60[1];
-  var _useState61 = useState(null),
-    edit = _useState61[0],
-    setEdit = _useState61[1];
-  var _useState62 = useState(function () {
+    courseFields = _useState60[0],
+    setCourseFields = _useState60[1];
+  var _useState61 = useState("dashboard"),
+    view = _useState61[0],
+    setView = _useState61[1];
+  var _useState62 = useState("list"),
+    tv = _useState62[0],
+    setTv = _useState62[1];
+  var _useState63 = useState(null),
+    edit = _useState63[0],
+    setEdit = _useState63[1];
+  var _useState64 = useState(function () {
       return lsGet("h-theme-html", "navy");
     }),
-    theme = _useState62[0],
-    setTheme = _useState62[1];
-  var _useState63 = useState("All"),
-    fCat = _useState63[0],
-    setFCat = _useState63[1];
-  var _useState64 = useState(false),
-    hideDone = _useState64[0],
-    setHideDone = _useState64[1];
-  var _useState65 = useState(true),
-    groupBycat = _useState65[0],
-    setGroupBycat = _useState65[1];
+    theme = _useState64[0],
+    setTheme = _useState64[1];
+  var _useState65 = useState("All"),
+    fCat = _useState65[0],
+    setFCat = _useState65[1];
   var _useState66 = useState(false),
-    showArchive = _useState66[0],
-    setShowArchive = _useState66[1];
-  var _useState67 = useState(false),
-    showDoneInTasks = _useState67[0],
-    setShowDoneInTasks = _useState67[1];
-  var _useState68 = useState(true),
-    sidebarOpen = _useState68[0],
-    setSidebarOpen = _useState68[1];
-  var _useState69 = useState(function () {
+    hideDone = _useState66[0],
+    setHideDone = _useState66[1];
+  var _useState67 = useState(true),
+    groupBycat = _useState67[0],
+    setGroupBycat = _useState67[1];
+  var _useState68 = useState(false),
+    showArchive = _useState68[0],
+    setShowArchive = _useState68[1];
+  var _useState69 = useState(false),
+    showDoneInTasks = _useState69[0],
+    setShowDoneInTasks = _useState69[1];
+  var _useState70 = useState(true),
+    sidebarOpen = _useState70[0],
+    setSidebarOpen = _useState70[1];
+  var _useState71 = useState(function () {
       return lsGet("h-fontscale", 1);
     }),
-    fontScale = _useState69[0],
-    setFontScale = _useState69[1];
-  var _useState70 = useState(""),
-    search = _useState70[0],
-    setSearch = _useState70[1];
-  var _useState71 = useState(null),
-    dragId = _useState71[0],
-    setDragId = _useState71[1];
-  var _useState72 = useState(null),
-    dragTaskId = _useState72[0],
-    setDragTaskId = _useState72[1];
-  var _useState73 = useState({
+    fontScale = _useState71[0],
+    setFontScale = _useState71[1];
+  var _useState72 = useState(""),
+    search = _useState72[0],
+    setSearch = _useState72[1];
+  var _useState73 = useState(null),
+    dragId = _useState73[0],
+    setDragId = _useState73[1];
+  var _useState74 = useState(null),
+    dragTaskId = _useState74[0],
+    setDragTaskId = _useState74[1];
+  var _useState75 = useState({
       title: "",
       course: "maths",
       date: "",
       notes: ""
     }),
-    newDl = _useState73[0],
-    setNewDl = _useState73[1];
-  var _useState74 = useState(false),
-    showNewList = _useState74[0],
-    setShowNewList = _useState74[1];
-  var _useState75 = useState(false),
-    showSearch = _useState75[0],
-    setShowSearch = _useState75[1];
+    newDl = _useState75[0],
+    setNewDl = _useState75[1];
   var _useState76 = useState(false),
-    showSettings = _useState76[0],
-    setShowSettings = _useState76[1];
-  var _useState77 = useState("idle"),
-    syncStatus = _useState77[0],
-    setSyncStatus = _useState77[1];
+    showNewList = _useState76[0],
+    setShowNewList = _useState76[1];
+  var _useState77 = useState(false),
+    showSearch = _useState77[0],
+    setShowSearch = _useState77[1];
   var _useState78 = useState(false),
-    loaded = _useState78[0],
-    setLoaded = _useState78[1];
-  var _useState79 = useState(function () {
+    showSettings = _useState78[0],
+    setShowSettings = _useState78[1];
+  var _useState79 = useState("idle"),
+    syncStatus = _useState79[0],
+    setSyncStatus = _useState79[1];
+  var _useState80 = useState(false),
+    loaded = _useState80[0],
+    setLoaded = _useState80[1];
+  var _useState81 = useState(function () {
       return lsGet("h-notif", false);
     }),
-    notifEnabled = _useState79[0],
-    setNotifEnabled = _useState79[1];
+    notifEnabled = _useState81[0],
+    setNotifEnabled = _useState81[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
   var T = THEMES[theme] || THEMES["navy"];
@@ -8564,7 +8848,7 @@ function App() {
     setEdit(null);
   };
   var delTask = function () {
-    var _ref51 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
+    var _ref54 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
       return _regenerator().w(function (_context16) {
         while (1) switch (_context16.n) {
           case 0:
@@ -8581,7 +8865,7 @@ function App() {
       }, _callee16);
     }));
     return function delTask(_x0) {
-      return _ref51.apply(this, arguments);
+      return _ref54.apply(this, arguments);
     };
   }();
   var pinTask = function pinTask(id) {
@@ -8625,7 +8909,7 @@ function App() {
     });
   };
   var deleteList = function () {
-    var _ref52 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
+    var _ref55 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -8642,7 +8926,7 @@ function App() {
       }, _callee17);
     }));
     return function deleteList(_x1) {
-      return _ref52.apply(this, arguments);
+      return _ref55.apply(this, arguments);
     };
   }();
   var createList = function createList(l) {
@@ -8666,7 +8950,7 @@ function App() {
     });
   };
   var delDeadline = function () {
-    var _ref53 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
+    var _ref56 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -8683,7 +8967,7 @@ function App() {
       }, _callee18);
     }));
     return function delDeadline(_x10) {
-      return _ref53.apply(this, arguments);
+      return _ref56.apply(this, arguments);
     };
   }();
   var handleDrop = function handleDrop(status) {
@@ -8821,9 +9105,12 @@ function App() {
       backgroundSize: "cover",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
-      overflow: "hidden"
+      overflow: "hidden",
+      position: "relative"
     }
-  }, React.createElement("style", null, "input:focus,select:focus,textarea:focus{border-color:" + T.accent + "!important;outline:none}@keyframes spin{to{transform:rotate(360deg)}}"), !isMobile && React.createElement(Sidebar, {
+  }, React.createElement(OrbBackground, {
+    T: T
+  }), React.createElement("style", null, "input:focus,select:focus,textarea:focus{border-color:" + T.accent + "!important;outline:none}@keyframes spin{to{transform:rotate(360deg)}}"), !isMobile && React.createElement(Sidebar, {
     view: view,
     setView: setView,
     syncStatus: syncStatus,
@@ -8945,9 +9232,9 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref54) {
-    var v = _ref54[0],
-      l = _ref54[1];
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref57) {
+    var v = _ref57[0],
+      l = _ref57[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -9018,9 +9305,22 @@ function App() {
   }].map(function (x) {
     return React.createElement("div", {
       key: x.l,
-      style: _extends({}, C, {
-        padding: 22
-      })
+      style: {
+        padding: 22,
+        background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.6)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: "1px solid " + (T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.8)"),
+        borderRadius: 14,
+        transition: "transform 0.18s",
+        cursor: "default"
+      },
+      onMouseEnter: function onMouseEnter(e) {
+        return e.currentTarget.style.transform = "translateY(-2px)";
+      },
+      onMouseLeave: function onMouseLeave(e) {
+        return e.currentTarget.style.transform = "none";
+      }
     }, React.createElement("span", {
       style: L
     }, x.l), React.createElement("div", {
@@ -9031,7 +9331,9 @@ function App() {
         lineHeight: 1,
         letterSpacing: "-0.02em"
       }
-    }, x.v));
+    }, React.createElement(RollNum, {
+      value: x.v
+    })));
   }), React.createElement("div", {
     style: _extends({}, C, {
       padding: 22,
