@@ -56,17 +56,6 @@
 </head>
 <body>
 <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:14px;background:#EEF2F7"><div style="width:32px;height:32px;border-radius:50%;border:3px solid #D0DBEA;border-top:3px solid #5E81AC;animation:spin 1s linear infinite"></div><span style="font-size:14px;color:#7B8EA8;font-family:sans-serif;font-weight:500">Loading Harry Tasks…</span></div></div>
-<script>
-window.onerror = function(msg, src, line, col, err) {
-  document.getElementById('root').innerHTML = 
-    '<div style="padding:20px;font-family:monospace;background:#fee;color:#c00;border:2px solid #c00;margin:20px;border-radius:8px">' +
-    '<b>JavaScript Error:</b><br>' + msg + '<br><small>Line ' + line + '</small></div>';
-  return false;
-};
-window.addEventListener('unhandledrejection', function(e) {
-  console.error('Unhandled promise rejection:', e.reason);
-});
-</script>
 <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
 <script>
@@ -7723,7 +7712,7 @@ function App() {
     setNotifEnabled = _useState75[1];
   var syncTimer = useRef(null);
   var isMobile = useIsMobile();
-  var T = THEMES[theme];
+  var T = THEMES[theme] || THEMES["slate"];
   window.__setTasks = setTasks;
   useEffect(function () {
     function loadAll() {
