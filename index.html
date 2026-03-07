@@ -306,6 +306,8 @@ var INITIAL_EXAM_DATES = {
 var WEEKS = 10,
   CURRENT_WEEK = 6;
 var TASK_TYPES = ["Personal", "Uni"];
+var CATEGORIES = ["Daily", "School", "Personal"];
+var STATUSES = ["To Do", "In Progress", "Done"];
 var PRIORITIES = ["High", "Medium", "Low"];
 var PRIORITY_LABEL = {
   High: "High",
@@ -3408,389 +3410,16 @@ function Card(_ref19) {
     }
   }, dc, "/", task.subtasks.length, " subtasks")));
 }
-function Modal(_ref20) {
-  var task = _ref20.task,
-    onSave = _ref20.onSave,
-    onClose = _ref20.onClose,
+function QuickAdd(_ref20) {
+  var onAdd = _ref20.onAdd,
     T = _ref20.T,
     isMobile = _ref20.isMobile;
-  var _useState1 = useState(task),
-    f = _useState1[0],
-    setF = _useState1[1],
-    _useState10 = useState(""),
-    ns = _useState10[0],
-    setNs = _useState10[1];
-  var u = function u(k, v) {
-    return setF(function (x) {
-      var _extends2;
-      return _extends({}, x, (_extends2 = {}, _extends2[k] = v, _extends2));
-    });
-  };
-  var inp = {
-    width: "100%",
-    boxSizing: "border-box",
-    border: "1.5px solid " + T.border,
-    borderRadius: 10,
-    padding: "12px 14px",
-    fontSize: 14,
-    color: T.text,
-    background: T.alt,
-    outline: "none"
-  };
-  var lbl = {
-    display: "block",
-    fontSize: 11,
-    fontWeight: 700,
-    color: T.muted,
-    textTransform: "uppercase",
-    letterSpacing: "0.09em",
-    marginBottom: 7
-  };
-  var ov = isMobile ? {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(30,36,48,0.65)",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "flex-end"
-  } : {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(30,36,48,0.5)",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20
-  };
-  var inn = isMobile ? {
-    background: T.surface,
-    borderRadius: "20px 20px 0 0",
-    width: "100%",
-    maxHeight: "94vh",
-    overflow: "auto",
-    padding: "24px 22px 36px"
-  } : {
-    background: T.surface,
-    borderRadius: 18,
-    width: "100%",
-    maxWidth: 520,
-    maxHeight: "90vh",
-    overflow: "auto",
-    padding: 28,
-    border: "1px solid " + T.border
-  };
-  return React.createElement("div", {
-    style: ov,
-    onClick: onClose,
-    className: "fade-in"
-  }, React.createElement("div", {
-    style: inn,
-    className: "slide-up",
-    onClick: function onClick(e) {
-      return e.stopPropagation();
-    }
-  }, isMobile && React.createElement("div", {
-    style: {
-      width: 40,
-      height: 5,
-      borderRadius: 3,
-      background: T.border,
-      margin: "0 auto 22px"
-    }
-  }), React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      marginBottom: 22
-    }
-  }, React.createElement("span", {
-    style: {
-      fontSize: 18,
-      fontWeight: 800,
-      color: T.text
-    }
-  }, "Edit Task"), React.createElement("button", {
-    onClick: onClose,
-    style: {
-      background: "none",
-      border: "none",
-      fontSize: 24,
-      cursor: "pointer",
-      color: T.muted
-    }
-  }, "\xD7")), React.createElement("label", {
-    style: lbl
-  }, "Title"), React.createElement("input", {
-    value: f.title,
-    onChange: function onChange(e) {
-      return u("title", e.target.value);
-    },
-    placeholder: "What needs to be done?",
-    style: _extends({}, inp, {
-      marginBottom: 16
-    }),
-    autoFocus: true
-  }), React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
-      gap: 10,
-      marginBottom: 16
-    }
-  }, [["Category", "category", CATEGORIES], ["Priority", "priority", PRIORITIES], ["Status", "status", STATUSES]].map(function (_ref21) {
-    var l = _ref21[0],
-      k = _ref21[1],
-      o = _ref21[2];
-    return React.createElement("div", {
-      key: k
-    }, React.createElement("label", {
-      style: lbl
-    }, l), React.createElement("select", {
-      value: f[k],
-      onChange: function onChange(e) {
-        return u(k, e.target.value);
-      },
-      style: _extends({}, inp, {
-        cursor: "pointer",
-        padding: "11px 10px",
-        fontSize: 13
-      })
-    }, o.map(function (x) {
-      return React.createElement("option", {
-        key: x
-      }, x);
-    })));
-  })), React.createElement("label", {
-    style: lbl
-  }, "Due Date"), React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 6,
-      marginBottom: 8,
-      flexWrap: "wrap"
-    }
-  }, [["Today", TODAY], ["Tomorrow", function () {
-    var d = new Date();
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split("T")[0];
-  }()], ["This week", function () {
-    var d = new Date();
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split("T")[0];
-  }()]].map(function (_ref22) {
-    var lbl = _ref22[0],
-      val = _ref22[1];
-    return React.createElement("button", {
-      key: lbl,
-      onClick: function onClick() {
-        return u("dueDate", val);
-      },
-      style: {
-        padding: "5px 12px",
-        borderRadius: 7,
-        border: "1px solid " + (f.dueDate === val ? T.accent : T.border),
-        background: f.dueDate === val ? T.accent + "18" : "transparent",
-        cursor: "pointer",
-        fontSize: 12,
-        fontWeight: 600,
-        color: f.dueDate === val ? T.accent : T.muted,
-        transition: "all 0.15s"
-      }
-    }, lbl);
-  }), f.dueDate && React.createElement("button", {
-    onClick: function onClick() {
-      return u("dueDate", "");
-    },
-    style: {
-      padding: "5px 10px",
-      borderRadius: 7,
-      border: "1px solid " + T.border,
-      background: "transparent",
-      cursor: "pointer",
-      fontSize: 12,
-      color: T.muted
-    }
-  }, "Clear")), React.createElement("input", {
-    type: "date",
-    value: f.dueDate,
-    onChange: function onChange(e) {
-      return u("dueDate", e.target.value);
-    },
-    style: _extends({}, inp, {
-      marginBottom: 16
-    })
-  }), React.createElement("label", {
-    style: lbl
-  }, "Notes"), React.createElement("textarea", {
-    value: f.notes,
-    onChange: function onChange(e) {
-      return u("notes", e.target.value);
-    },
-    placeholder: "Extra details\u2026",
-    style: _extends({}, inp, {
-      minHeight: 80,
-      resize: "vertical",
-      marginBottom: 16
-    })
-  }), React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 16
-    }
-  }, React.createElement(Check, {
-    checked: f.pinned,
-    onChange: function onChange() {
-      return u("pinned", !f.pinned);
-    },
-    T: T
-  }), React.createElement("span", {
-    style: {
-      fontSize: 14,
-      color: T.text,
-      fontWeight: 500
-    }
-  }, "Pin to top")), React.createElement("label", {
-    style: lbl
-  }, "Subtasks"), f.subtasks.map(function (s) {
-    return React.createElement("div", {
-      key: s.id,
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        marginBottom: 10
-      }
-    }, React.createElement("input", {
-      type: "checkbox",
-      checked: s.done,
-      onChange: function onChange() {
-        return u("subtasks", f.subtasks.map(function (x) {
-          return x.id === s.id ? _extends({}, x, {
-            done: !x.done
-          }) : x;
-        }));
-      },
-      style: {
-        width: 18,
-        height: 18
-      }
-    }), React.createElement("span", {
-      style: {
-        flex: 1,
-        fontSize: 14,
-        color: s.done ? T.muted : T.text,
-        textDecoration: s.done ? "line-through" : "none"
-      }
-    }, s.title), React.createElement("button", {
-      onClick: function onClick() {
-        return u("subtasks", f.subtasks.filter(function (x) {
-          return x.id !== s.id;
-        }));
-      },
-      style: {
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: T.muted,
-        fontSize: 18
-      }
-    }, "\xD7"));
-  }), React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      marginBottom: 22
-    }
-  }, React.createElement("input", {
-    value: ns,
-    onChange: function onChange(e) {
-      return setNs(e.target.value);
-    },
-    onKeyDown: function onKeyDown(e) {
-      if (e.key === "Enter" && ns.trim()) {
-        u("subtasks", [].concat(f.subtasks, [{
-          id: Date.now(),
-          title: ns.trim(),
-          done: false
-        }]));
-        setNs("");
-      }
-    },
-    placeholder: "Add subtask\u2026",
-    style: _extends({}, inp, {
-      flex: 1
-    })
-  }), React.createElement("button", {
-    onClick: function onClick() {
-      if (ns.trim()) {
-        u("subtasks", [].concat(f.subtasks, [{
-          id: Date.now(),
-          title: ns.trim(),
-          done: false
-        }]));
-        setNs("");
-      }
-    },
-    style: {
-      background: T.accent,
-      color: "#fff",
-      border: "none",
-      borderRadius: 10,
-      padding: "0 18px",
-      cursor: "pointer",
-      fontSize: 14,
-      fontWeight: 600
-    }
-  }, "Add")), React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 10
-    }
-  }, React.createElement("button", {
-    onClick: function onClick() {
-      return onSave(f);
-    },
-    style: {
-      flex: 1,
-      background: T.accent,
-      color: "#fff",
-      border: "none",
-      borderRadius: 12,
-      padding: 14,
-      cursor: "pointer",
-      fontSize: 15,
-      fontWeight: 700
-    }
-  }, "Save"), React.createElement("button", {
-    onClick: onClose,
-    style: {
-      flex: 1,
-      background: T.alt,
-      color: T.muted,
-      border: "none",
-      borderRadius: 12,
-      padding: 14,
-      cursor: "pointer",
-      fontSize: 15
-    }
-  }, "Cancel"))));
-}
-function QuickAdd(_ref23) {
-  var onAdd = _ref23.onAdd,
-    T = _ref23.T,
-    isMobile = _ref23.isMobile;
-  var _useState11 = useState(""),
-    title = _useState11[0],
-    setTitle = _useState11[1],
-    _useState12 = useState("Daily"),
-    cat = _useState12[0],
-    setCat = _useState12[1],
-    _useState13 = useState("Medium"),
-    pri = _useState13[0],
-    setPri = _useState13[1];
+  var _useState1 = useState(""),
+    title = _useState1[0],
+    setTitle = _useState1[1];
+  var _useState10 = useState("Medium"),
+    pri = _useState10[0],
+    setPri = _useState10[1];
   var submit = function submit() {
     if (!title.trim()) return;
     onAdd({
@@ -3815,14 +3444,15 @@ function QuickAdd(_ref23) {
     fontSize: 14,
     color: T.text,
     background: T.surface,
-    outline: "none"
+    outline: "none",
+    fontFamily: "inherit"
   };
   return React.createElement("div", {
     style: {
       background: T.alt,
       border: "1.5px solid " + T.border,
       borderRadius: 16,
-      padding: 18
+      padding: 16
     }
   }, React.createElement("span", {
     style: {
@@ -3832,13 +3462,13 @@ function QuickAdd(_ref23) {
       textTransform: "uppercase",
       letterSpacing: "0.1em",
       display: "block",
-      marginBottom: 12
+      marginBottom: 10
     }
-  }, "Quick Add Task"), React.createElement("div", {
+  }, "Quick Add"), React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
-      gap: 10
+      gap: 8
     }
   }, React.createElement("input", {
     value: title,
@@ -3851,26 +3481,14 @@ function QuickAdd(_ref23) {
     placeholder: "What needs doing?",
     style: _extends({}, s, {
       flex: 1
-    })
+    }),
+    autoFocus: true
   }), React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
     }
   }, React.createElement("select", {
-    value: cat,
-    onChange: function onChange(e) {
-      return setCat(e.target.value);
-    },
-    style: _extends({}, s, {
-      flex: 1,
-      cursor: "pointer"
-    })
-  }, CATEGORIES.map(function (c) {
-    return React.createElement("option", {
-      key: c
-    }, c);
-  })), React.createElement("select", {
     value: pri,
     onChange: function onChange(e) {
       return setPri(e.target.value);
@@ -3898,19 +3516,19 @@ function QuickAdd(_ref23) {
     }
   }, "Add"))));
 }
-function FieldEditor(_ref24) {
-  var fields = _ref24.fields,
-    onFieldsChange = _ref24.onFieldsChange,
-    T = _ref24.T;
-  var _useState14 = useState(false),
-    adding = _useState14[0],
-    setAdding = _useState14[1];
-  var _useState15 = useState(""),
-    newField = _useState15[0],
-    setNewField = _useState15[1];
-  var _useState16 = useState(""),
-    newLabel = _useState16[0],
-    setNewLabel = _useState16[1];
+function FieldEditor(_ref21) {
+  var fields = _ref21.fields,
+    onFieldsChange = _ref21.onFieldsChange,
+    T = _ref21.T;
+  var _useState11 = useState(false),
+    adding = _useState11[0],
+    setAdding = _useState11[1];
+  var _useState12 = useState(""),
+    newField = _useState12[0],
+    setNewField = _useState12[1];
+  var _useState13 = useState(""),
+    newLabel = _useState13[0],
+    setNewLabel = _useState13[1];
   var PRESETS = ["resources", "notes", "problemSets", "flashcards", "lectures", "tutorials", "coursework", "revision", "practicals"];
   var availablePresets = PRESETS.filter(function (p) {
     return !fields.includes(p);
@@ -4082,17 +3700,17 @@ function FieldEditor(_ref24) {
     }
   }, "\xD7")));
 }
-function CourseWeekGrid(_ref25) {
-  var course = _ref25.course,
-    weeks = _ref25.weeks,
-    currentWeek = _ref25.currentWeek,
-    get = _ref25.get,
-    tog = _ref25.tog,
-    T = _ref25.T,
-    examDate = _ref25.examDate,
-    onExamChange = _ref25.onExamChange,
-    courseFields = _ref25.courseFields,
-    _onFieldsChange = _ref25.onFieldsChange;
+function CourseWeekGrid(_ref22) {
+  var course = _ref22.course,
+    weeks = _ref22.weeks,
+    currentWeek = _ref22.currentWeek,
+    get = _ref22.get,
+    tog = _ref22.tog,
+    T = _ref22.T,
+    examDate = _ref22.examDate,
+    onExamChange = _ref22.onExamChange,
+    courseFields = _ref22.courseFields,
+    _onFieldsChange = _ref22.onFieldsChange;
   var fields = courseFields || course.fields;
   var total = fields.length * weeks;
   var done = Array.from({
@@ -4105,9 +3723,9 @@ function CourseWeekGrid(_ref25) {
     }).length;
   }, 0);
   var pct = Math.round(done / total * 100);
-  var _useState17 = useState(false),
-    open = _useState17[0],
-    setOpen = _useState17[1];
+  var _useState14 = useState(false),
+    open = _useState14[0],
+    setOpen = _useState14[1];
   var examFmt = examDate ? dateFmt(examDate) : null;
   return React.createElement("div", {
     style: {
@@ -4363,25 +3981,25 @@ function CourseWeekGrid(_ref25) {
     }, allDone ? "✓" : "", wkDone, "/", fields.length)));
   }))))));
 }
-function FlexItem(_ref26) {
-  var item = _ref26.item,
-    listColor = _ref26.listColor,
-    onUpdate = _ref26.onUpdate,
-    onDelete = _ref26.onDelete,
-    T = _ref26.T,
-    dragHandlers = _ref26.dragHandlers;
-  var _useState18 = useState(false),
-    editText = _useState18[0],
-    setEditText = _useState18[1];
-  var _useState19 = useState(item.text || ""),
-    tv = _useState19[0],
-    setTv = _useState19[1];
-  var _useState20 = useState(!!item.note),
-    showNote = _useState20[0],
-    setShowNote = _useState20[1];
-  var _useState21 = useState(!!item.url),
-    showUrl = _useState21[0],
-    setShowUrl = _useState21[1];
+function FlexItem(_ref23) {
+  var item = _ref23.item,
+    listColor = _ref23.listColor,
+    onUpdate = _ref23.onUpdate,
+    onDelete = _ref23.onDelete,
+    T = _ref23.T,
+    dragHandlers = _ref23.dragHandlers;
+  var _useState15 = useState(false),
+    editText = _useState15[0],
+    setEditText = _useState15[1];
+  var _useState16 = useState(item.text || ""),
+    tv = _useState16[0],
+    setTv = _useState16[1];
+  var _useState17 = useState(!!item.note),
+    showNote = _useState17[0],
+    setShowNote = _useState17[1];
+  var _useState18 = useState(!!item.url),
+    showUrl = _useState18[0],
+    setShowUrl = _useState18[1];
   var saveT = function saveT() {
     if (tv.trim()) onUpdate({
       text: tv.trim()
@@ -4629,27 +4247,27 @@ function FlexItem(_ref26) {
     }
   })));
 }
-function ListPanel(_ref27) {
-  var list = _ref27.list,
-    onUpdate = _ref27.onUpdate,
-    onDelete = _ref27.onDelete,
-    T = _ref27.T,
-    compact = _ref27.compact;
-  var _useState22 = useState(""),
-    newText = _useState22[0],
-    setNewText = _useState22[1];
+function ListPanel(_ref24) {
+  var list = _ref24.list,
+    onUpdate = _ref24.onUpdate,
+    onDelete = _ref24.onDelete,
+    T = _ref24.T,
+    compact = _ref24.compact;
+  var _useState19 = useState(""),
+    newText = _useState19[0],
+    setNewText = _useState19[1];
+  var _useState20 = useState(false),
+    editingName = _useState20[0],
+    setEditingName = _useState20[1];
+  var _useState21 = useState(list.name),
+    nameVal = _useState21[0],
+    setNameVal = _useState21[1];
+  var _useState22 = useState(true),
+    open = _useState22[0],
+    setOpen = _useState22[1];
   var _useState23 = useState(false),
-    editingName = _useState23[0],
-    setEditingName = _useState23[1];
-  var _useState24 = useState(list.name),
-    nameVal = _useState24[0],
-    setNameVal = _useState24[1];
-  var _useState25 = useState(true),
-    open = _useState25[0],
-    setOpen = _useState25[1];
-  var _useState26 = useState(false),
-    editColor = _useState26[0],
-    setEditColor = _useState26[1];
+    editColor = _useState23[0],
+    setEditColor = _useState23[1];
   var dragOver = useRef(null),
     dragItem = useRef(null);
   var items = [].concat(list.items || []).sort(function (a, b) {
@@ -5081,17 +4699,17 @@ function ListPanel(_ref27) {
     }
   }, "Add"))));
 }
-function NewListModal(_ref28) {
-  var onSave = _ref28.onSave,
-    onClose = _ref28.onClose,
-    T = _ref28.T,
-    isMobile = _ref28.isMobile;
-  var _useState27 = useState(""),
-    name = _useState27[0],
-    setName = _useState27[1];
-  var _useState28 = useState(LIST_COLORS[0]),
-    color = _useState28[0],
-    setColor = _useState28[1];
+function NewListModal(_ref25) {
+  var onSave = _ref25.onSave,
+    onClose = _ref25.onClose,
+    T = _ref25.T,
+    isMobile = _ref25.isMobile;
+  var _useState24 = useState(""),
+    name = _useState24[0],
+    setName = _useState24[1];
+  var _useState25 = useState(LIST_COLORS[0]),
+    color = _useState25[0],
+    setColor = _useState25[1];
   var inp = {
     width: "100%",
     border: "1.5px solid " + T.border,
@@ -5270,16 +4888,16 @@ function NewListModal(_ref28) {
     }
   }, "Cancel"))));
 }
-function MobileDashboard(_ref29) {
-  var lists = _ref29.lists,
-    todayTasks = _ref29.todayTasks,
-    habits = _ref29.habits,
-    setHabits = _ref29.setHabits,
-    deadlines = _ref29.deadlines,
-    updateList = _ref29.updateList,
-    deleteList = _ref29.deleteList,
-    setView = _ref29.setView,
-    T = _ref29.T;
+function MobileDashboard(_ref26) {
+  var lists = _ref26.lists,
+    todayTasks = _ref26.todayTasks,
+    habits = _ref26.habits,
+    setHabits = _ref26.setHabits,
+    deadlines = _ref26.deadlines,
+    updateList = _ref26.updateList,
+    deleteList = _ref26.deleteList,
+    setView = _ref26.setView,
+    T = _ref26.T;
   var C = {
     background: T.surface,
     border: "1px solid " + T.border,
@@ -5498,14 +5116,301 @@ function useSwipe(onSwipeLeft, onSwipeRight, threshold) {
     onTouchEnd: onTouchEnd
   };
 }
-function WeatherWidget(_ref30) {
-  var T = _ref30.T;
-  var _useState29 = useState(null),
-    weather = _useState29[0],
-    setWeather = _useState29[1];
-  var _useState30 = useState(true),
-    loading = _useState30[0],
-    setLoading = _useState30[1];
+function SidebarWeather(_ref27) {
+  var T = _ref27.T;
+  var _useState26 = useState(null),
+    w = _useState26[0],
+    setW = _useState26[1];
+  useEffect(function () {
+    var cached = lsGet("h-weather-cache", null);
+    var age = lsGet("h-weather-time", 0);
+    if (cached && Date.now() - age < 1800000) {
+      setW(cached);
+      return;
+    }
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode&timezone=Europe/London").then(function (r) {
+      return r.json();
+    }).then(function (d) {
+      var codes = {
+        0: "Clear",
+        1: "Clear",
+        2: "Cloudy",
+        3: "Overcast",
+        51: "Drizzle",
+        61: "Rain",
+        63: "Rain",
+        71: "Snow",
+        80: "Showers",
+        95: "Storm"
+      };
+      var data = {
+        temp: Math.round(d.current.temperature_2m),
+        desc: codes[d.current.weathercode] || ""
+      };
+      setW(data);
+      lsSet("h-weather-cache", data);
+      lsSet("h-weather-time", Date.now());
+    }).catch(function () {});
+  }, []);
+  if (!w) return null;
+  return React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: T.muted,
+      margin: "2px 0 0"
+    }
+  }, w.temp, "\xB0 \xB7 ", w.desc);
+}
+function DashWeather(_ref28) {
+  var T = _ref28.T;
+  var _useState27 = useState(null),
+    w = _useState27[0],
+    setW = _useState27[1];
+  useEffect(function () {
+    var cached = lsGet("h-weather-cache", null);
+    var age = lsGet("h-weather-time", 0);
+    if (cached && Date.now() - age < 1800000) {
+      setW(cached);
+      return;
+    }
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode,windspeed_10m&timezone=Europe/London").then(function (r) {
+      return r.json();
+    }).then(function (d) {
+      var code = d.current.weathercode;
+      var descs = {
+        0: "Clear",
+        1: "Mainly clear",
+        2: "Partly cloudy",
+        3: "Overcast",
+        45: "Foggy",
+        51: "Drizzle",
+        61: "Rain",
+        63: "Rain",
+        65: "Heavy rain",
+        71: "Snow",
+        80: "Showers",
+        95: "Thunderstorm"
+      };
+      var getType = function getType(c) {
+        if (c <= 1) return "sun";
+        if (c <= 3) return "cloud";
+        if (c <= 55) return "drizzle";
+        if (c <= 67) return "rain";
+        if (c <= 77) return "snow";
+        return "storm";
+      };
+      var data = {
+        temp: Math.round(d.current.temperature_2m),
+        desc: descs[code] || "",
+        type: getType(code),
+        wind: Math.round(d.current.windspeed_10m)
+      };
+      setW(data);
+      lsSet("h-weather-cache", data);
+      lsSet("h-weather-time", Date.now());
+    }).catch(function () {});
+  }, []);
+  if (!w) return React.createElement("div", {
+    style: {
+      width: 120,
+      height: 80,
+      background: T.surface,
+      border: "1px solid " + T.border,
+      borderRadius: 16,
+      flexShrink: 0
+    }
+  });
+  var col = {
+    sun: T.accent,
+    cloud: T.muted,
+    drizzle: "#5E81AC",
+    rain: "#5E81AC",
+    snow: "#88C0D0",
+    storm: PRIORITY_COLOR.High
+  };
+  var svgs = {
+    sun: React.createElement("svg", {
+      width: "36",
+      height: "36",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: col.sun,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("circle", {
+      cx: "12",
+      cy: "12",
+      r: "5"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "1",
+      x2: "12",
+      y2: "3"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "21",
+      x2: "12",
+      y2: "23"
+    }), React.createElement("line", {
+      x1: "4.22",
+      y1: "4.22",
+      x2: "5.64",
+      y2: "5.64"
+    }), React.createElement("line", {
+      x1: "18.36",
+      y1: "18.36",
+      x2: "19.78",
+      y2: "19.78"
+    }), React.createElement("line", {
+      x1: "1",
+      y1: "12",
+      x2: "3",
+      y2: "12"
+    }), React.createElement("line", {
+      x1: "21",
+      y1: "12",
+      x2: "23",
+      y2: "12"
+    })),
+    cloud: React.createElement("svg", {
+      width: "36",
+      height: "36",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: col.cloud,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"
+    })),
+    drizzle: React.createElement("svg", {
+      width: "36",
+      height: "36",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: col.drizzle,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"
+    }), React.createElement("line", {
+      x1: "8",
+      y1: "19",
+      x2: "8",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "16",
+      y1: "19",
+      x2: "16",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "21",
+      x2: "12",
+      y2: "23"
+    })),
+    rain: React.createElement("svg", {
+      width: "36",
+      height: "36",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: col.rain,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"
+    }), React.createElement("line", {
+      x1: "8",
+      y1: "19",
+      x2: "8",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "16",
+      y1: "19",
+      x2: "16",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "12",
+      y1: "21",
+      x2: "12",
+      y2: "23"
+    })),
+    snow: React.createElement("svg", {
+      width: "36",
+      height: "36",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: col.snow,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"
+    }), React.createElement("line", {
+      x1: "8",
+      y1: "16",
+      x2: "8",
+      y2: "21"
+    }), React.createElement("line", {
+      x1: "16",
+      y1: "16",
+      x2: "16",
+      y2: "21"
+    })),
+    storm: React.createElement("svg", {
+      width: "36",
+      height: "36",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: col.storm,
+      strokeWidth: "1.5",
+      strokeLinecap: "round"
+    }, React.createElement("path", {
+      d: "M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"
+    }), React.createElement("polyline", {
+      points: "13 11 9 17 15 17 11 23"
+    }))
+  };
+  return React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      background: T.surface,
+      border: "1px solid " + T.border,
+      borderRadius: 16,
+      padding: "14px 20px",
+      flexShrink: 0
+    }
+  }, React.createElement("div", null, svgs[w.type] || svgs.cloud), React.createElement("div", null, React.createElement("div", {
+    style: {
+      fontSize: 30,
+      fontWeight: 800,
+      color: T.text,
+      lineHeight: 1,
+      letterSpacing: "-0.02em"
+    }
+  }, w.temp, "\xB0"), React.createElement("div", {
+    style: {
+      fontSize: 12,
+      color: T.muted,
+      marginTop: 2
+    }
+  }, w.desc), React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: T.muted,
+      marginTop: 1
+    }
+  }, "Edinburgh \xB7 ", w.wind, " km/h")));
+}
+function WeatherWidget(_ref29) {
+  var T = _ref29.T;
+  var _useState28 = useState(null),
+    weather = _useState28[0],
+    setWeather = _useState28[1];
+  var _useState29 = useState(true),
+    loading = _useState29[0],
+    setLoading = _useState29[1];
   useEffect(function () {
     fetch('https://api.open-meteo.com/v1/forecast?latitude=55.9533&longitude=-3.1883&current=temperature_2m,weathercode,windspeed_10m&timezone=Europe/London').then(function (r) {
       return r.json();
@@ -5639,16 +5544,16 @@ function WeatherWidget(_ref30) {
     }
   }, "Edinburgh \xB7 Wind ", weather.wind, " km/h")));
 }
-function ProgressRing(_ref31) {
-  var pct = _ref31.pct,
-    _ref31$size = _ref31.size,
-    size = _ref31$size === void 0 ? 80 : _ref31$size,
-    _ref31$stroke = _ref31.stroke,
-    stroke = _ref31$stroke === void 0 ? 7 : _ref31$stroke,
-    color = _ref31.color,
-    T = _ref31.T,
-    label = _ref31.label,
-    value = _ref31.value;
+function ProgressRing(_ref30) {
+  var pct = _ref30.pct,
+    _ref30$size = _ref30.size,
+    size = _ref30$size === void 0 ? 80 : _ref30$size,
+    _ref30$stroke = _ref30.stroke,
+    stroke = _ref30$stroke === void 0 ? 7 : _ref30$stroke,
+    color = _ref30.color,
+    T = _ref30.T,
+    label = _ref30.label,
+    value = _ref30.value;
   var r = Math.round((size - stroke * 2) / 2);
   var circ = Math.round(2 * Math.PI * r);
   var dash = Math.round(pct / 100 * circ);
@@ -5723,21 +5628,21 @@ function ProgressRing(_ref31) {
     }
   }, label));
 }
-function NotesPage(_ref32) {
+function NotesPage(_ref31) {
   var _notes$;
-  var notes = _ref32.notes,
-    setNotes = _ref32.setNotes,
-    T = _ref32.T,
-    isMobile = _ref32.isMobile;
-  var _useState31 = useState(((_notes$ = notes[0]) == null ? void 0 : _notes$.id) || null),
-    activeId = _useState31[0],
-    setActiveId = _useState31[1];
-  var _useState32 = useState(null),
-    editingTitle = _useState32[0],
-    setEditingTitle = _useState32[1];
-  var _useState33 = useState(""),
-    titleVal = _useState33[0],
-    setTitleVal = _useState33[1];
+  var notes = _ref31.notes,
+    setNotes = _ref31.setNotes,
+    T = _ref31.T,
+    isMobile = _ref31.isMobile;
+  var _useState30 = useState(((_notes$ = notes[0]) == null ? void 0 : _notes$.id) || null),
+    activeId = _useState30[0],
+    setActiveId = _useState30[1];
+  var _useState31 = useState(null),
+    editingTitle = _useState31[0],
+    setEditingTitle = _useState31[1];
+  var _useState32 = useState(""),
+    titleVal = _useState32[0],
+    setTitleVal = _useState32[1];
   var active = notes.find(function (n) {
     return n.id === activeId;
   }) || notes[0];
@@ -6056,16 +5961,16 @@ function NotesPage(_ref32) {
     }
   }))));
 }
-function SwipeCard(_ref33) {
-  var onSwipeLeft = _ref33.onSwipeLeft,
-    children = _ref33.children,
-    T = _ref33.T;
-  var _useState34 = useState(0),
-    offset = _useState34[0],
-    setOffset = _useState34[1];
-  var _useState35 = useState(false),
-    swiped = _useState35[0],
-    setSwiped = _useState35[1];
+function SwipeCard(_ref32) {
+  var onSwipeLeft = _ref32.onSwipeLeft,
+    children = _ref32.children,
+    T = _ref32.T;
+  var _useState33 = useState(0),
+    offset = _useState33[0],
+    setOffset = _useState33[1];
+  var _useState34 = useState(false),
+    swiped = _useState34[0],
+    setSwiped = _useState34[1];
   var startX = useRef(null);
   var onTouchStart = function onTouchStart(e) {
     startX.current = e.touches[0].clientX;
@@ -6150,18 +6055,18 @@ var NAV_ITEMS = [{
   label: "Notes",
   icon: "note"
 }];
-function Sidebar(_ref34) {
-  var view = _ref34.view,
-    setView = _ref34.setView,
-    syncStatus = _ref34.syncStatus,
-    onSearch = _ref34.onSearch,
-    onSettings = _ref34.onSettings,
-    T = _ref34.T,
-    open = _ref34.open,
-    setOpen = _ref34.setOpen;
-  var _useState36 = useState(false),
-    hovered = _useState36[0],
-    setHovered = _useState36[1];
+function Sidebar(_ref33) {
+  var view = _ref33.view,
+    setView = _ref33.setView,
+    syncStatus = _ref33.syncStatus,
+    onSearch = _ref33.onSearch,
+    onSettings = _ref33.onSettings,
+    T = _ref33.T,
+    open = _ref33.open,
+    setOpen = _ref33.setOpen;
+  var _useState35 = useState(false),
+    hovered = _useState35[0],
+    setHovered = _useState35[1];
   var expanded = open || hovered;
   return React.createElement("div", {
     onMouseEnter: function onMouseEnter() {
@@ -6386,13 +6291,13 @@ function taskTag(t) {
     color: TYPE_COLOR.Personal
   };
 }
-function TaskModal(_ref35) {
-  var task = _ref35.task,
-    onSave = _ref35.onSave,
-    onClose = _ref35.onClose,
-    T = _ref35.T,
-    isMobile = _ref35.isMobile;
-  var _useState37 = useState({
+function TaskModal(_ref34) {
+  var task = _ref34.task,
+    onSave = _ref34.onSave,
+    onClose = _ref34.onClose,
+    T = _ref34.T,
+    isMobile = _ref34.isMobile;
+  var _useState36 = useState({
       title: task.title || "",
       type: task.type || "Personal",
       courseId: task.courseId || null,
@@ -6403,15 +6308,15 @@ function TaskModal(_ref35) {
       pinned: task.pinned || false,
       done: task.done || false
     }),
-    f = _useState37[0],
-    setF = _useState37[1];
-  var _useState38 = useState(""),
-    ns = _useState38[0],
-    setNs = _useState38[1];
+    f = _useState36[0],
+    setF = _useState36[1];
+  var _useState37 = useState(""),
+    ns = _useState37[0],
+    setNs = _useState37[1];
   var u = function u(k, v) {
     return setF(function (x) {
-      var _extends3;
-      return _extends({}, x, (_extends3 = {}, _extends3[k] = v, _extends3));
+      var _extends2;
+      return _extends({}, x, (_extends2 = {}, _extends2[k] = v, _extends2));
     });
   };
   var save = function save() {
@@ -6624,9 +6529,9 @@ function TaskModal(_ref35) {
       marginBottom: 8,
       flexWrap: "wrap"
     }
-  }, [["Today", TODAY_VAL], ["Tomorrow", tmrw], ["This week", nextWeek]].map(function (_ref36) {
-    var l = _ref36[0],
-      v = _ref36[1];
+  }, [["Today", TODAY_VAL], ["Tomorrow", tmrw], ["This week", nextWeek]].map(function (_ref35) {
+    var l = _ref35[0],
+      v = _ref35[1];
     return React.createElement("button", {
       key: l,
       onClick: function onClick() {
@@ -6827,18 +6732,18 @@ function TaskModal(_ref35) {
     }
   }, "Cancel"))));
 }
-function TaskCard(_ref37) {
-  var task = _ref37.task,
-    onEdit = _ref37.onEdit,
-    onDelete = _ref37.onDelete,
-    onToggleDone = _ref37.onToggleDone,
-    onPin = _ref37.onPin,
-    T = _ref37.T,
-    style = _ref37.style,
-    animDelay = _ref37.animDelay;
-  var _useState39 = useState(false),
-    pressed = _useState39[0],
-    setPressed = _useState39[1];
+function TaskCard(_ref36) {
+  var task = _ref36.task,
+    onEdit = _ref36.onEdit,
+    onDelete = _ref36.onDelete,
+    onToggleDone = _ref36.onToggleDone,
+    onPin = _ref36.onPin,
+    T = _ref36.T,
+    style = _ref36.style,
+    animDelay = _ref36.animDelay;
+  var _useState38 = useState(false),
+    pressed = _useState38[0],
+    setPressed = _useState38[1];
   var tag = taskTag(task);
   var d = dateFmt(task.dueDate);
   var isDone = taskDone(task);
@@ -7016,32 +6921,32 @@ function TaskCard(_ref37) {
     color: "currentColor"
   })))));
 }
-function TasksView(_ref38) {
-  var tasks = _ref38.tasks,
-    setTasks = _ref38.setTasks,
-    setEdit = _ref38.setEdit,
-    delTask = _ref38.delTask,
-    pinTask = _ref38.pinTask,
-    archiveTask = _ref38.archiveTask,
-    T = _ref38.T,
-    isMobile = _ref38.isMobile,
-    showArchive = _ref38.showArchive,
-    setShowArchive = _ref38.setShowArchive,
-    archive = _ref38.archive,
-    setArchive = _ref38.setArchive,
-    restoreTask = _ref38.restoreTask;
-  var _useState40 = useState("all"),
-    filter = _useState40[0],
-    setFilter = _useState40[1];
-  var _useState41 = useState("default"),
-    sortBy = _useState41[0],
-    setSortBy = _useState41[1];
-  var _useState42 = useState(false),
-    showDone = _useState42[0],
-    setShowDone = _useState42[1];
-  var _useState43 = useState(""),
-    search = _useState43[0],
-    setSearch = _useState43[1];
+function TasksView(_ref37) {
+  var tasks = _ref37.tasks,
+    setTasks = _ref37.setTasks,
+    setEdit = _ref37.setEdit,
+    delTask = _ref37.delTask,
+    pinTask = _ref37.pinTask,
+    archiveTask = _ref37.archiveTask,
+    T = _ref37.T,
+    isMobile = _ref37.isMobile,
+    showArchive = _ref37.showArchive,
+    setShowArchive = _ref37.setShowArchive,
+    archive = _ref37.archive,
+    setArchive = _ref37.setArchive,
+    restoreTask = _ref37.restoreTask;
+  var _useState39 = useState("all"),
+    filter = _useState39[0],
+    setFilter = _useState39[1];
+  var _useState40 = useState("default"),
+    sortBy = _useState40[0],
+    setSortBy = _useState40[1];
+  var _useState41 = useState(false),
+    showDone = _useState41[0],
+    setShowDone = _useState41[1];
+  var _useState42 = useState(""),
+    search = _useState42[0],
+    setSearch = _useState42[1];
   var quickDone = function quickDone(id) {
     return setTasks(function (p) {
       return p.map(function (t) {
@@ -7325,20 +7230,20 @@ function TasksView(_ref38) {
     });
   }))));
 }
-function TodayPage(_ref39) {
-  var T = _ref39.T,
-    isMobile = _ref39.isMobile;
-  var _useState44 = useState(function () {
+function TodayPage(_ref38) {
+  var T = _ref38.T,
+    isMobile = _ref38.isMobile;
+  var _useState43 = useState(function () {
       return lsGet("h-today-items", []);
     }),
-    items = _useState44[0],
-    setItems = _useState44[1];
-  var _useState45 = useState(""),
-    newText = _useState45[0],
-    setNewText = _useState45[1];
-  var _useState46 = useState(false),
-    showDone = _useState46[0],
-    setShowDone = _useState46[1];
+    items = _useState43[0],
+    setItems = _useState43[1];
+  var _useState44 = useState(""),
+    newText = _useState44[0],
+    setNewText = _useState44[1];
+  var _useState45 = useState(false),
+    showDone = _useState45[0],
+    setShowDone = _useState45[1];
   var inputRef = useRef(null);
   useEffect(function () {
     lsSet("h-today-items", items);
@@ -7679,37 +7584,37 @@ function TodayPage(_ref39) {
   })));
 }
 function App() {
-  var _useState47 = useState(function () {
+  var _useState46 = useState(function () {
       return lsGet("h-tasks-html", INITIAL_TASKS);
     }),
-    tasks = _useState47[0],
-    setTasks = _useState47[1];
-  var _useState48 = useState(function () {
+    tasks = _useState46[0],
+    setTasks = _useState46[1];
+  var _useState47 = useState(function () {
       return lsGet("h-courses-html", {});
     }),
-    cd = _useState48[0],
-    setCd = _useState48[1];
-  var _useState49 = useState(function () {
+    cd = _useState47[0],
+    setCd = _useState47[1];
+  var _useState48 = useState(function () {
       return lsGet("h-dl-html", []);
     }),
-    deadlines = _useState49[0],
-    setDeadlines = _useState49[1];
-  var _useState50 = useState(function () {
+    deadlines = _useState48[0],
+    setDeadlines = _useState48[1];
+  var _useState49 = useState(function () {
       return lsGet("h-lists-html", INITIAL_LISTS);
     }),
-    lists = _useState50[0],
-    setLists = _useState50[1];
-  var _useState51 = useState(function () {
+    lists = _useState49[0],
+    setLists = _useState49[1];
+  var _useState50 = useState(function () {
       return lsGet("h-habits-html", INITIAL_HABITS);
     }),
-    habits = _useState51[0],
-    setHabits = _useState51[1];
-  var _useState52 = useState(function () {
+    habits = _useState50[0],
+    setHabits = _useState50[1];
+  var _useState51 = useState(function () {
       return lsGet("h-archive-html", []);
     }),
-    archive = _useState52[0],
-    setArchive = _useState52[1];
-  var _useState53 = useState(function () {
+    archive = _useState51[0],
+    setArchive = _useState51[1];
+  var _useState52 = useState(function () {
       return lsGet("h-notes-html", [{
         id: "n1",
         title: "Quick notes",
@@ -7717,52 +7622,57 @@ function App() {
         createdAt: new Date().toISOString()
       }]);
     }),
-    notes = _useState53[0],
-    setNotes = _useState53[1];
-  var _useState54 = useState(function () {
+    notes = _useState52[0],
+    setNotes = _useState52[1];
+  var _useState53 = useState(function () {
       return lsGet("h-exams-html", INITIAL_EXAM_DATES);
     }),
-    examDates = _useState54[0],
-    setExamDates = _useState54[1];
-  var _useState55 = useState(function () {
+    examDates = _useState53[0],
+    setExamDates = _useState53[1];
+  var _useState54 = useState(function () {
       return lsGet("h-cfields-html", Object.fromEntries(COURSES.map(function (c) {
         return [c.id, c.fields];
       })));
     }),
-    courseFields = _useState55[0],
-    setCourseFields = _useState55[1];
-  var _useState56 = useState("dashboard"),
-    view = _useState56[0],
-    setView = _useState56[1];
-  var _useState57 = useState("list"),
-    tv = _useState57[0],
-    setTv = _useState57[1];
-  var _useState58 = useState(null),
-    edit = _useState58[0],
-    setEdit = _useState58[1];
-  var _useState59 = useState(function () {
+    courseFields = _useState54[0],
+    setCourseFields = _useState54[1];
+  var _useState55 = useState("dashboard"),
+    view = _useState55[0],
+    setView = _useState55[1];
+  var _useState56 = useState("list"),
+    tv = _useState56[0],
+    setTv = _useState56[1];
+  var _useState57 = useState(null),
+    edit = _useState57[0],
+    setEdit = _useState57[1];
+  var _useState58 = useState(function () {
       return lsGet("h-theme-html", "slate");
     }),
-    theme = _useState59[0],
-    setTheme = _useState59[1];
-  var _useState60 = useState("All"),
-    fCat = _useState60[0],
-    setFCat = _useState60[1];
-  var _useState61 = useState(false),
-    hideDone = _useState61[0],
-    setHideDone = _useState61[1];
-  var _useState62 = useState(true),
-    groupBycat = _useState62[0],
-    setGroupBycat = _useState62[1];
+    theme = _useState58[0],
+    setTheme = _useState58[1];
+  var _useState59 = useState("All"),
+    fCat = _useState59[0],
+    setFCat = _useState59[1];
+  var _useState60 = useState(false),
+    hideDone = _useState60[0],
+    setHideDone = _useState60[1];
+  var _useState61 = useState(true),
+    groupBycat = _useState61[0],
+    setGroupBycat = _useState61[1];
+  var _useState62 = useState(false),
+    showArchive = _useState62[0],
+    setShowArchive = _useState62[1];
   var _useState63 = useState(false),
-    showArchive = _useState63[0],
-    setShowArchive = _useState63[1];
-  var _useState64 = useState(false),
-    showDoneInTasks = _useState64[0],
-    setShowDoneInTasks = _useState64[1];
-  var _useState65 = useState(true),
-    sidebarOpen = _useState65[0],
-    setSidebarOpen = _useState65[1];
+    showDoneInTasks = _useState63[0],
+    setShowDoneInTasks = _useState63[1];
+  var _useState64 = useState(true),
+    sidebarOpen = _useState64[0],
+    setSidebarOpen = _useState64[1];
+  var _useState65 = useState(function () {
+      return lsGet("h-fontscale", 1);
+    }),
+    fontScale = _useState65[0],
+    setFontScale = _useState65[1];
   var _useState66 = useState(""),
     search = _useState66[0],
     setSearch = _useState66[1];
@@ -8091,6 +8001,10 @@ function App() {
     lsSet("h-notif", notifEnabled);
   }, [notifEnabled]);
   useEffect(function () {
+    lsSet("h-fontscale", fontScale);
+    document.documentElement.style.fontSize = fontScale * 16 + "px";
+  }, [fontScale]);
+  useEffect(function () {
     var h = function h(e) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -8155,7 +8069,7 @@ function App() {
     setEdit(null);
   };
   var delTask = function () {
-    var _ref50 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
+    var _ref49 = _asyncToGenerator(_regenerator().m(function _callee16(id) {
       return _regenerator().w(function (_context16) {
         while (1) switch (_context16.n) {
           case 0:
@@ -8172,7 +8086,7 @@ function App() {
       }, _callee16);
     }));
     return function delTask(_x0) {
-      return _ref50.apply(this, arguments);
+      return _ref49.apply(this, arguments);
     };
   }();
   var pinTask = function pinTask(id) {
@@ -8196,8 +8110,8 @@ function App() {
   };
   var tog = function tog(cid, wk, fld) {
     return setCd(function (p) {
-      var _extends4;
-      return _extends({}, p, (_extends4 = {}, _extends4[cid + "-" + wk + "-" + fld] = !p[cid + "-" + wk + "-" + fld], _extends4));
+      var _extends3;
+      return _extends({}, p, (_extends3 = {}, _extends3[cid + "-" + wk + "-" + fld] = !p[cid + "-" + wk + "-" + fld], _extends3));
     });
   };
   var get = function get(cid, wk, fld) {
@@ -8216,7 +8130,7 @@ function App() {
     });
   };
   var deleteList = function () {
-    var _ref51 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
+    var _ref50 = _asyncToGenerator(_regenerator().m(function _callee17(id) {
       return _regenerator().w(function (_context17) {
         while (1) switch (_context17.n) {
           case 0:
@@ -8233,7 +8147,7 @@ function App() {
       }, _callee17);
     }));
     return function deleteList(_x1) {
-      return _ref51.apply(this, arguments);
+      return _ref50.apply(this, arguments);
     };
   }();
   var createList = function createList(l) {
@@ -8257,7 +8171,7 @@ function App() {
     });
   };
   var delDeadline = function () {
-    var _ref52 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
+    var _ref51 = _asyncToGenerator(_regenerator().m(function _callee18(id) {
       return _regenerator().w(function (_context18) {
         while (1) switch (_context18.n) {
           case 0:
@@ -8274,7 +8188,7 @@ function App() {
       }, _callee18);
     }));
     return function delDeadline(_x10) {
-      return _ref52.apply(this, arguments);
+      return _ref51.apply(this, arguments);
     };
   }();
   var handleDrop = function handleDrop(status) {
@@ -8535,9 +8449,9 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref53) {
-    var v = _ref53[0],
-      l = _ref53[1];
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(function (_ref52) {
+    var v = _ref52[0],
+      l = _ref52[1];
     return React.createElement("button", {
       key: v,
       onClick: function onClick() {
@@ -9206,15 +9120,15 @@ function App() {
       examDate: examDates[course.id],
       onExamChange: function onExamChange(id, val) {
         return setExamDates(function (p) {
-          var _extends5;
-          return _extends({}, p, (_extends5 = {}, _extends5[id] = val, _extends5));
+          var _extends4;
+          return _extends({}, p, (_extends4 = {}, _extends4[id] = val, _extends4));
         });
       },
       courseFields: courseFields[course.id] || course.fields,
       onFieldsChange: function onFieldsChange(id, fields) {
         return setCourseFields(function (p) {
-          var _extends6;
-          return _extends({}, p, (_extends6 = {}, _extends6[id] = fields, _extends6));
+          var _extends5;
+          return _extends({}, p, (_extends5 = {}, _extends5[id] = fields, _extends5));
         });
       }
     });
