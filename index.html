@@ -2797,7 +2797,7 @@ function DesktopNav(_ref1) {
       display: "flex",
       gap: 3
     }
-  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["deadlines", "Deadlines"], ["selling", "Selling"]].map(_ref10 => {
+  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["selling", "Selling"]].map(_ref10 => {
     let [v, l] = _ref10;
     return React.createElement("button", {
       key: v,
@@ -5731,11 +5731,6 @@ const NAV_ITEMS = [{
   icon: "book",
   color: null
 }, {
-  id: "deadlines",
-  label: "Deadlines",
-  icon: "calendar",
-  color: null
-}, {
   id: "selling",
   label: "Selling",
   icon: "tag",
@@ -8175,6 +8170,7 @@ function SellingPage(_ref39) {
   let {
     items,
     setItems,
+    lists = [],
     T,
     isMobile
   } = _ref39;
@@ -8500,7 +8496,77 @@ function SellingPage(_ref39) {
       color: T.muted,
       margin: "0 0 0 13px"
     }
-  }, active.length, " active \xB7 ", done.length, " sold", totalRevenue > 0 ? ` · £${totalRevenue.toFixed(2)} revenue` : "")), done.length > 0 && React.createElement("button", {
+  }, active.length, " active \xB7 ", done.length, " sold", totalRevenue > 0 ? ` · £${totalRevenue.toFixed(2)} revenue` : "")), (() => {
+    const importableLists = lists.filter(l => l.rows && l.rows.length > 0);
+    if (importableLists.length === 0) return null;
+    return React.createElement("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        flexShrink: 0
+      }
+    }, React.createElement("select", {
+      id: "import-list-sel",
+      style: {
+        border: `1.5px solid ${T.border}`,
+        borderRadius: 10,
+        padding: "8px 12px",
+        fontSize: 13,
+        color: T.text,
+        background: T.surface,
+        outline: "none",
+        cursor: "pointer",
+        fontFamily: "inherit"
+      }
+    }, React.createElement("option", {
+      value: ""
+    }, "Import from list\u2026"), importableLists.map(l => React.createElement("option", {
+      key: l.id,
+      value: l.id
+    }, l.name, " (", l.rows.length, " items)"))), React.createElement("button", {
+      onClick: () => {
+        const sel = document.getElementById("import-list-sel");
+        if (!sel || !sel.value) return;
+        const list = lists.find(l => l.id === sel.value);
+        if (!list) return;
+        const existing = new Set(items.map(i => i.name.toLowerCase().trim()));
+        const newItems = list.rows.filter(r => r.text && !existing.has(r.text.toLowerCase().trim())).map(r => ({
+          id: `s${Date.now()}_${Math.random().toString(36).slice(2)}`,
+          name: r.text,
+          platform: null,
+          checks: {
+            photos: false,
+            listed: false,
+            sold: false,
+            shipped: false
+          },
+          priceListed: "",
+          priceSold: "",
+          createdAt: new Date().toISOString()
+        }));
+        if (newItems.length === 0) {
+          alert("All items already imported.");
+          return;
+        }
+        setItems(p => [...p, ...newItems]);
+        sel.value = "";
+        alert(`Imported ${newItems.length} item${newItems.length !== 1 ? "s" : ""}.`);
+      },
+      style: {
+        background: T.accent,
+        color: "#fff",
+        border: "none",
+        borderRadius: 10,
+        padding: "8px 16px",
+        cursor: "pointer",
+        fontSize: 13,
+        fontWeight: 700,
+        flexShrink: 0,
+        whiteSpace: "nowrap"
+      }
+    }, "Import"));
+  })(), done.length > 0 && React.createElement("button", {
     onClick: () => setShowDone(s => !s),
     style: {
       background: "none",
@@ -9225,7 +9291,7 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["deadlines", "Deadlines"], ["selling", "Selling"]].map(_ref42 => {
+  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["selling", "Selling"]].map(_ref42 => {
     let [v, l] = _ref42;
     return React.createElement("button", {
       key: v,
@@ -9921,6 +9987,7 @@ function App() {
   }), view === "selling" && React.createElement(SellingPage, {
     items: sellingItems,
     setItems: setSellingItems,
+    lists: lists,
     T: T,
     isMobile: isMobile
   }), view === "deadlines" && React.createElement(DeadlinesCalPage, {
