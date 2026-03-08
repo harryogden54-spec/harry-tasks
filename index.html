@@ -2797,7 +2797,7 @@ function DesktopNav(_ref1) {
       display: "flex",
       gap: 3
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(_ref10 => {
+  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["deadlines", "Deadlines"], ["selling", "Selling"]].map(_ref10 => {
     let [v, l] = _ref10;
     return React.createElement("button", {
       key: v,
@@ -5703,27 +5703,43 @@ function SwipeCard(_ref26) {
 const NAV_ITEMS = [{
   id: "today",
   label: "Today",
-  icon: "check"
+  icon: "check",
+  color: "#4CAF50"
 }, {
   id: "dashboard",
   label: "Dashboard",
-  icon: "calendar"
+  icon: "calendar",
+  color: null
 }, {
   id: "tasks",
   label: "Tasks",
-  icon: "task"
+  icon: "task",
+  color: null
 }, {
   id: "lists",
   label: "Lists",
-  icon: "list"
+  icon: "list",
+  color: null
 }, {
   id: "timetable",
   label: "Timetable",
-  icon: "clock"
+  icon: "clock",
+  color: "#5B9BD5"
 }, {
   id: "courses",
   label: "Courses",
-  icon: "book"
+  icon: "book",
+  color: null
+}, {
+  id: "deadlines",
+  label: "Deadlines",
+  icon: "calendar",
+  color: null
+}, {
+  id: "selling",
+  label: "Selling",
+  icon: "tag",
+  color: "#A0527A"
 }];
 function Sidebar(_ref27) {
   let {
@@ -9209,7 +9225,7 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(_ref42 => {
+  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["deadlines", "Deadlines"], ["selling", "Selling"]].map(_ref42 => {
     let [v, l] = _ref42;
     return React.createElement("button", {
       key: v,
