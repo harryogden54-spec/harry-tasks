@@ -8175,6 +8175,7 @@ function SellingPage(_ref39) {
     isMobile
   } = _ref39;
   const [showDone, setShowDone] = useState(false);
+  const [sortBy, setSortBy] = useState("default");
   const [editingCell, setEditingCell] = useState(null);
   const [editVal, setEditVal] = useState("");
   const [newName, setNewName] = useState("");
@@ -8229,8 +8230,14 @@ function SellingPage(_ref39) {
     });
     setEditingCell(null);
   };
-  const active = items.filter(i => !isComplete(i));
-  const done = items.filter(i => isComplete(i));
+  const sortItems = arr => {
+    if (sortBy === "platform") return [...arr].sort((a, b) => (a.platform || "zzz").localeCompare(b.platform || "zzz"));
+    if (sortBy === "listed") return [...arr].sort((a, b) => (parseFloat(b.priceListed) || 0) - (parseFloat(a.priceListed) || 0));
+    if (sortBy === "sold") return [...arr].sort((a, b) => (parseFloat(b.priceSold) || 0) - (parseFloat(a.priceSold) || 0));
+    return arr;
+  };
+  const active = sortItems(items.filter(i => !isComplete(i)));
+  const done = sortItems(items.filter(i => isComplete(i)));
   const totalRevenue = done.reduce((a, i) => a + (parseFloat(i.priceSold) || 0), 0);
   const totalListed = active.reduce((a, i) => a + (parseFloat(i.priceListed) || 0), 0);
   const platformCounts = PLATFORMS.map(p => ({
@@ -8551,7 +8558,29 @@ function SellingPage(_ref39) {
         flexShrink: 0
       }
     }, "Import"));
-  })(), done.length > 0 && React.createElement("button", {
+  })(), React.createElement("select", {
+    value: sortBy,
+    onChange: e => setSortBy(e.target.value),
+    style: {
+      border: `1.5px solid ${T.border}`,
+      borderRadius: 10,
+      padding: "8px 12px",
+      fontSize: 13,
+      color: T.text,
+      background: T.surface,
+      outline: "none",
+      cursor: "pointer",
+      fontFamily: "inherit"
+    }
+  }, React.createElement("option", {
+    value: "default"
+  }, "Sort: Default"), React.createElement("option", {
+    value: "platform"
+  }, "Sort: Platform"), React.createElement("option", {
+    value: "listed"
+  }, "Sort: Listed \xA3 \u2193"), React.createElement("option", {
+    value: "sold"
+  }, "Sort: Sold \xA3 \u2193")), done.length > 0 && React.createElement("button", {
     onClick: () => setShowDone(s => !s),
     style: {
       background: "none",
@@ -8862,7 +8891,319 @@ function App() {
     content: "",
     createdAt: new Date().toISOString()
   }]));
-  const [sellingItems, setSellingItems] = useState(() => lsGet("h-selling-html", []));
+  const [sellingItems, setSellingItems] = useState(() => lsGet("h-selling-html", [{
+    "id": "s_preloaded_1",
+    "name": "Uniqlo Jumper",
+    "platform": null,
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": true,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_2",
+    "name": "Diesel grey zip up",
+    "platform": null,
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_3",
+    "name": "Grey RL Crewneck",
+    "platform": null,
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_4",
+    "name": "Massimo Dutti Sweatshirt",
+    "platform": null,
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_5",
+    "name": "Brown Uniqlo Jacket",
+    "platform": null,
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_6",
+    "name": "White Diesel Zip Up",
+    "platform": null,
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_7",
+    "name": "Black Adidas Joggers",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_8",
+    "name": "Blue adidas joggers",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_9",
+    "name": "Primo Jumper straight lines",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_10",
+    "name": "Primo Jumper Marks",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_11",
+    "name": "Striped Blue Jumper",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_12",
+    "name": "Mountain Warehouse fleece",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": false,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_13",
+    "name": "Blue Mountain Warehouse fleece",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": false,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_14",
+    "name": "Star Jeans",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": false,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_15",
+    "name": "Banana Republic Top - Black",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": false,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_16",
+    "name": "CMP Fleece",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_17",
+    "name": "Banana Republic Cardigan",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": false,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_18",
+    "name": "Jigsaw Sweatshirt Blue",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_19",
+    "name": "Jigsaw Sweatshirt Pink",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_20",
+    "name": "BCBG Dress",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_21",
+    "name": "Banana Republic Sweater Pink",
+    "platform": "vinted",
+    "checks": {
+      "photos": true,
+      "listed": false,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_22",
+    "name": "Karen Millen Top",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_23",
+    "name": "Armani Skirt",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }, {
+    "id": "s_preloaded_24",
+    "name": "Fratelli Coat",
+    "platform": "depop",
+    "checks": {
+      "photos": true,
+      "listed": true,
+      "sold": false,
+      "shipped": false
+    },
+    "priceListed": "",
+    "priceSold": "",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }]));
   const [examDates, setExamDates] = useState(() => lsGet("h-exams-html", INITIAL_EXAM_DATES));
   const [courseFields, setCourseFields] = useState(() => lsGet("h-cfields-html", Object.fromEntries(COURSES.map(c => [c.id, c.fields]))));
   const [view, setView] = useState("dashboard");
