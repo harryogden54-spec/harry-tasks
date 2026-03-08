@@ -207,7 +207,7 @@ const INITIAL_EXAM_DATES = {
   construction: ""
 };
 const WEEKS = 10,
-  CURRENT_WEEK = 6;
+  CURRENT_WEEK = Math.min(10, Math.max(1, Math.ceil((new Date() - new Date("2026-01-19")) / (7 * 86400000))));
 const TASK_TYPES = ["Personal", "Uni"];
 const CATEGORIES = ["Daily", "School", "Personal"];
 const STATUSES = ["To Do", "In Progress", "Done"];
@@ -2845,7 +2845,8 @@ function DesktopNav(_ref1) {
 function Cal(_ref11) {
   let {
     tasks,
-    T
+    T,
+    deadlines = []
   } = _ref11;
   const now = new Date();
   const [mo, setMo] = useState(now.getMonth());
@@ -2928,7 +2929,22 @@ function Cal(_ref11) {
       fontWeight: 700,
       padding: "4px 0"
     }
-  }, d)), Array(fd).fill(null).map((_, i) => React.createElement("div", {
+  }, d, (() => {
+    const dlOnDay = deadlines.filter(x => {
+      const dt = new Date(x.date + "T12:00:00");
+      return dt.getDate() === d && dt.getMonth() === mo && dt.getFullYear() === yr;
+    });
+    return dlOnDay.length > 0 ? React.createElement("span", {
+      style: {
+        display: "block",
+        width: 5,
+        height: 5,
+        borderRadius: "50%",
+        background: T.accent2 || T.accent,
+        margin: "1px auto 0"
+      }
+    }) : null;
+  })())), Array(fd).fill(null).map((_, i) => React.createElement("div", {
     key: `e${i}`
   })), Array(dim).fill(null).map((_, i) => {
     const day = i + 1,
@@ -3720,6 +3736,10 @@ function ListCard(_ref17) {
     onMouseEnter: () => setHov(true),
     onMouseLeave: () => setHov(false),
     style: {
+      display: "inline-block",
+      width: "100%",
+      breakInside: "avoid",
+      marginBottom: 16,
       background: T.surface,
       border: `1.5px solid ${hov ? list.color + "80" : T.border}`,
       borderTop: `4px solid ${list.color}`,
@@ -5780,7 +5800,9 @@ function Sidebar(_ref27) {
       flexShrink: 0,
       display: "flex",
       alignItems: "center",
-      animation: view === item.id ? "iconPop 0.3s cubic-bezier(0.16,1,0.3,1)" : "none"
+      animation: view === item.id ? "iconPop 0.3s cubic-bezier(0.16,1,0.3,1)" : "none",
+      transform: view === item.id ? "scale(1.1)" : "scale(1)",
+      transition: "transform 0.2s"
     }
   }, React.createElement(Ic, {
     n: item.icon,
@@ -5923,7 +5945,8 @@ function TaskModal(_ref28) {
     onSave,
     onClose,
     T,
-    isMobile
+    isMobile,
+    deadlines = []
   } = _ref28;
   const [f, setF] = useState({
     title: task.title || "",
@@ -5934,7 +5957,8 @@ function TaskModal(_ref28) {
     notes: task.notes || "",
     subtasks: task.subtasks || [],
     pinned: task.pinned || false,
-    done: task.done || false
+    done: task.done || false,
+    deadlineId: task.deadlineId || null
   });
   const [ns, setNs] = useState("");
   const u = (k, v) => setF(x => ({
@@ -6196,7 +6220,28 @@ function TaskModal(_ref28) {
       resize: "vertical",
       lineHeight: 1.6
     }
-  })), f.subtasks.length > 0 && React.createElement("div", {
+  })), deadlines.length > 0 && React.createElement("div", {
+    style: {
+      marginBottom: 18
+    }
+  }, React.createElement("label", {
+    style: lbl
+  }, "Linked Deadline"), React.createElement("select", {
+    value: f.deadlineId || "",
+    onChange: e => u("deadlineId", e.target.value || null),
+    style: {
+      ...inp,
+      cursor: "pointer"
+    }
+  }, React.createElement("option", {
+    value: ""
+  }, "\u2014 None \u2014"), deadlines.map(d => {
+    const c = COURSES.find(x => x.id === d.course);
+    return React.createElement("option", {
+      key: d.id,
+      value: d.id
+    }, d.title, c ? ` · ${c.short}` : "", " (", d.date, ")");
+  }))), f.subtasks.length > 0 && React.createElement("div", {
     style: {
       marginBottom: 14
     }
@@ -6368,11 +6413,11 @@ function TaskCard(_ref30) {
     onMouseLeave: () => setHovered(false),
     style: {
       ...glassStyle,
-      borderLeft: `3px solid ${isDone ? T.border : accentColor}`,
+      borderLeft: `${task.pinned ? 4 : 3}px solid ${isDone ? T.border : accentColor}`,
       borderRight: `3px solid ${isDone ? T.border : PRIORITY_COLOR[task.priority]}`,
       borderRadius: 16,
-      padding: "14px 16px",
-      marginBottom: 8,
+      padding: task.pinned ? "18px 18px" : "13px 16px",
+      marginBottom: task.pinned ? 10 : 7,
       cursor: "pointer",
       transition: "all 0.22s cubic-bezier(0.16,1,0.3,1)",
       transform: hovered ? "translateY(-2px) scale(1.005)" : "translateY(0) scale(1)",
@@ -6520,7 +6565,16 @@ function TaskCard(_ref30) {
       padding: "2px 6px",
       borderRadius: 20
     }
-  }, task.subtasks.filter(s => s.done).length, "/", task.subtasks.length))), React.createElement("div", {
+  }, task.subtasks.filter(s => s.done).length, "/", task.subtasks.length), task.deadlineId && React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: T.accent2 || T.accent,
+      background: (T.accent2 || T.accent) + "18",
+      padding: "2px 7px",
+      borderRadius: 20
+    }
+  }, "deadline"))), React.createElement("div", {
     style: {
       display: "flex",
       gap: 3,
@@ -7422,9 +7476,8 @@ function ListsView(_ref33) {
     T: T
   }), React.createElement("div", {
     style: {
-      display: "grid",
-      gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill,minmax(260px,1fr))",
-      gap: 14
+      columnCount: isMobile ? 1 : 3,
+      columnGap: 16
     }
   }, lists.map(list => React.createElement(ListCard, {
     key: list.id,
@@ -7662,6 +7715,344 @@ function PageHero(_ref37) {
       margin: "0 0 4px"
     }
   }, title), children));
+}
+function DeadlinesCalPage(_ref38) {
+  let {
+    deadlines,
+    tasks,
+    setView,
+    setEdit,
+    T
+  } = _ref38;
+  const now = new Date();
+  const [mo, setMo] = useState(now.getMonth());
+  const [yr, setYr] = useState(now.getFullYear());
+  const firstDay = new Date(yr, mo, 1).getDay();
+  const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+  const start = (firstDay + 6) % 7;
+  const cells = [];
+  for (let i = 0; i < start; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  const dlForDay = d => {
+    if (!d) return [];
+    return deadlines.filter(x => {
+      const dt = new Date(x.date + "T12:00:00");
+      return dt.getDate() === d && dt.getMonth() === mo && dt.getFullYear() === yr;
+    });
+  };
+  const tasksForDl = dlId => tasks.filter(t => t.deadlineId === dlId && !taskDone(t));
+  const isToday = d => d && yr === now.getFullYear() && mo === now.getMonth() && d === now.getDate();
+  const prevMo = () => {
+    if (mo === 0) {
+      setMo(11);
+      setYr(y => y - 1);
+    } else setMo(m => m - 1);
+  };
+  const nextMo = () => {
+    if (mo === 11) {
+      setMo(0);
+      setYr(y => y + 1);
+    } else setMo(m => m + 1);
+  };
+  const allDlThisMo = deadlines.filter(x => {
+    const dt = new Date(x.date + "T12:00:00");
+    return dt.getMonth() === mo && dt.getFullYear() === yr;
+  }).sort((a, b) => a.date > b.date ? 1 : -1);
+  return React.createElement("div", {
+    className: "page-enter"
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 28
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 4
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 3,
+      height: 22,
+      borderRadius: 2,
+      background: T.accent
+    }
+  }), React.createElement("h1", {
+    style: {
+      fontSize: 28,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.03em",
+      margin: 0
+    }
+  }, "Deadlines")), React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted,
+      margin: 0,
+      paddingLeft: 13
+    }
+  }, allDlThisMo.length, " deadline", allDlThisMo.length !== 1 ? "s" : "", " this month")), React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, React.createElement("button", {
+    onClick: prevMo,
+    style: {
+      background: T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)",
+      backdropFilter: "blur(12px)",
+      border: `1px solid ${T.border}`,
+      borderRadius: 10,
+      width: 36,
+      height: 36,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: T.text,
+      fontSize: 18
+    }
+  }, "\u2039"), React.createElement("span", {
+    style: {
+      fontSize: 15,
+      fontWeight: 700,
+      color: T.text,
+      minWidth: 120,
+      textAlign: "center"
+    }
+  }, new Date(yr, mo).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric"
+  })), React.createElement("button", {
+    onClick: nextMo,
+    style: {
+      background: T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)",
+      backdropFilter: "blur(12px)",
+      border: `1px solid ${T.border}`,
+      borderRadius: 10,
+      width: 36,
+      height: 36,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: T.text,
+      fontSize: 18
+    }
+  }, "\u203A"))), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 300px",
+      gap: 20,
+      alignItems: "start"
+    }
+  }, React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(7,1fr)",
+      marginBottom: 8
+    }
+  }, ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => React.createElement("div", {
+    key: d,
+    style: {
+      textAlign: "center",
+      fontSize: 11,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      padding: "4px 0"
+    }
+  }, d))), React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(7,1fr)",
+      gap: 4
+    }
+  }, cells.map((d, i) => {
+    const dls = dlForDay(d);
+    const today = isToday(d);
+    return React.createElement("div", {
+      key: i,
+      style: {
+        minHeight: 72,
+        borderRadius: 10,
+        padding: "6px",
+        background: today ? T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.8)" : d ? "transparent" : "transparent",
+        border: today ? `2px solid ${T.accent}` : `1px solid ${d ? T.border : "transparent"}`,
+        position: "relative",
+        transition: "background 0.15s"
+      },
+      onMouseEnter: e => {
+        if (d) e.currentTarget.style.background = T.dark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.7)";
+      },
+      onMouseLeave: e => {
+        if (d) e.currentTarget.style.background = today ? T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.8)" : "transparent";
+      }
+    }, d && React.createElement("span", {
+      style: {
+        fontSize: 12,
+        fontWeight: today ? 800 : 500,
+        color: today ? T.accent : T.text,
+        display: "block",
+        marginBottom: 4
+      }
+    }, d), dls.map(dl => {
+      const c = COURSES.find(x => x.id === dl.course);
+      const linked = tasksForDl(dl.id).length;
+      return React.createElement("div", {
+        key: dl.id,
+        style: {
+          background: ((c == null ? void 0 : c.color) || T.accent) + "22",
+          border: `1px solid ${(c == null ? void 0 : c.color) || T.accent}40`,
+          borderRadius: 5,
+          padding: "2px 5px",
+          marginBottom: 2,
+          cursor: "pointer"
+        },
+        onClick: () => {}
+      }, React.createElement("p", {
+        style: {
+          margin: 0,
+          fontSize: 9,
+          fontWeight: 700,
+          color: (c == null ? void 0 : c.color) || T.accent,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }
+      }, dl.title), linked > 0 && React.createElement("p", {
+        style: {
+          margin: 0,
+          fontSize: 8,
+          color: T.muted
+        }
+      }, linked, " task", linked !== 1 ? "s" : ""));
+    }));
+  }))), React.createElement("div", null, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 14
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 3,
+      height: 16,
+      borderRadius: 2,
+      background: T.accent2 || T.accent
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 800,
+      color: T.text,
+      textTransform: "uppercase",
+      letterSpacing: "0.1em"
+    }
+  }, "This Month")), allDlThisMo.length === 0 && React.createElement("p", {
+    style: {
+      fontSize: 13,
+      color: T.muted
+    }
+  }, "No deadlines this month"), allDlThisMo.map(dl => {
+    const c = COURSES.find(x => x.id === dl.course);
+    const linked = tasksForDl(dl.id);
+    const diff = Math.round((new Date(dl.date + "T12:00:00") - new Date()) / 86400000);
+    const past = diff < 0;
+    return React.createElement("div", {
+      key: dl.id,
+      style: {
+        background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
+        backdropFilter: "blur(16px)",
+        border: `1px solid ${past ? PRIORITY_COLOR.High + "40" : T.border}`,
+        borderLeft: `4px solid ${(c == null ? void 0 : c.color) || T.accent}`,
+        borderRadius: 12,
+        padding: "12px 14px",
+        marginBottom: 10
+      }
+    }, React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: 6
+      }
+    }, React.createElement("div", null, React.createElement("p", {
+      style: {
+        margin: 0,
+        fontSize: 14,
+        fontWeight: 700,
+        color: T.text
+      }
+    }, dl.title), c && React.createElement("p", {
+      style: {
+        margin: "2px 0 0",
+        fontSize: 11,
+        color: c.color,
+        fontWeight: 600
+      }
+    }, c.name)), React.createElement("span", {
+      style: {
+        fontSize: 11,
+        fontWeight: 700,
+        color: past ? PRIORITY_COLOR.High : diff <= 3 ? PRIORITY_COLOR.Medium : T.muted,
+        background: past ? PRIORITY_COLOR.High + "15" : diff <= 3 ? PRIORITY_COLOR.Medium + "15" : T.alt,
+        padding: "3px 8px",
+        borderRadius: 6,
+        flexShrink: 0
+      }
+    }, past ? `${Math.abs(diff)}d ago` : diff === 0 ? "Today" : diff === 1 ? "Tomorrow" : `${diff}d`)), linked.length > 0 && React.createElement("div", {
+      style: {
+        borderTop: `1px solid ${T.border}`,
+        paddingTop: 8,
+        marginTop: 4
+      }
+    }, React.createElement("p", {
+      style: {
+        fontSize: 10,
+        fontWeight: 700,
+        color: T.muted,
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        marginBottom: 5
+      }
+    }, "Linked tasks"), linked.map(t => React.createElement("div", {
+      key: t.id,
+      onClick: () => setEdit(t),
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "4px 0",
+        cursor: "pointer"
+      }
+    }, React.createElement("div", {
+      style: {
+        width: 5,
+        height: 5,
+        borderRadius: "50%",
+        background: PRIORITY_COLOR[t.priority],
+        flexShrink: 0
+      }
+    }), React.createElement("span", {
+      style: {
+        fontSize: 12,
+        color: T.text,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, t.title)))));
+  }))));
 }
 function App() {
   const [tasks, setTasks] = useState(() => lsGet("h-tasks-html", INITIAL_TASKS));
@@ -7985,13 +8376,15 @@ function App() {
     padding: isMobile ? 18 : 22
   };
   const L = {
-    fontSize: 10,
-    fontWeight: 700,
-    color: T.muted,
+    fontSize: 11,
+    fontWeight: 800,
+    color: T.text,
     textTransform: "uppercase",
-    letterSpacing: "0.12em",
+    letterSpacing: "0.1em",
     display: "block",
-    marginBottom: 10
+    marginBottom: 12,
+    borderLeft: `3px solid ${T.accent}`,
+    paddingLeft: 10
   };
   const B = a => ({
     background: a ? T.accent : "transparent",
@@ -8169,8 +8562,8 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(_ref38 => {
-    let [v, l] = _ref38;
+  }, [["dashboard", "Home"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["archive", "Archive"]].map(_ref39 => {
+    let [v, l] = _ref39;
     return React.createElement("button", {
       key: v,
       onClick: () => setView(v),
@@ -8270,19 +8663,19 @@ function App() {
     year: "numeric"
   })), React.createElement("h1", {
     style: {
-      fontSize: 44,
+      fontSize: 52,
       fontWeight: 800,
       color: T.text,
-      letterSpacing: "-0.04em",
-      lineHeight: 0.95,
-      margin: "0 0 12px"
+      letterSpacing: "-0.05em",
+      lineHeight: 0.9,
+      margin: "0 0 14px"
     }
   }, React.createElement("span", {
     style: {
       display: "block",
-      fontSize: 22,
-      fontWeight: 600,
-      letterSpacing: "-0.02em",
+      fontSize: 18,
+      fontWeight: 500,
+      letterSpacing: "-0.01em",
       color: T.muted
     }
   }, (() => {
@@ -8344,68 +8737,6 @@ function App() {
   })))), React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr auto",
-      gap: 14,
-      marginBottom: 20,
-      alignItems: "stretch"
-    }
-  }, [{
-    l: "Active",
-    v: tasks.filter(t => !taskDone(t)).length,
-    c: T.text
-  }, {
-    l: "Due Today",
-    v: todayTasks.length,
-    c: todayTasks.length ? PRIORITY_COLOR.Medium : T.text
-  }, {
-    l: "Overdue",
-    v: overdue.length,
-    c: overdue.length ? PRIORITY_COLOR.High : T.text
-  }].map(x => React.createElement("div", {
-    key: x.l,
-    style: {
-      padding: 22,
-      background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.6)",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      border: `1px solid ${T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.8)"}`,
-      borderRadius: 14,
-      transition: "transform 0.18s",
-      cursor: "default"
-    },
-    onMouseEnter: e => e.currentTarget.style.transform = "translateY(-2px)",
-    onMouseLeave: e => e.currentTarget.style.transform = "none"
-  }, React.createElement("span", {
-    style: L
-  }, x.l), React.createElement("div", {
-    style: {
-      fontSize: 32,
-      fontWeight: 800,
-      color: x.c,
-      lineHeight: 1,
-      letterSpacing: "-0.02em"
-    }
-  }, React.createElement(RollNum, {
-    value: x.v
-  })))), React.createElement("div", {
-    style: {
-      ...C,
-      padding: 22,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, React.createElement(ProgressRing, {
-    pct: totI > 0 ? Math.round(doneI / totI * 100) : 0,
-    size: 72,
-    stroke: 6,
-    color: doneI === totI ? "#A3BE8C" : T.accent,
-    T: T,
-    label: "Week",
-    value: totI > 0 ? Math.round(doneI / totI * 100) : 0
-  }))), React.createElement("div", {
-    style: {
-      display: "grid",
       gridTemplateColumns: "1fr 1fr",
       gap: 14,
       marginBottom: 20
@@ -8458,7 +8789,8 @@ function App() {
     style: L
   }, "Calendar"), React.createElement(Cal, {
     tasks: tasks,
-    T: T
+    T: T,
+    deadlines: deadlines
   }))), React.createElement("div", {
     style: C
   }, React.createElement("div", {
@@ -8468,9 +8800,29 @@ function App() {
       alignItems: "center",
       marginBottom: 16
     }
-  }, React.createElement("span", {
-    style: L
-  }, "All Tasks"), React.createElement("button", {
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 2
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 3,
+      height: 18,
+      borderRadius: 2,
+      background: T.accent
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 800,
+      color: T.text,
+      textTransform: "uppercase",
+      letterSpacing: "0.12em"
+    }
+  }, "All Tasks")), React.createElement("button", {
     onClick: () => setView("tasks"),
     style: {
       fontSize: 12,
@@ -8507,7 +8859,6 @@ function App() {
       const d = dateFmt(t.dueDate);
       return React.createElement("div", {
         key: t.id,
-        onClick: () => setEdit(t),
         style: {
           display: "flex",
           alignItems: "center",
@@ -8515,21 +8866,43 @@ function App() {
           padding: "8px 12px",
           borderRadius: 9,
           marginBottom: 4,
-          cursor: "pointer",
           background: isUrgent(t) ? PRIORITY_COLOR.High + "10" : T.alt,
           transition: "background 0.12s"
         },
         onMouseEnter: e => e.currentTarget.style.background = T.border,
         onMouseLeave: e => e.currentTarget.style.background = isUrgent(t) ? PRIORITY_COLOR.High + "10" : T.alt
       }, React.createElement("div", {
+        onClick: e => {
+          e.stopPropagation();
+          setTasks(p => p.map(x => x.id === t.id ? {
+            ...x,
+            done: !x.done,
+            status: !x.done ? "Done" : "To Do"
+          } : x));
+        },
         style: {
-          width: 6,
-          height: 6,
-          borderRadius: "50%",
-          background: PRIORITY_COLOR[t.priority],
-          flexShrink: 0
+          width: 18,
+          height: 18,
+          borderRadius: 5,
+          border: `2px solid ${T.border}`,
+          background: "transparent",
+          cursor: "pointer",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "all 0.15s"
+        },
+        onMouseEnter: e => {
+          e.currentTarget.style.borderColor = T.accent;
+          e.currentTarget.style.background = T.accent + "20";
+        },
+        onMouseLeave: e => {
+          e.currentTarget.style.borderColor = T.border;
+          e.currentTarget.style.background = "transparent";
         }
       }), React.createElement("span", {
+        onClick: () => setEdit(t),
         style: {
           flex: 1,
           fontSize: 13,
@@ -8537,7 +8910,8 @@ function App() {
           fontWeight: 500,
           overflow: "hidden",
           textOverflow: "ellipsis",
-          whiteSpace: "nowrap"
+          whiteSpace: "nowrap",
+          cursor: "pointer"
         }
       }, t.title), React.createElement("span", {
         style: {
@@ -8881,6 +9255,12 @@ function App() {
   }))), view === "today" && React.createElement(TodayPage, {
     T: T,
     isMobile: isMobile
+  }), view === "deadlines" && React.createElement(DeadlinesCalPage, {
+    deadlines: deadlines,
+    tasks: tasks,
+    setView: setView,
+    setEdit: setEdit,
+    T: T
   }), view === "notes" && React.createElement(NotesPage, {
     notes: notes,
     setNotes: setNotes,
@@ -8891,7 +9271,8 @@ function App() {
     onSave: saveTask,
     onClose: () => setEdit(null),
     T: T,
-    isMobile: isMobile
+    isMobile: isMobile,
+    deadlines: deadlines
   }), showNewList && React.createElement(NewListModal, {
     onSave: createList,
     onClose: () => setShowNewList(false),
