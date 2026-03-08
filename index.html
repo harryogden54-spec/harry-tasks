@@ -8200,6 +8200,7 @@ function SellingPage(_ref39) {
       },
       priceListed: "",
       priceSold: "",
+      soldDate: "",
       createdAt: new Date().toISOString()
     }]);
     setNewName("");
@@ -8208,12 +8209,17 @@ function SellingPage(_ref39) {
   const delItem = id => upd(items.filter(i => i.id !== id));
   const toggleCheck = (id, col) => {
     const item = items.find(i => i.id === id);
-    updItem(id, {
+    const newVal = !item.checks[col];
+    const patch = {
       checks: {
         ...item.checks,
-        [col]: !item.checks[col]
+        [col]: newVal
       }
-    });
+    };
+    if (col === "sold" && newVal && !item.soldDate) {
+      patch.soldDate = new Date().toISOString().split("T")[0];
+    }
+    updItem(id, patch);
   };
   const isComplete = item => SELL_COLS.every(c => item.checks[c.id]);
   const startEdit = (id, field, val) => {
@@ -8239,11 +8245,47 @@ function SellingPage(_ref39) {
   const active = sortItems(items.filter(i => !isComplete(i)));
   const done = sortItems(items.filter(i => isComplete(i)));
   const totalRevenue = done.reduce((a, i) => a + (parseFloat(i.priceSold) || 0), 0);
-  const totalListed = active.reduce((a, i) => a + (parseFloat(i.priceListed) || 0), 0);
-  const platformCounts = PLATFORMS.map(p => ({
-    ...p,
-    count: items.filter(i => i.platform === p.id).length
-  }));
+  const potentialRevenue = active.filter(i => i.checks.listed).reduce((a, i) => a + (parseFloat(i.priceListed) || 0), 0);
+  const totalListedCount = active.filter(i => i.checks.listed).length;
+  const unlistedCount = active.filter(i => !i.checks.listed).length;
+  const Ring = _ref40 => {
+    let {
+      pct,
+      size,
+      stroke,
+      color,
+      bg
+    } = _ref40;
+    const r = (size - stroke * 2) / 2;
+    const circ = 2 * Math.PI * r;
+    const dash = pct / 100 * circ;
+    return React.createElement("svg", {
+      width: size,
+      height: size,
+      style: {
+        transform: "rotate(-90deg)"
+      }
+    }, React.createElement("circle", {
+      cx: size / 2,
+      cy: size / 2,
+      r: r,
+      fill: "none",
+      stroke: bg || T.border,
+      strokeWidth: stroke
+    }), React.createElement("circle", {
+      cx: size / 2,
+      cy: size / 2,
+      r: r,
+      fill: "none",
+      stroke: color,
+      strokeWidth: stroke,
+      strokeDasharray: `${dash} ${circ}`,
+      strokeLinecap: "round",
+      style: {
+        transition: "stroke-dasharray 0.6s ease"
+      }
+    }));
+  };
   const platStyle = item => {
     if (!item.platform) return {};
     const p = PLATFORMS.find(x => x.id === item.platform);
@@ -8256,12 +8298,12 @@ function SellingPage(_ref39) {
       borderLeft: `3px solid ${p.color}`
     };
   };
-  const EditCell = _ref40 => {
+  const EditCell = _ref41 => {
     let {
       item,
       field,
       prefix = ""
-    } = _ref40;
+    } = _ref41;
     return (editingCell == null ? void 0 : editingCell.id) === item.id && (editingCell == null ? void 0 : editingCell.field) === field ? React.createElement("input", {
       autoFocus: true,
       value: editVal,
@@ -8294,11 +8336,11 @@ function SellingPage(_ref39) {
       }
     }, "\u2014"));
   };
-  const Row = _ref41 => {
+  const Row = _ref42 => {
     let {
       item,
       dimmed
-    } = _ref41;
+    } = _ref42;
     return React.createElement("tr", {
       style: {
         opacity: dimmed ? 0.45 : 1,
@@ -8411,7 +8453,56 @@ function SellingPage(_ref39) {
         padding: "0",
         borderBottom: `1px solid ${T.border}`,
         borderRight: `1px solid ${T.border}`,
-        minWidth: 90
+        minWidth: 110
+      }
+    }, item.checks.sold ? (editingCell == null ? void 0 : editingCell.id) === item.id && (editingCell == null ? void 0 : editingCell.field) === "soldDate" ? React.createElement("input", {
+      type: "date",
+      autoFocus: true,
+      value: editVal,
+      onChange: e => setEditVal(e.target.value),
+      onBlur: saveEdit,
+      onKeyDown: e => e.key === "Enter" && saveEdit(),
+      style: {
+        width: "100%",
+        border: "none",
+        outline: "none",
+        padding: "10px 10px",
+        fontSize: 12,
+        color: T.text,
+        background: "transparent",
+        fontFamily: "inherit"
+      }
+    }) : React.createElement("div", {
+      onClick: () => !dimmed && startEdit(item.id, "soldDate", item.soldDate || ""),
+      style: {
+        padding: "10px 10px",
+        fontSize: 12,
+        color: item.soldDate ? T.text : T.muted,
+        cursor: "text",
+        minHeight: 42
+      }
+    }, item.soldDate ? new Date(item.soldDate + "T12:00:00").toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short"
+    }) : React.createElement("span", {
+      style: {
+        opacity: 0.4,
+        fontSize: 11
+      }
+    }, "Set date")) : React.createElement("div", {
+      style: {
+        padding: "10px 10px",
+        fontSize: 12,
+        color: T.muted,
+        minHeight: 42,
+        opacity: 0.25
+      }
+    }, "\u2014")), React.createElement("td", {
+      style: {
+        padding: "0",
+        borderBottom: `1px solid ${T.border}`,
+        borderRight: `1px solid ${T.border}`,
+        minWidth: 80
       }
     }, React.createElement(EditCell, {
       item: item,
@@ -8422,7 +8513,7 @@ function SellingPage(_ref39) {
         padding: "0",
         borderBottom: `1px solid ${T.border}`,
         borderRight: `1px solid ${T.border}`,
-        minWidth: 90
+        minWidth: 80
       }
     }, React.createElement(EditCell, {
       item: item,
@@ -8451,40 +8542,225 @@ function SellingPage(_ref39) {
       onMouseLeave: e => e.currentTarget.style.opacity = "0.25"
     }, "\xD7")));
   };
+  const soldPct = items.length > 0 ? Math.round(done.length / items.length * 100) : 0;
+  const listedPct = active.length > 0 ? Math.round(totalListedCount / active.length * 100) : 0;
   return React.createElement("div", {
     className: "page-enter"
   }, React.createElement("div", {
     style: {
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "space-between",
+      position: "relative",
       marginBottom: 20,
-      gap: 16,
+      borderRadius: 22,
+      overflow: "hidden"
+    }
+  }, React.createElement("div", {
+    style: {
+      background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
+      backdropFilter: "blur(24px)",
+      WebkitBackdropFilter: "blur(24px)",
+      border: `1px solid ${T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.85)"}`,
+      borderRadius: 22,
+      padding: "24px 28px"
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 3,
+      background: "linear-gradient(90deg,#A0527A,#C4622D,#1DA0C3)",
+      borderRadius: "22px 22px 0 0"
+    }
+  }), React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 28,
       flexWrap: "wrap"
     }
-  }, React.createElement("div", null, React.createElement("div", {
+  }, React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 160
+    }
+  }, React.createElement("p", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.12em",
+      margin: "0 0 6px"
+    }
+  }, "Total Revenue"), React.createElement("p", {
+    style: {
+      fontSize: isMobile ? 36 : 48,
+      fontWeight: 800,
+      color: T.text,
+      letterSpacing: "-0.04em",
+      margin: "0 0 4px",
+      lineHeight: 1
+    }
+  }, "\xA3", totalRevenue.toFixed(2)), React.createElement("p", {
+    style: {
+      fontSize: 12,
+      color: T.muted,
+      margin: 0
+    }
+  }, "from ", done.length, " sold item", done.length !== 1 ? "s" : "")), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 6
+    }
+  }, React.createElement("div", {
+    style: {
+      position: "relative",
+      width: 80,
+      height: 80
+    }
+  }, React.createElement(Ring, {
+    pct: soldPct,
+    size: 80,
+    stroke: 7,
+    color: "#4CAF50",
+    bg: T.border
+  }), React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 18,
+      fontWeight: 800,
+      color: T.text,
+      lineHeight: 1
+    }
+  }, soldPct), React.createElement("span", {
+    style: {
+      fontSize: 9,
+      color: T.muted,
+      fontWeight: 600
+    }
+  }, "%"))), React.createElement("span", {
+    style: {
+      fontSize: 10,
+      fontWeight: 700,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Sold")), React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, [{
+    label: "Active listings",
+    value: active.length,
+    color: T.accent
+  }, {
+    label: "Currently listed",
+    value: totalListedCount,
+    sub: `£${potentialRevenue.toFixed(0)} potential`,
+    color: "#C9A84C"
+  }, {
+    label: "Not yet listed",
+    value: unlistedCount,
+    color: T.muted
+  }].map((s, i) => React.createElement("div", {
+    key: i,
     style: {
       display: "flex",
       alignItems: "center",
       gap: 10,
-      marginBottom: 4
+      padding: "8px 14px",
+      background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.6)",
+      borderRadius: 10,
+      border: `1px solid ${T.border}`
     }
   }, React.createElement("div", {
     style: {
-      width: 3,
-      height: 24,
-      borderRadius: 2,
-      background: "#A0527A"
+      width: 8,
+      height: 8,
+      borderRadius: "50%",
+      background: s.color,
+      flexShrink: 0
     }
-  }), React.createElement("h1", {
+  }), React.createElement("span", {
     style: {
-      fontSize: 28,
-      fontWeight: 800,
+      fontSize: 13,
       color: T.text,
-      letterSpacing: "-0.03em",
-      margin: 0
+      fontWeight: 600,
+      minWidth: 18,
+      textAlign: "right"
     }
-  }, "Selling"))), React.createElement("div", {
+  }, s.value), React.createElement("span", {
+    style: {
+      fontSize: 12,
+      color: T.muted
+    }
+  }, s.label), s.sub && React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#C9A84C",
+      marginLeft: 4
+    }
+  }, s.sub))))))), React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      marginBottom: 14,
+      flexWrap: "wrap",
+      alignItems: "center"
+    }
+  }, React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      flex: 1,
+      flexWrap: "wrap"
+    }
+  }, PLATFORMS.map(p => React.createElement("div", {
+    key: p.id,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 5,
+      padding: "4px 10px",
+      background: T.dark ? p.color + "18" : p.bg,
+      border: `1px solid ${p.color}40`,
+      borderRadius: 20
+    }
+  }, React.createElement("div", {
+    style: {
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: p.color
+    }
+  }), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: p.color
+    }
+  }, p.label), React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: T.muted
+    }
+  }, "(", items.filter(i => i.platform === p.id).length, ")")))), React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -8537,6 +8813,7 @@ function SellingPage(_ref39) {
           },
           priceListed: "",
           priceSold: "",
+          soldDate: "",
           createdAt: new Date().toISOString()
         }));
         if (!newItems.length) {
@@ -8578,9 +8855,9 @@ function SellingPage(_ref39) {
     value: "platform"
   }, "Sort: Platform"), React.createElement("option", {
     value: "listed"
-  }, "Sort: Listed \xA3 \u2193"), React.createElement("option", {
+  }, "Sort: Listed \xA3"), React.createElement("option", {
     value: "sold"
-  }, "Sort: Sold \xA3 \u2193")), done.length > 0 && React.createElement("button", {
+  }, "Sort: Sold \xA3")), done.length > 0 && React.createElement("button", {
     onClick: () => setShowDone(s => !s),
     style: {
       background: "none",
@@ -8594,121 +8871,6 @@ function SellingPage(_ref39) {
     }
   }, showDone ? `Hide sold (${done.length})` : `Show sold (${done.length})`))), React.createElement("div", {
     style: {
-      display: "grid",
-      gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)",
-      gap: 12,
-      marginBottom: 20
-    }
-  }, [{
-    label: "Active listings",
-    value: active.length,
-    icon: "📦",
-    color: T.accent,
-    sub: `£${totalListed.toFixed(0)} listed value`
-  }, {
-    label: "Sold",
-    value: done.length,
-    icon: "✓",
-    color: "#4CAF50",
-    sub: totalRevenue > 0 ? `£${totalRevenue.toFixed(2)} revenue` : "No revenue yet"
-  }, {
-    label: "Avg sale price",
-    value: done.length > 0 ? `£${(totalRevenue / done.length).toFixed(2)}` : "—",
-    icon: "£",
-    color: "#C9A84C",
-    sub: done.length > 0 ? `from ${done.length} sale${done.length !== 1 ? "s" : ""}` : "No sales yet"
-  }, {
-    label: "Platform spread",
-    value: platformCounts.filter(p => p.count > 0).map(p => `${p.count} ${p.label}`).join(", ") || "None set",
-    icon: "🏪",
-    color: "#A0527A",
-    sub: "active items",
-    small: true
-  }].map((s, i) => React.createElement("div", {
-    key: i,
-    style: {
-      background: T.dark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.7)",
-      backdropFilter: "blur(20px)",
-      WebkitBackdropFilter: "blur(20px)",
-      border: `1px solid ${T.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.85)"}`,
-      borderRadius: 14,
-      padding: "16px 18px",
-      position: "relative",
-      overflow: "hidden"
-    }
-  }, React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      height: 3,
-      background: s.color,
-      borderRadius: "14px 14px 0 0",
-      opacity: 0.7
-    }
-  }), React.createElement("p", {
-    style: {
-      fontSize: 10,
-      fontWeight: 700,
-      color: T.muted,
-      textTransform: "uppercase",
-      letterSpacing: "0.1em",
-      margin: "0 0 8px"
-    }
-  }, s.label), React.createElement("p", {
-    style: {
-      fontSize: s.small ? 13 : 26,
-      fontWeight: 800,
-      color: T.text,
-      margin: "0 0 4px",
-      letterSpacing: s.small ? "-0.01em" : "-0.02em",
-      lineHeight: 1.1
-    }
-  }, s.value), React.createElement("p", {
-    style: {
-      fontSize: 11,
-      color: T.muted,
-      margin: 0
-    }
-  }, s.sub)))), React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8,
-      marginBottom: 16,
-      flexWrap: "wrap"
-    }
-  }, PLATFORMS.map(p => React.createElement("div", {
-    key: p.id,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 5,
-      padding: "4px 10px",
-      background: T.dark ? p.color + "18" : p.bg,
-      border: `1px solid ${p.color}40`,
-      borderRadius: 20
-    }
-  }, React.createElement("div", {
-    style: {
-      width: 7,
-      height: 7,
-      borderRadius: "50%",
-      background: p.color
-    }
-  }), React.createElement("span", {
-    style: {
-      fontSize: 11,
-      fontWeight: 700,
-      color: p.color
-    }
-  }, p.label), React.createElement("span", {
-    style: {
-      fontSize: 11,
-      color: T.muted
-    }
-  }, "(", items.filter(i => i.platform === p.id).length, ")")))), React.createElement("div", {
-    style: {
       overflowX: "auto",
       borderRadius: 16,
       border: `1px solid ${T.border}`,
@@ -8719,7 +8881,7 @@ function SellingPage(_ref39) {
     style: {
       width: "100%",
       borderCollapse: "collapse",
-      minWidth: 700
+      minWidth: 800
     }
   }, React.createElement("thead", null, React.createElement("tr", {
     style: {
@@ -8774,6 +8936,21 @@ function SellingPage(_ref39) {
     }
   }, col.label))), React.createElement("th", {
     style: {
+      padding: "10px 10px",
+      textAlign: "left",
+      borderBottom: `2px solid ${T.border}`,
+      borderRight: `1px solid ${T.border}`
+    }
+  }, React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 800,
+      color: T.muted,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Sold On")), React.createElement("th", {
+    style: {
       padding: "10px 12px",
       textAlign: "left",
       borderBottom: `2px solid ${T.border}`,
@@ -8813,15 +8990,15 @@ function SellingPage(_ref39) {
     item: item,
     dimmed: false
   })), active.length === 0 && !showDone && React.createElement("tr", null, React.createElement("td", {
-    colSpan: 9,
+    colSpan: 10,
     style: {
       padding: "40px",
       textAlign: "center",
       color: T.muted,
       fontSize: 14
     }
-  }, "No active items \u2014 add one below or import from a list")), showDone && done.length > 0 && React.createElement("tr", null, React.createElement("td", {
-    colSpan: 9,
+  }, "No active items \u2014 add one below")), showDone && done.length > 0 && React.createElement("tr", null, React.createElement("td", {
+    colSpan: 10,
     style: {
       padding: "8px 14px",
       background: T.alt,
@@ -8849,7 +9026,7 @@ function SellingPage(_ref39) {
     value: newName,
     onChange: e => setNewName(e.target.value),
     onKeyDown: e => e.key === "Enter" && addItem(),
-    placeholder: "Add item (e.g. Vintage Levi jacket)\u2026",
+    placeholder: "Add item\u2026",
     style: {
       flex: 1,
       border: `1.5px solid ${T.border}`,
@@ -9714,8 +9891,8 @@ function App() {
       gap: 2,
       WebkitOverflowScrolling: "touch"
     }
-  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["selling", "Selling"]].map(_ref42 => {
-    let [v, l] = _ref42;
+  }, [["dashboard", "Home"], ["today", "Today"], ["tasks", "Tasks"], ["lists", "Lists"], ["timetable", "Timetable"], ["courses", "Courses"], ["selling", "Selling"]].map(_ref43 => {
+    let [v, l] = _ref43;
     return React.createElement("button", {
       key: v,
       onClick: () => setView(v),
